@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('kabupaten_code');
             $table->string('link_no');
 
-            $table->integer('drp_num')->unique();
+            $table->integer('drp_num')->index();
             $table->decimal('chainage', 10, 2)->nullable();
             $table->integer('drp_order')->nullable();
             $table->decimal('drp_length', 10, 2)->nullable();

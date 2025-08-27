@@ -7,15 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class DRP extends Model
 {
     protected $table = 'drp';
-
     // Tidak ada primary key
     protected $primaryKey = null;
     public $incrementing = false;
     protected $keyType = 'string';
-
-    // Jika tabel ini tidak butuh timestamps
-    public $timestamps = false;
-
     // Kolom yang bisa diisi mass-assignment
     protected $fillable = [
         'province_code',
@@ -29,7 +24,7 @@ class DRP extends Model
         'dpr_north_min',
         'dpr_north_sec',
         'dpr_east_deg',
-        'dpr_east_min',
+        'dpr_east_min', 
         'dpr_east_sec',
         'drp_type',
         'drp_desc',
@@ -55,5 +50,24 @@ class DRP extends Model
     public function type()
     {
         return $this->belongsTo(CodeDrpType::class, 'drp_type', 'code');
+    }
+    // Relasi ke link_kabupaten sebagai titik awal
+    public function linkFrom()
+    {
+        return $this->hasMany(LinkKabupaten::class, 'drp_from', 'drp_num');
+    }
+
+    // Relasi ke link_kabupaten sebagai titik akhir
+    public function linkTo()
+    {
+        return $this->hasMany(LinkKabupaten::class, 'drp_to', 'drp_num');
+    }
+    public function kecFrom()
+    {
+        return $this->hasMany(LinkKecamatan::class, 'drp_from', 'drp_num');
+    }
+    public function kecTo()
+    {
+        return $this->hasMany(LinkKecamatan::class, 'drp_to', 'drp_num');
     }
 }

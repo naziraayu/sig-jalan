@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('drp_from');
             $table->integer('drp_to');
             $table->string('kabupaten')->nullable();
+            $table->timestamps();
 
             // Foreign keys
             $table->foreign('province_code')
@@ -32,14 +33,6 @@ return new class extends Migration
                 ->references('link_no')->on('link')
                 ->onDelete('cascade');
 
-            $table->foreign('drp_from')
-                ->references('drp_num')->on('drp')
-                ->onDelete('cascade');
-
-            $table->foreign('drp_to')
-                ->references('drp_num')->on('drp')
-                ->onDelete('cascade');
-            $table->timestamps();
         });
     }
 
