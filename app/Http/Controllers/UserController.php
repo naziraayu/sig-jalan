@@ -63,12 +63,12 @@ class UserController extends Controller
         ]);
 
         if ($request->hasFile('photo')) {
-            // hapus foto lama kalau ada
             if ($user->photo && Storage::disk('public')->exists($user->photo)) {
                 Storage::disk('public')->delete($user->photo);
             }
-            $validated['photo'] = $request->file('photo')->store('photos', 'public');
+            $validated['photo'] = $request->file('photo')->store('profile_photos', 'public');
         }
+
 
         if ($request->filled('password')) {
             $validated['password'] = bcrypt($request->password);

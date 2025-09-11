@@ -10,7 +10,7 @@
                     <a href="{{ route('dashboard') }}">Dashboard</a>
                 </div>
                 <div class="breadcrumb-item">
-                    <a href="{{ route('users.index') }}">User Management</a>
+                    <a href="{{ route('users.index') }}">Manajemen User</a>
                 </div>
                 <div class="breadcrumb-item">Tambah User</div>
             </div>

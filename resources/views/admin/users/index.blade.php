@@ -9,7 +9,7 @@
         <div class="breadcrumb-item active">
           <a href="{{ route('dashboard') }}">Dashboard</a>
         </div>
-        <div class="breadcrumb-item">User Management</div>
+        <div class="breadcrumb-item">Manajemen User</div>
       </div>
     </div>
 

@@ -16,4 +16,8 @@ class Island extends Model
         'province_code',
         'island_name',
     ];
+    public function province()
+    {
+        return $this->belongsTo(Province::class, 'province_code', 'province_code');
+    }
 }

@@ -10,7 +10,7 @@
                     <a href="{{ route('dashboard') }}">Dashboard</a>
                 </div>
                 <div class="breadcrumb-item">
-                    <a href="{{ route('users.index') }}">User Management</a>
+                    <a href="{{ route('users.index') }}">Manajemen User</a>
                 </div>
                 <div class="breadcrumb-item">Edit User</div>
             </div>
@@ -30,10 +30,10 @@
                             <input type="file" name="photo" class="form-control">
                             @if($user->photo)
                                 <div class="mt-2">
-                                <img src="{{ asset('storage/' . $user->photo) }}" 
-                                    alt="Foto Profil" 
-                                    class="img-thumbnail" 
-                                    width="120">
+                                <img src="{{ $user->photo 
+                                    ? asset('storage/' . $user->photo) 
+                                    : asset('assets/img/avatar/avatar-1.png') }}" 
+                                    class="img-thumbnail" width="150" style="object-fit: cover;">
                                 </div>
                             @endif
                         </div>

@@ -10,7 +10,7 @@
                     <a href="{{ route('dashboard') }}">Dashboard</a>
                 </div>
                 <div class="breadcrumb-item">
-                    <a href="{{ route('users.index') }}">User Management</a>
+                    <a href="{{ route('users.index') }}">Manajemen User</a>
                 </div>
                 <div class="breadcrumb-item">Detail User</div>
             </div>
@@ -23,12 +23,10 @@
             <div class="card">
                 <div class="card-body">
                     <p><strong>Foto:</strong></p>
-                    @if($user->photo)
-                    <img src="{{ asset('storage/' . $user->photo) }}" class="img-thumbnail" width="150">
-                    @else
-                    <span class="text-muted">Belum ada foto</span>
-                    @endif
-
+                    <img src="{{ $user->photo 
+                        ? asset('storage/' . $user->photo) 
+                        : asset('assets/img/avatar/avatar-1.png') }}" 
+                        class="img-thumbnail" width="150" style="object-fit: cover;">
                     <p><strong>Nama:</strong> {{ $user->name }}</p>
                     <p><strong>Email:</strong> {{ $user->email }}</p>
                     <p><strong>Role:</strong> {{ $user->role ? $user->role->name : '-' }}</p>

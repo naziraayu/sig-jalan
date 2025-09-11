@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Province extends Model
 {
+    protected $table = 'provinces';
     protected $primaryKey = 'province_code';
     public $incrementing = false;   // karena PK bukan auto increment
     protected $keyType = 'string'; // tipe PK adalah string

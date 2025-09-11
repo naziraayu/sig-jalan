@@ -16,4 +16,10 @@ class Balai extends Model
         'province_code',
         'balai_name',
     ];
+
+    public function province()
+    {
+        return $this->belongsTo(Province::class, 'province_code', 'province_code');
+    }
+
 }

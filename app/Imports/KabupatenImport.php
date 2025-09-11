@@ -3,26 +3,29 @@
 namespace App\Imports;
 
 use App\Models\Kabupaten;
+use Maatwebsite\Excel\Row;
 use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\OnEachRow;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class KabupatenImport implements ToModel, WithHeadingRow
+class KabupatenImport implements OnEachRow, WithHeadingRow
 {
-    /**
-    * @param array $row
-    *
-    * @return \Illuminate\Database\Eloquent\Model|null
-    */
-    public function model(array $row)
+    public function onRow(Row $row): void
     {
-       return new Kabupaten([
-            'kabupaten_code'   => $row['kabupaten_code'],
-            'province_code'    => $row['province_code'],
-            'kabupaten_name'   => $row['kabupaten_name'],
-            'balai_code'       => $row['balai_code'] ?? null,
-            'island_code'      => $row['island_code'] ?? null,
-            'default_kabupaten'=> isset($row['defaultkabupaten']) ? (bool)$row['defaultkabupaten'] : false,
-            'stable'           => $row['stable'] ?? null,
-        ]);
+        // ambil data sebagai array
+        $data = $row->toArray();  
+
+        Kabupaten::updateOrCreate(
+            ['kabupaten_code' => $data['kabupaten_code'] ?? null], // primary key
+            [
+                'province_code'     => $data['province_code'] ?? null,
+                'kabupaten_name'    => $data['kabupaten_name'] ?? null,
+                'balai_code'        => $data['balai_code'] ?? null,
+                'island_code'       => $data['island_code'] ?? null,
+                'default_kabupaten' => !empty($data['default_kabupaten']),
+                'stable'            => $data['stable'] ?? 0,
+            ]
+        );
     }
+
 }

@@ -54,5 +54,27 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Role::class, 'role_id');
     }
+    public function permissions()
+    {
+        return $this->role?->permissions ?? collect();
+    }
+    public function hasPermission(string $action, ?string $feature = null): bool
+    {
+        if (!$this->role) return false;
+
+        $query = $this->role->permissions();
+
+        if ($feature) {
+            $query->where('feature', $feature);
+        }
+
+        return $query->where('action', $action)->exists();
+    }
+    public function features()
+    {
+        if (!$this->role) return collect();
+
+        return $this->role->permissions()->pluck('feature')->unique();
+    }
 
 }
