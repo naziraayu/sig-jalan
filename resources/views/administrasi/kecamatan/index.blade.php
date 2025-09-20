@@ -121,7 +121,14 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
-        $('#kecamatanTable').DataTable();
+        $('#kecamatanTable').DataTable({
+        paging: true,
+        searching: true,
+        ordering: true,
+        info: true,
+        lengthChange: true,
+        pageLength: 10,
+        });
     });
 </script>
 @endpush

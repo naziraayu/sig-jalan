@@ -21,7 +21,7 @@ return new class extends Migration
             $table->id();
             $table->string('feature'); // misal 'provinsi', 'user', dll
             $table->string('action');  // misal 'create', 'read', 'update', 'delete', 'import', 'export'
-            $table->timestamps();
+            $table->timestamps(); 
         });
 
         Schema::create('role_permission', function (Blueprint $table) {
@@ -70,6 +70,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('roles');
+        Schema::dropIfExists('permissions');
+        Schema::dropIfExists('role_permission');
         Schema::dropIfExists('users');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');

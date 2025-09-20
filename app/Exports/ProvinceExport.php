@@ -3,9 +3,10 @@
 namespace App\Exports;
 
 use App\Models\Province;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\FromCollection;
 
-class ProvinceExport implements FromCollection
+class ProvinceExport implements FromCollection, WithHeadings
 {
     /**
     * @return \Illuminate\Support\Collection
@@ -23,5 +24,13 @@ class ProvinceExport implements FromCollection
                 ];
             });
     }
-
+    public function headings(): array
+    {
+        return [
+            'Province_Code',
+            'Province_Name',
+            'DefaultProvince',
+            'Stable',
+        ];
+    }
 }

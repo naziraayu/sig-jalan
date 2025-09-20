@@ -13,11 +13,15 @@ class IslandExport implements FromCollection, WithHeadings
     */
      public function collection()
     {
-        return Island::select('island_code', 'island_name', 'province_code')->get();
+        return Island::select('province_code', 'island_code', 'island_name', )->get();
     }
 
     public function headings(): array
     {
-        return ['Kode Pulau', 'Nama Pulau', 'Kode Provinsi'];
+        return [
+            'Province_Code', 
+            'Island_Code', 
+            'Island_Name'
+        ];
     }
 }

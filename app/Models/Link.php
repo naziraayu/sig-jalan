@@ -49,4 +49,15 @@ class Link extends Model
     {
         return $this->belongsTo(Kabupaten::class, 'kabupaten_code', 'kabupaten_code');
     }
+
+    public function statusRelation() {
+        return $this->belongsTo(CodeLinkStatus::class, 'status', 'code');
+    }
+
+    // Link.php
+    public function functionRelation()
+    {
+        return $this->belongsTo(CodeLinkFunction::class, 'function', 'code');
+    }
+
 }

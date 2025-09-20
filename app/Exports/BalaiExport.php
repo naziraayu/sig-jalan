@@ -19,9 +19,9 @@ class BalaiExport implements FromCollection, WithHeadings
     public function headings(): array
     {
         return [
-            'Balai Code',
-            'Balai Name',
-            'Province Code',
+            'Province_Code',
+            'Balai_Code',
+            'Balai_Name',
         ];
     }
 }

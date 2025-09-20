@@ -70,4 +70,14 @@ class DRP extends Model
     {
         return $this->hasMany(LinkKecamatan::class, 'drp_to', 'drp_num');
     }
+    public function status()
+    {
+        return $this->belongsTo(CodeLinkStatus::class, 'status_code', 'code');
+    }
+
+    public function link()
+    {
+        return $this->belongsTo(Link::class, 'link_no', 'link_no');
+    }
+
 }

@@ -49,10 +49,10 @@
                     <a href="#" class="nav-link has-dropdown"><i class="fas fa-th"></i> <span>Pengaturan Jaringan</span></a>
                     <ul class="dropdown-menu">
                         @if($user->hasPermission('detail', 'ruas_jalan'))
-                            <li><a class="nav-link" href="#">Ruas Jalan</a></li>
+                            <li><a class="nav-link" href="{{ route(name: 'ruas-jalan.index') }}">Ruas Jalan</a></li>
                         @endif
                         @if($user->hasPermission('detail', 'drp'))
-                            <li><a class="nav-link" href="#">DRP</a></li>
+                            <li><a class="nav-link" href="{{ route(name: 'drp.index') }}">DRP</a></li>
                         @endif
                         @if($user->hasPermission('detail', 'kelas_jalan'))
                             <li><a class="nav-link" href="#">Kelas Jalan</a></li>
@@ -76,7 +76,7 @@
                     <a href="#" class="nav-link has-dropdown"><i class="fas fa-th-large"></i> <span>Jalan</span></a>
                     <ul class="dropdown-menu">
                         @if($user->hasPermission('detail', 'inventarisasi_jalan'))
-                            <li><a class="nav-link" href="#">Inventarisasi Jalan</a></li>
+                            <li><a class="nav-link" href="{{ route(name: 'inventarisasi-jalan.index') }}">Inventarisasi Jalan</a></li>
                         @endif
                         @if($user->hasPermission('detail', 'kondisi_jalan'))
                             <li><a class="nav-link" href="#">Kondisi Jalan</a></li>

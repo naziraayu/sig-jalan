@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DRPController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BalaiController;
@@ -10,6 +11,8 @@ use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KabupatenController;
 use App\Http\Controllers\KecamatanController;
+use App\Http\Controllers\RuasJalanController;
+use App\Http\Controllers\InventarisasiJalanController;
 
 // --------------------
 // Public Routes
@@ -188,8 +191,104 @@ Route::middleware(['auth'])->group(function () {
             ->middleware('permission:export,kecamatan')->name('export');
     });
 
+    // --------------------
+    // Ruas Jalan Routes
+    // --------------------
+    Route::prefix('ruas-jalan')->name('ruas-jalan.')->group(function () {
+        // Hapus semua
+        Route::delete('/destroy-all', [RuasJalanController::class, 'destroyAll'])
+            ->middleware('permission:delete,ruas_jalan')->name('destroyAll');
 
+        // CRUD
+        Route::get('/', [RuasJalanController::class, 'index'])
+            ->middleware('permission:read,ruas_jalan')->name('index');
+        Route::get('/create', [RuasJalanController::class, 'create'])
+            ->middleware('permission:add,ruas_jalan')->name('create');
+        Route::post('/', [RuasJalanController::class, 'store'])
+            ->middleware('permission:add,ruas_jalan')->name('store');
+        Route::get('/{ruas}', [RuasJalanController::class, 'show'])
+            ->middleware('permission:detail,ruas_jalan')->name('show');
+        Route::get('/{ruas}/edit', [RuasJalanController::class, 'edit'])
+            ->middleware('permission:update,ruas_jalan')->name('edit');
+        Route::put('/{ruas}', [RuasJalanController::class, 'update'])
+            ->middleware('permission:update,ruas_jalan')->name('update');
+        Route::delete('/{ruas}', [RuasJalanController::class, 'destroy'])
+            ->middleware('permission:delete,ruas_jalan')->name('destroy');
 
+        // Import & Export
+        Route::post('/import', [RuasJalanController::class, 'import'])
+            ->middleware('permission:import,ruas_jalan')->name('import');
+        Route::get('/export', [RuasJalanController::class, 'export'])
+            ->middleware('permission:export,ruas_jalan')->name('export');
+    });
+
+    // --------------------
+    // DRP Routes
+    // --------------------
+    Route::prefix('drp')->name('drp.')->group(function () {
+        // Hapus semua
+        Route::delete('/destroy-all', [DRPController::class, 'destroyAll'])
+            ->middleware('permission:delete,drp')->name('destroyAll');
+
+        // CRUD
+        Route::get('/', [DRPController::class, 'index'])
+            ->middleware('permission:read,drp')->name('index');
+        Route::get('/create', [DRPController::class, 'create'])
+            ->middleware('permission:add,drp')->name('create');
+        Route::post('/', [DRPController::class, 'store'])
+            ->middleware('permission:add,drp')->name('store');
+        Route::get('/{drp}/edit', [DRPController::class, 'edit'])
+            ->middleware('permission:update,drp')->name('edit');
+        Route::put('/{drp}', [DRPController::class, 'update'])
+            ->middleware('permission:update,drp')->name('update');
+        Route::delete('/{drp}', [DRPController::class, 'destroy'])
+            ->middleware('permission:delete,drp')->name('destroy');
+
+        // Import & Export
+        Route::post('/import', [DRPController::class, 'import'])
+            ->middleware('permission:import,drp')->name('import');
+        Route::get('/export', [DRPController::class, 'export'])
+            ->middleware('permission:export,drp')->name('export');
+
+        // Custom: ambil DRP berdasarkan link_no (buat dropdown dinamis)
+        Route::get('/by-link/{link_no}', [DRPController::class, 'getDrpByLink'])
+            ->name('byLink');
+    });
+
+// --------------------
+// Inventarisasi Jalan Routes
+// --------------------
+Route::prefix('inventarisasi-jalan')->name('inventarisasi-jalan.')->group(function () {
+    // Hapus semua
+    Route::delete('/destroy-all', [InventarisasiJalanController::class, 'destroyAll'])
+        ->middleware('permission:delete,inventarisasi_jalan')->name('destroyAll');
+
+    // CRUD - urutkan route yang spesifik dulu sebelum yang pakai parameter
+    Route::get('/', [InventarisasiJalanController::class, 'index'])
+        ->middleware('permission:read,inventarisasi_jalan')->name('index');
+    Route::get('/create', [InventarisasiJalanController::class, 'create'])
+        ->middleware('permission:add,inventarisasi_jalan')->name('create');
+    Route::post('/', [InventarisasiJalanController::class, 'store'])
+        ->middleware('permission:add,inventarisasi_jalan')->name('store');
+    Route::get('/detail', [InventarisasiJalanController::class, 'getDetail'])
+        ->name('getDetail');
+    Route::get('/show/{link_no}', [InventarisasiJalanController::class, 'show'])
+        ->middleware('permission:read,inventarisasi_jalan')->name('show');
+    
+    // Import & Export
+    Route::post('/import', [InventarisasiJalanController::class, 'import'])
+        ->middleware('permission:import,inventarisasi_jalan')->name('import');
+    Route::get('/export', [InventarisasiJalanController::class, 'export'])
+        ->middleware('permission:export,inventarisasi_jalan')->name('export');
+    
+    // Route dengan parameter di akhir agar tidak bentrok
+    Route::get('/{inventarisasi}/edit', [InventarisasiJalanController::class, 'edit'])
+        ->middleware('permission:update,inventarisasi_jalan')->name('edit');
+    Route::put('/{inventarisasi}', [InventarisasiJalanController::class, 'update'])
+        ->middleware('permission:update,inventarisasi_jalan')->name('update');
+    Route::delete('/{inventarisasi}', [InventarisasiJalanController::class, 'destroy'])
+        ->middleware('permission:delete,inventarisasi_jalan')->name('destroy');
+});
     // --------------------
     // Profile Routes
     // --------------------
