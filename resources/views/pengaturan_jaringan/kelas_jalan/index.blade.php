@@ -4,20 +4,20 @@
 <div class="main-content">
     <section class="section">
         <div class="section-header">
-            <h1>Data DRP (Distance Reference Point)</h1>
+            <h1>Kelas Jalan</h1>
             <div class="section-header-breadcrumb">
                 <div class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></div>
-                <div class="breadcrumb-item active">DRP</div>
+                <div class="breadcrumb-item active">Kelas Jalan</div>
             </div>
         </div>
 
         <div class="section-body">
-            <h2 class="section-title">Daftar DRP</h2>
-            <p class="section-lead">Menampilkan data DRP berdasarkan pilihan dropdown.</p>
+            <h2 class="section-title">Daftar Kelas Jalan</h2>
+            <p class="section-lead">Menampilkan data kelas jalan berdasarkan pilihan dropdown.</p>
 
             <div class="card">
                 <div class="card-header">
-                    <h4>Filter DRP</h4>
+                    <h4>Filter Kelas Jalan</h4>
                 </div>
                 <div class="card-body">
                     <div class="form-row">
@@ -68,7 +68,7 @@
                                 <option value="">-- Pilih Ruas --</option>
                                 @foreach($ruasjalan as $ruas)
                                     <option value="{{ $ruas->link_no }}">
-                                        {{ $ruas->link_code }} - {{ $ruas->link_name }}
+                                        {{ $ruas->linkNo?->link_code }} - {{ $ruas->linkNo?->link_name }}
                                     </option>
                                 @endforeach
                             </select>
@@ -80,13 +80,13 @@
             {{-- Tabel hasil pilihan --}}
             <div class="card mt-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4>Data DRP</h4>
+                    <h4>Data Kelas Jalan</h4>
                     <div class="d-flex flex-wrap gap-2">
 
                         {{-- Hapus Semua --}}
-                        @if(auth()->user()->hasPermission('delete','drp'))
-                            <form action="{{ route('drp.destroyAll') }}" method="POST" class="d-inline"
-                                onsubmit="return confirm('Yakin ingin menghapus semua data DRP? Semua data akan hilang!')">
+                        @if(auth()->user()->hasPermission('delete','kelas_jalan'))
+                            <form action="{{ route('kelas-jalan.destroyAll') }}" method="POST" class="d-inline"
+                                onsubmit="return confirm('Yakin ingin menghapus semua data kelas jalan? Semua data akan hilang!')">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-icon icon-left btn-danger">
@@ -96,15 +96,15 @@
                         @endif
 
                         {{-- Import / Export --}}
-                        @if(auth()->user()->hasPermission('import','drp') || auth()->user()->hasPermission('export','drp'))
+                        @if(auth()->user()->hasPermission('import','kelas_jalan') || auth()->user()->hasPermission('export','kelas_jalan'))
                             <button type="button" class="btn btn-icon icon-left btn-success" data-toggle="modal" data-target="#modalImportExport">
                                 <i class="fas fa-file-excel"></i> Import / Export
                             </button>
                         @endif
 
                         {{-- Tambah Data --}}
-                        @if(auth()->user()->hasPermission('add','drp'))
-                            <a href="{{ route('drp.create') }}" class="btn btn-icon icon-left btn-primary">
+                        @if(auth()->user()->hasPermission('add','kelas_jalan'))
+                            <a href="{{ route('kelas-jalan.create') }}" class="btn btn-icon icon-left btn-primary">
                                 <i class="fas fa-plus"></i> Tambah Data
                             </a>
                         @endif
@@ -125,9 +125,9 @@
 
 {{-- Modal Import Export --}}
 @include('components.modals.import_export', [
-    'title' => 'Import / Export DRP',
-    'importRoute' => route('drp.import'),
-    'exportRoute' => route('drp.export'),
+    'title' => 'Import / Export Kelas Jalan',
+    'importRoute' => route('kelas-jalan.import'),
+    'exportRoute' => route('kelas-jalan.export'),
 ]) 
 
 @endsection
@@ -139,7 +139,7 @@ $(document).ready(function(){
         let linkNo = $(this).val();
         if(linkNo){
             $.ajax({
-                url: "{{ route('drp.getDetail') }}",
+                url: "{{ route('kelas-jalan.getDetail') }}",
                 type: "GET",
                 data: {link_no: linkNo},
                 success: function(res){
@@ -149,11 +149,10 @@ $(document).ready(function(){
                             <table id="detailRuasTable" class="table table-striped table-bordered">
                                 <thead>
                                     <tr>
-                                        <th>Nomor DRP</th>
-                                        <th>KM</th>
-                                        <th>Panjang DRP</th>
-                                        <th>Tipe DRP</th>
-                                        <th>Deskripsi DRP (0+100)</th>
+                                        <th>Provinsi</th>
+                                        <th>Kabupaten</th>
+                                        <th>Kelas Jalan</th>
+                                        <th>Panjang (KM)</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
@@ -162,38 +161,44 @@ $(document).ready(function(){
 
                         res.data.forEach(function(item){
                             console.log('Full item:', item);
+                            console.log('item.link_no:', item.link_no);
+                            console.log('typeof item.link_no:', typeof item.link_no);
                             
-                            // Format koordinat
-                            let koordinat = '';
-                            if (item.dpr_north_deg && item.dpr_east_deg) {
-                                koordinat = `${item.dpr_north_deg}°${item.dpr_north_min || 0}'${item.dpr_north_sec || 0}" N, ${item.dpr_east_deg}°${item.dpr_east_min || 0}'${item.dpr_east_sec || 0}" E`;
+                            // Pastikan link_no adalah string
+                            let linkNo = item.link_no;
+                            if (typeof linkNo === 'object' && linkNo !== null) {
+                                console.log('link_no is object, trying to get string value');
+                                // Jika link_no adalah object, coba ambil properti yang sesuai
+                                linkNo = linkNo.link_no || linkNo.id || linkNo.value || linkNo;
                             }
+                            
+                            console.log('Final linkNo:', linkNo);
                             
                             html += `
                                 <tr>
-                                    <td>${item.drp_num || '-'}</td>
-                                    <td>${item.chainage || '-'}</td>
-                                    <td>${item.drp_length || '-'}</td>
-                                    <td>${item.type?.code_description_eng ?? '-'}</td>
-                                    <td>${item.drp_desc || '-'}</td>
+                                    <td>${item.province?.province_name ?? '-'}</td>
+                                    <td>${item.kabupaten?.kabupaten_name ?? '-'}</td>
+                                    <td>${item.class_relation?.code_description_ind ?? item.class ?? '-'}</td>
+                                    <td>${item.kmClass ?? '-'}</td>
                                     <td>
-                                        <div class="btn-group" role="group">
-                                            @if(auth()->user()->hasPermission('update','drp'))
-                                                <a href="/drp/${item.drp_num}/edit" class="btn btn-sm btn-warning">
-                                                    <i class="fas fa-edit"></i> Edit
-                                                </a>
-                                            @endif
-                                            @if(auth()->user()->hasPermission('delete','drp'))
-                                                <form action="/drp/${item.drp_num}" method="POST" class="d-inline" 
-                                                    onsubmit="return confirm('Yakin ingin menghapus data DRP ini?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-danger">
-                                                        <i class="fas fa-trash"></i> Hapus
-                                                    </button>
-                                                </form>
-                                            @endif
-                                        </div>
+                                        <a href="/kelas-jalan/show/${linkNo}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i> Detail
+                                        </a>
+                                        @if(auth()->user()->hasPermission('update','kelas_jalan'))
+                                            <a href="/kelas-jalan/edit/${linkNo}" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a>
+                                        @endif
+                                        @if(auth()->user()->hasPermission('delete','kelas_jalan'))
+                                            <form action="/kelas-jalan/destroy/${linkNo}" method="POST" class="d-inline"
+                                                onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                    <i class="fas fa-trash"></i> Hapus
+                                                </button>
+                                            </form>
+                                        @endif
                                     </td>
                                 </tr>
                             `;
@@ -208,10 +213,7 @@ $(document).ready(function(){
                             responsive: true,
                             autoWidth: false,
                             pageLength: 10,
-                            lengthMenu: [5, 10, 25, 50, 100],
-                            language: {
-                                url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/id.json'
-                            }
+                            lengthMenu: [5, 10, 25, 50, 100]
                         });
                     } else {
                         $('#detailRuas').html('<p class="text-danger">Data tidak ditemukan</p>');

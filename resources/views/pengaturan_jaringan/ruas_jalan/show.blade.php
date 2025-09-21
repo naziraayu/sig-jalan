@@ -26,7 +26,7 @@
                         <table class="table table-striped table-bordered">
                             <tbody>
                                 <tr>
-                                    <th width="30%">Link No</th>
+                                    <th width="30%">Nomor SK</th>
                                     <td>{{ $ruas->link_no }}</td>
                                 </tr>
                                 <tr>

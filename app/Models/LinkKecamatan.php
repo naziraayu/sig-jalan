@@ -35,16 +35,20 @@ class LinkKecamatan extends Model
         return $this->belongsTo(Link::class, 'link_no', 'link_no');
     }
 
-    // Relasi ke titik DRP awal
+    /// Relasi ke titik DRP awal - dengan filter link_no
     public function drpFrom()
     {
-        return $this->belongsTo(Drp::class, 'drp_from', 'drp_num');
+        return $this->belongsTo(Drp::class, 'drp_from', 'drp_num')
+                    ->where('drp.link_no', '=', $this->attributes['link_no'] ?? null);
     }   
-    // Relasi ke titik DRP akhir
+    
+    // Relasi ke titik DRP akhir - dengan filter link_no  
     public function drpTo()
     {
-        return $this->belongsTo(Drp::class, 'drp_to', 'drp_num');
+        return $this->belongsTo(Drp::class, 'drp_to', 'drp_num')
+                    ->where('drp.link_no', '=', $this->attributes['link_no'] ?? null);
     }
+    
      public function kecamatan()
     {
         return $this->belongsTo(Kecamatan::class, 'kecamatan_code', 'kecamatan_code');

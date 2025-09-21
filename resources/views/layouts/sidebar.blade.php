@@ -55,16 +55,13 @@
                             <li><a class="nav-link" href="{{ route(name: 'drp.index') }}">DRP</a></li>
                         @endif
                         @if($user->hasPermission('detail', 'kelas_jalan'))
-                            <li><a class="nav-link" href="#">Kelas Jalan</a></li>
-                        @endif
-                        @if($user->hasPermission('detail', 'koridor'))
-                            <li><a class="nav-link" href="#">Koridor</a></li>
+                            <li><a class="nav-link" href="{{ route(name: 'kelas-jalan.index') }}">Kelas Jalan</a></li>
                         @endif
                         @if($user->hasPermission('detail', 'ruas_jalan_kabupaten'))
                             <li><a class="nav-link" href="#">Ruas Jalan/Kabupaten</a></li>
                         @endif
                         @if($user->hasPermission('detail', 'ruas_jalan_kecamatan'))
-                            <li><a class="nav-link" href="#">Ruas Jalan/Kecamatan</a></li>
+                            <li><a class="nav-link" href="{{ route(name: 'ruas-jalan-kecamatan.index') }}">Ruas Jalan/Kecamatan</a></li>
                         @endif
                     </ul>
                 </li>

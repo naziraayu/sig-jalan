@@ -11,7 +11,9 @@ use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KabupatenController;
 use App\Http\Controllers\KecamatanController;
+use App\Http\Controllers\LinkClassController;
 use App\Http\Controllers\RuasJalanController;
+use App\Http\Controllers\LinkKecamatanController;
 use App\Http\Controllers\InventarisasiJalanController;
 
 // --------------------
@@ -230,6 +232,11 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/destroy-all', [DRPController::class, 'destroyAll'])
             ->middleware('permission:delete,drp')->name('destroyAll');
 
+             // Tambahkan route ini di dalam group drp
+        Route::get('/get-detail', [DRPController::class, 'getDetail'])->name('getDetail');
+        Route::get('/get-kabupaten', [DRPController::class, 'getKabupaten'])->name('getKabupaten');
+        Route::get('/get-links', [DRPController::class, 'getLinks'])->name('getLinks');
+
         // CRUD
         Route::get('/', [DRPController::class, 'index'])
             ->middleware('permission:read,drp')->name('index');
@@ -249,46 +256,113 @@ Route::middleware(['auth'])->group(function () {
             ->middleware('permission:import,drp')->name('import');
         Route::get('/export', [DRPController::class, 'export'])
             ->middleware('permission:export,drp')->name('export');
-
-        // Custom: ambil DRP berdasarkan link_no (buat dropdown dinamis)
-        Route::get('/by-link/{link_no}', [DRPController::class, 'getDrpByLink'])
-            ->name('byLink');
     });
 
-// --------------------
-// Inventarisasi Jalan Routes
-// --------------------
-Route::prefix('inventarisasi-jalan')->name('inventarisasi-jalan.')->group(function () {
-    // Hapus semua
-    Route::delete('/destroy-all', [InventarisasiJalanController::class, 'destroyAll'])
-        ->middleware('permission:delete,inventarisasi_jalan')->name('destroyAll');
+    // --------------------
+    // Kelas Jalan Routes
+    // --------------------
+    Route::prefix('kelas-jalan')->name('kelas-jalan.')->group(function () {
+        // Hapus semua
+        Route::delete('/destroy-all', [LinkClassController::class, 'destroyAll'])
+            ->middleware('permission:delete,kelas_jalan')->name('destroyAll');
 
-    // CRUD - urutkan route yang spesifik dulu sebelum yang pakai parameter
-    Route::get('/', [InventarisasiJalanController::class, 'index'])
-        ->middleware('permission:read,inventarisasi_jalan')->name('index');
-    Route::get('/create', [InventarisasiJalanController::class, 'create'])
-        ->middleware('permission:add,inventarisasi_jalan')->name('create');
-    Route::post('/', [InventarisasiJalanController::class, 'store'])
-        ->middleware('permission:add,inventarisasi_jalan')->name('store');
-    Route::get('/detail', [InventarisasiJalanController::class, 'getDetail'])
-        ->name('getDetail');
-    Route::get('/show/{link_no}', [InventarisasiJalanController::class, 'show'])
-        ->middleware('permission:read,inventarisasi_jalan')->name('show');
-    
-    // Import & Export
-    Route::post('/import', [InventarisasiJalanController::class, 'import'])
-        ->middleware('permission:import,inventarisasi_jalan')->name('import');
-    Route::get('/export', [InventarisasiJalanController::class, 'export'])
-        ->middleware('permission:export,inventarisasi_jalan')->name('export');
-    
-    // Route dengan parameter di akhir agar tidak bentrok
-    Route::get('/{inventarisasi}/edit', [InventarisasiJalanController::class, 'edit'])
-        ->middleware('permission:update,inventarisasi_jalan')->name('edit');
-    Route::put('/{inventarisasi}', [InventarisasiJalanController::class, 'update'])
-        ->middleware('permission:update,inventarisasi_jalan')->name('update');
-    Route::delete('/{inventarisasi}', [InventarisasiJalanController::class, 'destroy'])
-        ->middleware('permission:delete,inventarisasi_jalan')->name('destroy');
-});
+        // CRUD - urutkan route yang spesifik dulu sebelum yang pakai parameter
+        Route::get('/', [LinkClassController::class, 'index'])
+            ->middleware('permission:read,kelas_jalan')->name('index');
+        Route::get('/create', [LinkClassController::class, 'create'])
+            ->middleware('permission:add,kelas_jalan')->name('create');
+        Route::post('/', [LinkClassController::class, 'store'])
+            ->middleware('permission:add,kelas_jalan')->name('store');
+        Route::get('/detail', [LinkClassController::class, 'getDetail'])
+            ->name('getDetail');
+        Route::get('/show/{link_no}', [LinkClassController::class, 'show'])
+            ->middleware('permission:read,kelas_jalan')->name('show');
+        
+        // Import & Export
+        Route::post('/import', [LinkClassController::class, 'import'])
+            ->middleware('permission:import,kelas_jalan')->name('import');
+        Route::get('/export', [LinkClassController::class, 'export'])
+            ->middleware('permission:export,kelas_jalan')->name('export');
+        
+        // Route dengan parameter di akhir agar tidak bentrok
+        Route::get('/{linkclass}/edit', [LinkClassController::class, 'edit'])
+            ->middleware('permission:update,kelas_jalan')->name('edit');
+        Route::put('/{linkclass}', [LinkClassController::class, 'update'])
+            ->middleware('permission:update,kelas_jalan')->name('update');
+        Route::delete('/{linkclass}', [LinkClassController::class, 'destroy'])
+            ->middleware('permission:delete,kelas_jalan')->name('destroy');
+    });
+
+    // --------------------
+    // Ruas Jalan Kecamatan Routes
+    // --------------------
+    Route::prefix('ruas-jalan-kecamatan')->name('ruas-jalan-kecamatan.')->group(function () {
+        // Hapus semua
+        Route::delete('/destroy-all', [LinkKecamatanController::class, 'destroyAll'])
+            ->middleware('permission:delete,ruas_jalan_kecamatan')->name('destroyAll');
+
+        // CRUD - urutkan route yang spesifik dulu sebelum yang pakai parameter
+        Route::get('/', [LinkKecamatanController::class, 'index'])
+            ->middleware('permission:read,ruas_jalan_kecamatan')->name('index');
+        Route::get('/create', [LinkKecamatanController::class, 'create'])
+            ->middleware('permission:add,ruas_jalan_kecamatan')->name('create');
+        Route::post('/', [LinkKecamatanController::class, 'store'])
+            ->middleware('permission:add,ruas_jalan_kecamatan')->name('store');
+        Route::get('/detail', [LinkKecamatanController::class, 'getDetail'])
+            ->name('getDetail');
+        Route::get('/show/{link_no}', [LinkKecamatanController::class, 'show'])
+            ->middleware('permission:read,ruas_jalan_kecamatan')->name('show');
+        
+        // Import & Export
+        Route::post('/import', [LinkKecamatanController::class, 'import'])
+            ->middleware('permission:import,ruas_jalan_kecamatan')->name('import');
+        Route::get('/export', [LinkKecamatanController::class, 'export'])
+            ->middleware('permission:export,ruas_jalan_kecamatan')->name('export');
+        
+        // Route dengan parameter di akhir agar tidak bentrok
+        Route::get('/{linkKecamatan}/edit', [LinkKecamatanController::class, 'edit'])
+            ->middleware('permission:update,ruas_jalan_kecamatan')->name('edit');
+        Route::put('/{linkKecamatan}', [LinkKecamatanController::class, 'update'])
+            ->middleware('permission:update,ruas_jalan_kecamatan')->name('update');
+        Route::delete('/{linkKecamatan}', [LinkKecamatanController::class, 'destroy'])
+            ->middleware('permission:delete,ruas_jalan_kecamatan')->name('destroy');
+    });
+
+    // --------------------
+    // Inventarisasi Jalan Routes
+    // --------------------
+    Route::prefix('inventarisasi-jalan')->name('inventarisasi-jalan.')->group(function () {
+        // Hapus semua
+        Route::delete('/destroy-all', [InventarisasiJalanController::class, 'destroyAll'])
+            ->middleware('permission:delete,inventarisasi_jalan')->name('destroyAll');
+
+        // CRUD - urutkan route yang spesifik dulu sebelum yang pakai parameter
+        Route::get('/', [InventarisasiJalanController::class, 'index'])
+            ->middleware('permission:read,inventarisasi_jalan')->name('index');
+        Route::get('/create', [InventarisasiJalanController::class, 'create'])
+            ->middleware('permission:add,inventarisasi_jalan')->name('create');
+        Route::post('/', [InventarisasiJalanController::class, 'store'])
+            ->middleware('permission:add,inventarisasi_jalan')->name('store');
+        Route::get('/detail', [InventarisasiJalanController::class, 'getDetail'])
+            ->name('getDetail');
+        Route::get('/show/{link_no}', [InventarisasiJalanController::class, 'show'])
+            ->middleware('permission:read,inventarisasi_jalan')->name('show');
+        
+        // Import & Export
+        Route::post('/import', [InventarisasiJalanController::class, 'import'])
+            ->middleware('permission:import,inventarisasi_jalan')->name('import');
+        Route::get('/export', [InventarisasiJalanController::class, 'export'])
+            ->middleware('permission:export,inventarisasi_jalan')->name('export');
+        
+        // Route dengan parameter di akhir agar tidak bentrok
+        Route::get('/{inventarisasi}/edit', [InventarisasiJalanController::class, 'edit'])
+            ->middleware('permission:update,inventarisasi_jalan')->name('edit');
+        Route::put('/{inventarisasi}', [InventarisasiJalanController::class, 'update'])
+            ->middleware('permission:update,inventarisasi_jalan')->name('update');
+        Route::delete('/{inventarisasi}', [InventarisasiJalanController::class, 'destroy'])
+            ->middleware('permission:delete,inventarisasi_jalan')->name('destroy');
+    });
+
     // --------------------
     // Profile Routes
     // --------------------
