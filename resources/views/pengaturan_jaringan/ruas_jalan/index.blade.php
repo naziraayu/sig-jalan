@@ -109,56 +109,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($ruasjalan as $ruas)
-                                    <tr data-provinsi="{{ $ruas->province?->province_code }}"
-                                        data-kabupaten="{{ $ruas->kabupaten?->kabupaten_code }}">
-                                        
-                                        <td>{{ $ruas->statusRelation?->code ?? '-' }}</td>
-                                        <td>{{ $ruas->province?->province_code ?? '-' }}</td>
-                                        <td>{{ $ruas->kabupaten?->kabupaten_code ?? '-' }}</td>
-                                        <td>{{ $ruas->link_code }}</td>
-                                        <td>{{ $ruas->link_name }}</td>
-                                        <td>
-                                            <div class="d-flex gap-1">
-                                                {{-- Tombol Detail --}}
-                                                @if(auth()->user()->hasPermission('detail','ruas_jalan'))
-                                                    <a href="{{ route('ruas-jalan.show', $ruas) }}" 
-                                                    class="btn btn-info btn-sm" title="Detail Data">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                @endif
-
-                                                {{-- Tombol Edit --}}
-                                                @if(auth()->user()->hasPermission('update','ruas_jalan'))
-                                                    <a href="{{ route('ruas-jalan.edit', $ruas) }}" 
-                                                    class="btn btn-warning btn-sm" title="Edit Data">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                @endif
-
-                                                {{-- Tombol Hapus --}}
-                                                @if(auth()->user()->hasPermission('delete','ruas_jalan'))
-                                                    <form action="{{ route('ruas-jalan.destroy', $ruas) }}" 
-                                                        method="POST" 
-                                                        class="d-inline"
-                                                        onsubmit="return confirm('Yakin ingin menghapus ruas jalan ini?')">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" 
-                                                                class="btn btn-danger btn-sm" 
-                                                                title="Hapus Data">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </form>
-                                                @endif
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="10" class="text-center">Tidak ada data</td>
-                                    </tr>
-                                @endforelse
+                                
                             </tbody>
                         </table>
                     </div>
@@ -179,38 +130,58 @@
 
 @push('scripts')
 <script>
-    $(document).ready(function() {
-        let table = $('#ruasJalanTable').DataTable({
-            paging: true,
-            searching: true,
-            ordering: true,
-            info: true,
-            lengthChange: true,
-            pageLength: 10,
-        });
-
-        // Custom filter berdasarkan provinsi & kabupaten
-        $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-            let provFilter = $('#filterProvinsi').val();
-            let kabFilter  = $('#filterKabupaten').val();
-
-            let rowProv = $(table.row(dataIndex).node()).data('provinsi');
-            let rowKab  = $(table.row(dataIndex).node()).data('kabupaten');
-
-            if ((provFilter === "" || rowProv == provFilter) &&
-                (kabFilter === "" || rowKab == kabFilter)) {
-                return true;
+$(document).ready(function () {
+    let table = $('#ruasJalanTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: "{{ route('ruas-jalan.data') }}",
+            data: function (d) {
+                d.filterProvinsi = $('#filterProvinsi').val();
+                d.filterKabupaten = $('#filterKabupaten').val();
             }
-            return false;
-        });
-
-        // Trigger filter
-        $('#filterProvinsi, #filterKabupaten').on('change', function() {
-            table.draw();
-        });
-
-        // Jalankan filter default (sesuai defaultProvinsi & defaultKabupaten)
-        table.draw();
+        },
+        columns: [
+            { data: 'status', name: 'statusRelation.code' },
+            { data: 'province_code', name: 'province.province_code' },
+            { data: 'kabupaten_code', name: 'kabupaten.kabupaten_code' },
+            { data: 'link_code', name: 'link_code' },
+            { data: 'link_name', name: 'link_name' },
+            { data: 'actions', name: 'actions', orderable: false, searchable: false }
+        ],
+        pageLength: 10,
+        responsive: true
     });
+
+    // Filter
+    $('#filterProvinsi, #filterKabupaten').on('change', function() {
+        table.ajax.reload();
+    });
+
+    // Jalankan filter default
+    table.ajax.reload();
+
+    // --- FIX: pas toggle sidebar ---
+    function fixDataTable() {
+        setTimeout(function () {
+            table.columns.adjust().responsive.recalc().draw(false);
+        }, 350); // delay > durasi animasi sidebar
+    }
+
+    // 1) Via klik tombol toggle
+    $(document).on('click', "[data-toggle='sidebar'], #sidebarToggle", function () {
+        fixDataTable();
+    });
+
+    // 2) Via observer kalau class body berubah
+    const observer = new MutationObserver(function (mutationsList) {
+        for (let mutation of mutationsList) {
+            if (mutation.attributeName === "class") {
+                fixDataTable();
+            }
+        }
+    });
+    observer.observe(document.body, { attributes: true });
+});
 </script>
 @endpush

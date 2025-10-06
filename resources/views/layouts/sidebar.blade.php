@@ -76,7 +76,7 @@
                             <li><a class="nav-link" href="{{ route(name: 'inventarisasi-jalan.index') }}">Inventarisasi Jalan</a></li>
                         @endif
                         @if($user->hasPermission('detail', 'kondisi_jalan'))
-                            <li><a class="nav-link" href="#">Kondisi Jalan</a></li>
+                            <li><a class="nav-link" href="{{ route(name: 'kondisi-jalan.index') }}">Kondisi Jalan</a></li>
                         @endif
                         @if($user->hasPermission('detail', 'koordinat_gps'))
                             <li><a class="nav-link" href="#">Impor Koordinat GPS</a></li>
@@ -94,7 +94,7 @@
                     <a href="#" class="nav-link has-dropdown"><i class="fas fa-map"></i> <span>Peta</span></a>
                     <ul class="dropdown-menu">
                         @if($user->hasPermission('detail', 'kabupaten'))
-                            <li><a class="nav-link" href="#">Kabupaten</a></li>
+                            <li><a class="nav-link" href="{{ url('/peta/alignment') }}">Kabupaten</a></li>
                         @endif
                         @if($user->hasPermission('detail', 'kecamatan'))
                             <li><a class="nav-link" href="#">Kecamatan</a></li>

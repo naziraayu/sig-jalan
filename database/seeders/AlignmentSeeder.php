@@ -14,6 +14,7 @@ class AlignmentSeeder extends Seeder
      */
     public function run(): void
     {
+        ini_set('memory_limit', '1024M');
         $path = database_path('seeders/data/Alignment.xlsx');
 
         if (file_exists($path)) {

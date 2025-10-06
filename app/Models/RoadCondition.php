@@ -97,7 +97,7 @@ class RoadCondition extends Model
 
     public function linkNo()
     {
-        return $this->belongsTo(Link::class, 'Link_No', 'link_no');
+        return $this->belongsTo(Link::class, 'link_no', 'link_no');
     }
 
     // contoh relasi ke tabel code conditions
@@ -136,4 +136,10 @@ class RoadCondition extends Model
     {
         return $this->hasMany(CodeFoothpathCondition::class, 'code', 'footpath_r');
     }
+
+    public function inventory()
+    {
+        return $this->belongsTo(RoadInventory::class, 'link_no', 'link_no');
+    }
+
 }

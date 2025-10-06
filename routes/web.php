@@ -8,12 +8,14 @@ use App\Http\Controllers\BalaiController;
 use App\Http\Controllers\IslandController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProvinceController;
+use App\Http\Controllers\AlignmentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KabupatenController;
 use App\Http\Controllers\KecamatanController;
 use App\Http\Controllers\LinkClassController;
 use App\Http\Controllers\RuasJalanController;
 use App\Http\Controllers\LinkKecamatanController;
+use App\Http\Controllers\RoadConditionController;
 use App\Http\Controllers\InventarisasiJalanController;
 
 // --------------------
@@ -197,6 +199,8 @@ Route::middleware(['auth'])->group(function () {
     // Ruas Jalan Routes
     // --------------------
     Route::prefix('ruas-jalan')->name('ruas-jalan.')->group(function () {
+        // Tambahkan route ini di dalam grup route ruas-jalan
+        Route::get('/data', [RuasJalanController::class, 'getData'])->name('data');
         // Hapus semua
         Route::delete('/destroy-all', [RuasJalanController::class, 'destroyAll'])
             ->middleware('permission:delete,ruas_jalan')->name('destroyAll');
@@ -232,12 +236,18 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/destroy-all', [DRPController::class, 'destroyAll'])
             ->middleware('permission:delete,drp')->name('destroyAll');
 
-             // Tambahkan route ini di dalam group drp
+        // AJAX Routes untuk data
         Route::get('/get-detail', [DRPController::class, 'getDetail'])->name('getDetail');
         Route::get('/get-kabupaten', [DRPController::class, 'getKabupaten'])->name('getKabupaten');
         Route::get('/get-links', [DRPController::class, 'getLinks'])->name('getLinks');
+        
+        // Route khusus untuk create page (hanya ruas yang belum punya DRP)
+        Route::get('/get-links-for-create', [DRPController::class, 'getLinksForCreate'])->name('getLinksForCreate');
+        
+        // Route untuk cek apakah DRP sudah ada
+        Route::get('/check-drp-exists', [DRPController::class, 'checkDRPExists'])->name('checkDRPExists');
 
-        // CRUD
+        // CRUD Routes
         Route::get('/', [DRPController::class, 'index'])
             ->middleware('permission:read,drp')->name('index');
         Route::get('/create', [DRPController::class, 'create'])
@@ -364,6 +374,52 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // --------------------
+    // Kondisi Jalan Routes
+    // --------------------
+    Route::prefix('kondisi-jalan')->name('kondisi-jalan.')->group(function () {
+        // Hapus semua
+        Route::delete('/destroy-all', [RoadConditionController::class, 'destroyAll'])
+            ->middleware('permission:delete,kondisi_jalan')->name('destroyAll');
+
+        // CRUD
+        Route::get('/', [RoadConditionController::class, 'index'])
+            ->middleware('permission:read,kondisi_jalan')->name('index');
+        Route::get('/create', [RoadConditionController::class, 'create'])
+            ->middleware('permission:add,kondisi_jalan')->name('create');
+        Route::post('/', [RoadConditionController::class, 'store'])
+            ->middleware('permission:add,kondisi_jalan')->name('store');
+        Route::get('/detail', [RoadConditionController::class, 'getDetail'])
+            ->name('getDetail');
+        Route::get('/get-years', [RoadConditionController::class, 'getYears'])
+            ->name('getYears');
+        Route::get('/get-ruas-by-year', [RoadConditionController::class, 'getRuasByYear'])
+            ->name('getRuasByYear');
+        Route::get('/segment-detail', [RoadConditionController::class, 'getSegmentDetail'])
+            ->name('getSegmentDetail');
+        Route::get('/show/{link_no}/{year?}', [RoadConditionController::class, 'show'])
+            ->middleware('permission:read,kondisi_jalan')->name('show');
+
+        // Import & Export
+        Route::post('/import', [RoadConditionController::class, 'import'])
+            ->middleware('permission:import,kondisi_jalan')->name('import');
+        Route::get('/export', [RoadConditionController::class, 'export'])
+            ->middleware('permission:export,kondisi_jalan')->name('export');
+
+        // Route dengan parameter di akhir agar tidak bentrok
+        Route::get('/{kondisi}/edit', [RoadConditionController::class, 'edit'])
+            ->middleware('permission:update,kondisi_jalan')->name('edit');
+        Route::put('/{kondisi}', [RoadConditionController::class, 'update'])
+            ->middleware('permission:update,kondisi_jalan')->name('update');
+        Route::delete('/{kondisi}', [RoadConditionController::class, 'destroy'])
+            ->middleware('permission:delete,kondisi_jalan')->name('destroy');
+    });
+
+    // --------------------
+    // Map Routes
+    // --------------------
+
+
+    // --------------------
     // Profile Routes
     // --------------------
     Route::prefix('profile')->name('profile.')->group(function () {
@@ -372,6 +428,13 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
         Route::put('/', [ProfileController::class, 'updatePhoto'])->name('update.photo');
     });
+
+    // View peta
+    Route::get('/peta/alignment', [AlignmentController::class, 'showMap']);
+
+    // API JSON untuk koordinat
+    Route::get('/api/alignment/coords', [AlignmentController::class, 'getCoords'])->name('api.coords');
+    Route::get('/api/alignment/coords-sdi', [AlignmentController::class, 'getCoordsWithSDI'])->name('api.coords.sdi');
 
 });
 

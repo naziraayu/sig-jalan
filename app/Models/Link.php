@@ -60,4 +60,32 @@ class Link extends Model
         return $this->belongsTo(CodeLinkFunction::class, 'function', 'code');
     }
 
+    public function drp()
+    {
+        return $this->hasMany(DRP::class, 'link_no', 'link_no');
+    }
+
+    // Scope untuk ruas yang belum memiliki DRP
+    public function scopeWithoutDRP($query)
+    {
+        return $query->whereDoesntHave('drp');
+    }
+    
+    // Scope untuk ruas yang sudah memiliki DRP  
+    public function scopeWithDRP($query)
+    {
+        return $query->whereHas('drp');
+    }
+
+    public function inventories()
+    {
+        return $this->hasMany(RoadInventory::class, 'link_no', 'link_no');
+    }
+
+    public function conditions()
+    {
+        return $this->hasMany(RoadCondition::class, 'link_no', 'link_no');
+    }
+
+
 }

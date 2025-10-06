@@ -226,6 +226,30 @@ $(document).ready(function(){
             $('#detailRuas').html('<p class="text-muted">Silakan pilih ruas untuk menampilkan data.</p>');
         }
     });
+    // Di bagian AJAX untuk perubahan kabupaten, pastikan route sesuai
+$('#filterKabupaten').on('change', function(){
+    let kabupatenCode = $(this).val();
+    
+    if(kabupatenCode) {
+        // Route sesuai dengan yang ada: /drp/get-links
+        getRuasJalan(kabupatenCode);
+    }
+    
+    // Reset data
+    $('#filterRuas').val('');
+    $('#detailRuas').html('<p class="text-muted">Silakan pilih ruas untuk menampilkan data.</p>');
+});
+
+function getRuasJalan(kabupatenCode) {
+    $.ajax({
+        url: "{{ route('drp.getLinks') }}", // Sesuai dengan route yang ada
+        type: "GET", 
+        data: {kabupaten_code: kabupatenCode},
+        success: function(res){
+            // Handle response sama seperti sebelumnya
+        }
+    });
+}
 });
 </script>
 @endpush

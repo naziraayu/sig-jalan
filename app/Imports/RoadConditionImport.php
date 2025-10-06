@@ -2,15 +2,16 @@
 
 namespace App\Imports;
 
+use Carbon\Carbon;
 use App\Models\RoadCondition;
 use Maatwebsite\Excel\Concerns\ToModel;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithBatchInserts;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
-use Carbon\Carbon;
 
-class RoadConditionImport implements ToModel, WithHeadingRow, WithChunkReading, WithBatchInserts
+class RoadConditionImport implements ToModel, WithHeadingRow, WithChunkReading, WithBatchInserts, ShouldQueue
 {
     /**
     * @param array $row

@@ -16,6 +16,8 @@ return [
     'kondisi_jalan' => ['read', 'add', 'detail', 'update', 'delete', 'import', 'export'],
     'koordinat_gps' => ['read', 'add', 'detail', 'update', 'delete', 'import', 'export'],
     'nilai_mca_ruas' => ['read', 'add', 'detail', 'update', 'delete', 'import', 'export'],
+    'peta_kabupaten' => ['read', 'detail'],
+    'peta_kecamatan' => ['read', 'detail'],
     'hak_akses' => ['read', 'add', 'detail', 'update', 'delete'],
     'user' => ['read', 'add', 'detail', 'update', 'delete'],
     'profile' => ['read', 'add','detail', 'update', 'delete'], 

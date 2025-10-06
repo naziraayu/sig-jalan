@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class DRP extends Model
 {
     protected $table = 'drp';
-    // Tidak ada primary key
+    
+    // Tidak ada primary key auto increment
     protected $primaryKey = null;
     public $incrementing = false;
     protected $keyType = 'string';
+    
     // Kolom yang bisa diisi mass-assignment
     protected $fillable = [
         'province_code',
@@ -51,6 +53,12 @@ class DRP extends Model
     {
         return $this->belongsTo(CodeDrpType::class, 'drp_type', 'code');
     }
+
+    public function link()
+    {
+        return $this->belongsTo(Link::class, 'link_no', 'link_no');
+    }
+
     // Relasi ke link_kabupaten sebagai titik awal
     public function linkFrom()
     {
@@ -62,18 +70,20 @@ class DRP extends Model
     {
         return $this->hasMany(LinkKabupaten::class, 'drp_to', 'drp_num');
     }
+    
     public function kecFrom()
     {
         return $this->hasMany(LinkKecamatan::class, 'drp_from', 'drp_num');
     }
+    
     public function kecTo()
     {
         return $this->hasMany(LinkKecamatan::class, 'drp_to', 'drp_num');
     }
 
-    public function link()
+    // Scope untuk DRP berdasarkan ruas tertentu
+    public function scopeByLink($query, $linkNo)
     {
-        return $this->belongsTo(Link::class, 'link_no', 'link_no');
+        return $query->where('link_no', $linkNo);
     }
-
 }

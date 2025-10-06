@@ -10,7 +10,7 @@ class Alignment extends Model
     use HasFactory;
 
     protected $table = 'alignment'; 
-
+ 
     // protected $primaryKey = 'chainage'; 
     public $incrementing = false; // karena chainage bukan auto increment
     protected $keyType = 'int';  

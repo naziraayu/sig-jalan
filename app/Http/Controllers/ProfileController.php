@@ -60,23 +60,23 @@ class ProfileController extends Controller
     }
 
     public function updatePhoto(Request $request): RedirectResponse
-{
-    $request->validate([
-        'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-    ]);
+    {
+        $request->validate([
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
 
-    /** @var \App\Models\User $user */
-    $user = Auth::user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
-    if ($request->hasFile('photo')) {
-        if ($user->photo && Storage::disk('public')->exists($user->photo)) {
-            Storage::disk('public')->delete($user->photo);
+        if ($request->hasFile('photo')) {
+            if ($user->photo && Storage::disk('public')->exists($user->photo)) {
+                Storage::disk('public')->delete($user->photo);
+            }
+            $user->photo = $request->file('photo')->store('profile_photos', 'public');
+            $user->save();
         }
-        $user->photo = $request->file('photo')->store('profile_photos', 'public');
-        $user->save();
-    }
 
-    return back()->with('success', 'Profile photo updated successfully!');
-}
+        return back()->with('success', 'Profile photo updated successfully!');
+    }
 
 }

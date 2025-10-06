@@ -55,11 +55,11 @@
                                 </tr>
                                 <tr>
                                     <th>Panjang Ruas (SK)</th>
-                                    <td>{{ $ruas->link_length_official }}</td>
+                                    <td>{{ $ruas->link_length_official }} Km</td>
                                 </tr>
                                 <tr>
                                     <th>Panjang Ruas (Survei)</th>
-                                    <td>{{ $ruas->link_length_actual }}</td>
+                                    <td>{{ $ruas->link_length_actual }} Km</td>
                                 </tr>
                                 <tr>
                                     <th>Akses ke Jalan</th>
