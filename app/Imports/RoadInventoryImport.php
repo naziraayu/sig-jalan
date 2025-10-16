@@ -18,9 +18,10 @@ class RoadInventoryImport implements ToModel, WithHeadingRow, WithChunkReading, 
     public function model(array $row)
     {
         return new RoadInventory([
-            'link_no'             => $row['link_no'] ?? null,
             'province_code'       => $row['province_code'] ?? null,
             'kabupaten_code'      => $row['kabupaten_code'] ?? null,
+            'link_id'             => $row['link_id'] ?? null,
+            'year'                => $row['year'] ?? null,
             'chainage_from'       => $row['chainagefrom'] ?? 0,
             'chainage_to'         => $row['chainageto'] ?? 0,
             'drp_from'            => $row['drp_from'] ?? null,

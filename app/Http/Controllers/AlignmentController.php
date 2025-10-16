@@ -16,19 +16,36 @@ class AlignmentController extends Controller
     }
 
     // API JSON untuk data koordinat - dikelompokkan per link_no
-    public function getCoords()
+    public function getCoords(Request $request)
     {
         try {
-            $data = DB::select("
+            $selectedYear = $request->get('year') ?? session('selected_year'); // ← TAMBAH INI
+
+            // Query dengan filter year
+            $query = "
                 SELECT 
                     a.link_no, 
                     a.north as lat,
                     a.east as lng
                 FROM alignment a
                 INNER JOIN kabupaten k ON a.kabupaten_code = k.kabupaten_code
-                WHERE k.kabupaten_name LIKE '%JEMBER%'
-                ORDER BY a.link_no ASC, a.chainage ASC
-            ");
+            ";
+
+            // Tambahkan kondisi WHERE
+            $conditions = ["k.kabupaten_name LIKE '%JEMBER%'"];
+            $bindings = [];
+
+            // Filter year jika ada (cek apakah alignment punya relasi ke link dengan year)
+            if ($selectedYear) {
+                $query .= " INNER JOIN link l ON a.link_no = l.link_no";
+                $conditions[] = "l.year = ?";
+                $bindings[] = $selectedYear;
+            }
+
+            $query .= " WHERE " . implode(" AND ", $conditions);
+            $query .= " ORDER BY a.link_no ASC, a.chainage ASC";
+
+            $data = DB::select($query, $bindings);
 
             // Group manual
             $grouped = collect($data)->groupBy('link_no')->map(function ($items, $linkNo) {
@@ -80,12 +97,13 @@ class AlignmentController extends Controller
 
     /**
      * API untuk menampilkan alignment dengan SDI per segmen
-     * UPDATED VERSION - Query yang benar
+     * UPDATED VERSION - dengan filter year dari session/request
      */
     public function getCoordsWithSDI(Request $request)
     {
         try {
-            $year = $request->get('year', date('Y'));
+            // Prioritaskan year dari request, fallback ke session, terakhir ke tahun sekarang
+            $year = $request->get('year') ?? session('selected_year') ?? date('Y'); // ← UBAH INI
             
             // 1. Ambil semua segmen road_condition untuk tahun ini di Jember
             $segments = DB::table('road_condition as rc')

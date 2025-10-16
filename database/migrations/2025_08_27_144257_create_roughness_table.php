@@ -15,7 +15,7 @@ return new class extends Migration
             $table->integer('year');
             $table->string('province_code', 50);
             $table->string('kabupaten_code', 50);
-            $table->string('link_no', 50);
+            $table->unsignedBigInteger('link_id', 50);
             $table->decimal('chainage_from', 10, 2)->nullable(); // Number (calculated)
             $table->decimal('chainage_to', 10, 2)->nullable();   // Number (calculated)
             $table->decimal('drp_from', 10, 2)->nullable();

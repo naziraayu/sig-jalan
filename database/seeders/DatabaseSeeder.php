@@ -27,12 +27,13 @@ class DatabaseSeeder extends Seeder
             CodeLinkStatusSeeder::class,
             CodeLinkFunctionSeeder::class,
             CodeLinkClassSeeder::class,
+            PopulateLinkMasterSeeder::class,
             LinkSeeder::class,
             CodeDRPTypeSeeder::class,
             DRPSeeder::class,
             LinkKabupatenSeeder::class,
-            LinkKecamatanSeeder::class,
-            AlignmentSeeder::class,
+            LinkKecamatanSeeder::class, 
+            // AlignmentSeeder::class,
             CodePavementTypeSeeder::class,
             CodeDrainTypeSeeder::class,
             CodeTerrainSeeder::class,
@@ -43,8 +44,8 @@ class DatabaseSeeder extends Seeder
             CodeDrainConditionSeeder::class,
             CodeSlopeConditionSeeder::class,
             CodeFoothpathConditionSeeder::class,
-            RoadConditionSeeder::class,
-            RoughnessSeeder::class,
+            // RoadConditionSeeder::class,
+            // RoughnessSeeder::class,
         ]);
     }
 }

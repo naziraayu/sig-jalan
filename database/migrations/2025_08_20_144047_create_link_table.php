@@ -12,12 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('link', function (Blueprint $table) {
-            $table->string('link_no')->primary();
+            $table->id();
+            $table->integer('year')->nullable();
             $table->string('province_code');
             $table->string('kabupaten_code');
+            $table->string('link_no')->nullable();
+            $table->unsignedBigInteger('link_master_id')->nullable();
 
             $table->string('link_code')->nullable();
-            $table->string('link_name')->nullable();
             $table->string('status')->nullable();
             $table->string('function')->nullable();
             $table->string('class')->nullable();
@@ -45,6 +47,11 @@ return new class extends Migration
             $table->foreign('kabupaten_code')
                 ->references('kabupaten_code')
                 ->on('kabupaten')
+                ->onDelete('cascade');
+
+            $table->foreign('link_master_id')
+                ->references('id')
+                ->on('link_master')
                 ->onDelete('cascade');
             
             $table->foreign('status')

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('link_class', function (Blueprint $table) {
             $table->string('province_code');
             $table->string('kabupaten_code');
-            $table->string('link_no');
+            $table->unsignedBigInteger('link_id');
             $table->string('class');
             $table->decimal('kmClass', 10, 2)->nullable();
             $table->timestamps();

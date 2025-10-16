@@ -11,11 +11,23 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Register middleware aliases
         $middleware->alias([
             'permission' => \App\Http\Middleware\CheckPermission::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);
+        
+        // ✅ AKTIFKAN MIDDLEWARE GLOBAL UNTUK WEB
+        // Middleware ini akan otomatis dijalankan untuk semua web routes
+        $middleware->web(append: [
+            \App\Http\Middleware\YearFilterMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
-    })->create();
+    })
+    ->withProviders([
+        // ✅ TAMBAHKAN VIEW SERVICE PROVIDER
+        \App\Providers\ViewServiceProvider::class,
+    ])
+    ->create();

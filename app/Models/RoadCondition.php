@@ -85,6 +85,14 @@ class RoadCondition extends Model
         'section_status',
     ];
 
+     protected $casts = [
+        'year' => 'integer',
+        'roughness' => 'boolean',
+        'paved' => 'boolean',
+        'chainage_from' => 'decimal:2',
+        'chainage_to' => 'decimal:2',
+    ];
+
     public function province()
     {
         return $this->belongsTo(Province::class, 'Province_Code', 'province_code');
@@ -97,7 +105,33 @@ class RoadCondition extends Model
 
     public function linkNo()
     {
-        return $this->belongsTo(Link::class, 'link_no', 'link_no');
+        return $this->belongsTo(Link::class, 'link_no', 'link_no')
+                    ->where('year', $this->year);
+    }
+
+    // Relasi ke LinkMaster via Link
+    public function master()
+    {
+        return $this->hasOneThrough(
+            LinkMaster::class,
+            Link::class,
+            'link_no',
+            'id',
+            'link_no',
+            'master_link_id'
+        )->where('link.year', $this->year);
+    }
+
+    // Scope: Filter by year
+    public function scopeByYear($query, $year)
+    {
+        return $query->where('year', $year);
+    }
+
+    // Scope: With link and master
+    public function scopeWithRelations($query)
+    {
+        return $query->with(['link.master']);
     }
 
     // contoh relasi ke tabel code conditions
@@ -135,11 +169,6 @@ class RoadCondition extends Model
     public function Rfootpath()
     {
         return $this->hasMany(CodeFoothpathCondition::class, 'code', 'footpath_r');
-    }
-
-    public function inventory()
-    {
-        return $this->belongsTo(RoadInventory::class, 'link_no', 'link_no');
     }
 
 }

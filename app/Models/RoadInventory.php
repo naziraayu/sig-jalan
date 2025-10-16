@@ -15,6 +15,7 @@ class RoadInventory extends Model
         'province_code',
         'kabupaten_code',
         'link_no',
+        'year',
         'chainage_from',
         'chainage_to',
         'drp_from',
@@ -37,6 +38,13 @@ class RoadInventory extends Model
         'impassable_reason',
     ];
 
+    protected $casts = [
+        'year' => 'integer',
+        'impassable' => 'boolean',
+        'chainage_from' => 'decimal:2',
+        'chainage_to' => 'decimal:2',
+    ];
+
     public function province()
     {
         return $this->belongsTo(Province::class, 'province_code', 'province_code');
@@ -50,7 +58,33 @@ class RoadInventory extends Model
 
     public function linkNo()
     {
-        return $this->belongsTo(Link::class, 'link_no', 'link_no');
+        return $this->belongsTo(Link::class, 'link_no', 'link_no')
+                    ->where('year', $this->year);
+    }
+
+    // Relasi ke LinkMaster via Link
+    public function master()
+    {
+        return $this->hasOneThrough(
+            LinkMaster::class,
+            Link::class,
+            'link_no',
+            'id',
+            'link_no',
+            'master_link_id'
+        )->where('link.year', $this->year);
+    }
+
+    // Scope: Filter by year
+    public function scopeByYear($query, $year)
+    {
+        return $query->where('year', $year);
+    }
+
+    // Scope: With link and master
+    public function scopeWithRelations($query)
+    {
+        return $query->with(['link.master']);
     }
 
      public function pavementType()

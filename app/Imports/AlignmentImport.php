@@ -20,7 +20,7 @@ class AlignmentImport implements ToModel, WithHeadingRow, WithChunkReading, With
         return new Alignment([
             'province_code'         => $row['province_code'],
             'kabupaten_code'        => $row['kabupaten_code'],
-            'link_no'               => $row['link_no'],
+            'link_master_id'        => $row['link_master_id'],
             'chainage'              => $row['chainage'],
             'chainage_rb'           => $row['chainage_rb'],
             'gpspoint_north_deg'    => $row['gpspoint_north_deg'],

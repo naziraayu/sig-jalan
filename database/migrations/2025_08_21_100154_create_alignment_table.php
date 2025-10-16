@@ -15,7 +15,8 @@ return new class extends Migration
             $table->integer('chainage')->index(); 
             $table->string('province_code');
             $table->string('kabupaten_code');
-            $table->string('link_no'); // relasi ke tabel link
+            $table->unsignedBigInteger('link_master_id'); // relasi ke tabel link
+            $table->integer('year')->nullable();
 
             $table->integer('chainage_rb')->nullable();
             $table->integer('gpspoint_north_deg')->nullable();
@@ -37,8 +38,8 @@ return new class extends Migration
                 ->references('kabupaten_code')->on('kabupaten')
                 ->onDelete('cascade');
 
-            $table->foreign('link_no')
-                ->references('link_no')->on('link')
+            $table->foreign('link_master_id')
+                ->references('id')->on('link_master')
                 ->onDelete('cascade');
         });
     }

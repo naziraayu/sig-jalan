@@ -16,6 +16,8 @@ class InventarisasiJalanController extends Controller
 {
     public function index()
     {
+        $selectedYear = session('selected_year'); // Ambil tahun dari session
+
         $statusRuas = CodeLinkStatus::orderBy('order')->get();
         $provinsi   = Province::orderBy('province_name')->get();
         $kabupaten  = Kabupaten::orderBy('kabupaten_name')->get();
@@ -23,6 +25,9 @@ class InventarisasiJalanController extends Controller
         // Ambil hanya 1 data per link_no
         $ruasjalan = RoadInventory::with('linkNo')
             ->select('link_no')
+            ->when($selectedYear, function($query) use ($selectedYear) {
+                return $query->where('year', $selectedYear);
+            })
             ->groupBy('link_no')
             ->orderBy('link_no')
             ->get();
@@ -32,43 +37,52 @@ class InventarisasiJalanController extends Controller
         ));
     }
 
-public function getDetail(Request $request)
-{
-    $linkNo = $request->get('link_no');
+    public function getDetail(Request $request)
+    {
+        $linkNo = $request->get('link_no');
+        $selectedYear = session('selected_year'); // Ambil tahun dari session
 
-    $ruas = RoadInventory::with([
-        'province',
-        'kabupaten',
-        'pavementType',
-        'shoulderTypeL',
-        'shoulderTypeR',
-        'drainTypeL',
-        'drainTypeR',
-        'terrainType',
-        'landUseL',
-        'landUseR',
-        'impassableReason',
-    ])->where('link_no', $linkNo)
-    ->orderBy('chainage_from')
-    ->get();
+        $ruas = RoadInventory::with([
+            'province',
+            'kabupaten',
+            'pavementType',
+            'shoulderTypeL',
+            'shoulderTypeR',
+            'drainTypeL',
+            'drainTypeR',
+            'terrainType',
+            'landUseL',
+            'landUseR',
+            'impassableReason',
+        ])
+        ->where('link_no', $linkNo)
+        ->when($selectedYear, function($query) use ($selectedYear) {
+            return $query->where('year', $selectedYear);
+        })
+        ->orderBy('chainage_from')
+        ->get();
 
-    if ($ruas->count()) {
+        if ($ruas->count()) {
+            return response()->json([
+                'success' => true,
+                'data'    => $ruas,
+            ]);
+        }
+
         return response()->json([
-            'success' => true,
-            'data'    => $ruas,
+            'success' => false,
+            'message' => 'Data tidak ditemukan',
         ]);
     }
-
-    return response()->json([
-        'success' => false,
-        'message' => 'Data tidak ditemukan',
-    ]);
-}
     public function show($link_no)
     {
+        $selectedYear = session('selected_year'); // Ambil tahun dari session
         // Ambil data ruas berdasarkan link_no
         $ruas = Link::with(['province', 'kabupaten'])
             ->where('link_no', $link_no)
+            ->when($selectedYear, function($query) use ($selectedYear) {
+                return $query->where('year', $selectedYear);
+            })
             ->firstOrFail();
 
         // Ambil semua road inventory yang terkait dengan semua relasi
@@ -84,9 +98,13 @@ public function getDetail(Request $request)
             'landUseL',
             'landUseR',
             'impassableReason'
-        ])->where('link_no', $link_no)
-          ->orderBy('chainage_from')
-          ->get();
+        ])
+        ->where('link_no', $link_no)
+        ->when($selectedYear, function($query) use ($selectedYear) {
+            return $query->where('year', $selectedYear);
+        })
+        ->orderBy('chainage_from')
+        ->get();
 
         // Hitung statistik untuk summary cards
         $statistics = [
@@ -165,6 +183,21 @@ public function getDetail(Request $request)
             return redirect()->back()->with('error', 'Gagal export data: ' . $e->getMessage());
         }
     }
+
+    // public function export()
+    // {
+    //     try {
+    //         $selectedYear = session('selected_year');
+            
+    //         // Export dengan filter year jika ada
+    //         return Excel::download(
+    //             new RoadInventoryExport($selectedYear), 
+    //             'inventarisasi_jalan_' . ($selectedYear ?? 'all') . '_' . date('Y-m-d_H-i-s') . '.xlsx'
+    //         );
+    //     } catch (\Exception $e) {
+    //         return redirect()->back()->with('error', 'Gagal export data: ' . $e->getMessage());
+    //     }
+    // }
 
     public function destroyAll()
     {

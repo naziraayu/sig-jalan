@@ -18,7 +18,7 @@ class LinkKabupatenImport implements ToModel, WithHeadingRow
         return new LinkKabupaten([
             'province_code'        => $row['province_code'],
             'kabupaten_code'       => $row['kabupaten_code'],
-            'link_no'              => $row['link_no'],
+            'link_id'              => $row['link_id'],
             'drp_from'             => $row['drp_from'],
             'drp_to'               => $row['drp_to'],
             'kabupaten'            => $row['kabupaten'], // Assuming kabupaten is also a field in the import

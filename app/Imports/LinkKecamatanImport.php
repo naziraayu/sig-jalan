@@ -18,7 +18,7 @@ class LinkKecamatanImport implements ToModel, WithHeadingRow
         return new LinkKecamatan([
             'province_code'        => $row['province_code'],
             'kabupaten_code'       => $row['kabupaten_code'],
-            'link_no'              => $row['link_no'],
+            'link_id'              => $row['link_id'],
             'drp_from'             => $row['drp_from'],
             'drp_to'               => $row['drp_to'],
             'kecamatan_code'       => $row['kecamatan_code'],

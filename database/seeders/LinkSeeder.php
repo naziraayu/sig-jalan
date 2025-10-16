@@ -14,7 +14,7 @@ class LinkSeeder extends Seeder
      */
     public function run(): void
     {
-       // Path ke file Excel (taruh di database/seeders/excel/links.xlsx)
+       // Path ke file Excel (taruh di database/seeders/excel/link.xlsx)
         $path = database_path('seeders/data/Link.xlsx');
 
         if (file_exists($path)) {

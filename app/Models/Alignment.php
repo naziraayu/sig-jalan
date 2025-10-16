@@ -19,6 +19,7 @@ class Alignment extends Model
         'province_code',
         'kabupaten_code',
         'link_no',
+        'year',
         'chainage',
         'chainage_rb',
         'gpspoint_north_deg',

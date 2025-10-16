@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\RoadInventory;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DRPController;
 use App\Http\Controllers\RoleController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\RuasJalanController;
 use App\Http\Controllers\LinkKecamatanController;
 use App\Http\Controllers\RoadConditionController;
 use App\Http\Controllers\InventarisasiJalanController;
+use App\Http\Controllers\YearFilterController;
 
 // --------------------
 // Public Routes
@@ -199,29 +201,30 @@ Route::middleware(['auth'])->group(function () {
     // Ruas Jalan Routes
     // --------------------
     Route::prefix('ruas-jalan')->name('ruas-jalan.')->group(function () {
-        // Tambahkan route ini di dalam grup route ruas-jalan
         Route::get('/data', [RuasJalanController::class, 'getData'])->name('data');
-        // Hapus semua
+        
         Route::delete('/destroy-all', [RuasJalanController::class, 'destroyAll'])
             ->middleware('permission:delete,ruas_jalan')->name('destroyAll');
 
-        // CRUD
         Route::get('/', [RuasJalanController::class, 'index'])
             ->middleware('permission:read,ruas_jalan')->name('index');
         Route::get('/create', [RuasJalanController::class, 'create'])
             ->middleware('permission:add,ruas_jalan')->name('create');
         Route::post('/', [RuasJalanController::class, 'store'])
             ->middleware('permission:add,ruas_jalan')->name('store');
-        Route::get('/{ruas}', [RuasJalanController::class, 'show'])
+        
+        // ✅ PERBAIKI: Parameter {id} bukan {ruas}
+        Route::get('/{id}', [RuasJalanController::class, 'show'])
             ->middleware('permission:detail,ruas_jalan')->name('show');
-        Route::get('/{ruas}/edit', [RuasJalanController::class, 'edit'])
+        Route::get('/{id}/edit', [RuasJalanController::class, 'edit'])
             ->middleware('permission:update,ruas_jalan')->name('edit');
-        Route::put('/{ruas}', [RuasJalanController::class, 'update'])
+        Route::put('/{id}', [RuasJalanController::class, 'update'])
             ->middleware('permission:update,ruas_jalan')->name('update');
-        Route::delete('/{ruas}', [RuasJalanController::class, 'destroy'])
+        Route::delete('/{id}', [RuasJalanController::class, 'destroy'])
             ->middleware('permission:delete,ruas_jalan')->name('destroy');
 
-        // Import & Export
+        Route::post('/generate-codes', [RuasJalanController::class, 'generateCodes'])->name('generateCodes');
+
         Route::post('/import', [RuasJalanController::class, 'import'])
             ->middleware('permission:import,ruas_jalan')->name('import');
         Route::get('/export', [RuasJalanController::class, 'export'])
@@ -345,6 +348,13 @@ Route::middleware(['auth'])->group(function () {
         // Hapus semua
         Route::delete('/destroy-all', [InventarisasiJalanController::class, 'destroyAll'])
             ->middleware('permission:delete,inventarisasi_jalan')->name('destroyAll');
+        Route::get('/get-years', function () {
+            $years = RoadInventory::select('year')
+                ->distinct()
+                ->orderBy('year', 'desc')
+                ->pluck('year');
+            return response()->json($years);
+        });
 
         // CRUD - urutkan route yang spesifik dulu sebelum yang pakai parameter
         Route::get('/', [InventarisasiJalanController::class, 'index'])
@@ -436,6 +446,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/api/alignment/coords', [AlignmentController::class, 'getCoords'])->name('api.coords');
     Route::get('/api/alignment/coords-sdi', [AlignmentController::class, 'getCoordsWithSDI'])->name('api.coords.sdi');
 
+    Route::prefix('year-filter')->name('year.filter.')->group(function () {
+        Route::get('/available', [YearFilterController::class, 'getAvailableYears'])->name('available');
+        Route::get('/current', [YearFilterController::class, 'getCurrentYear'])->name('current');
+        Route::post('/set', [YearFilterController::class, 'setYear'])->name('set');
+    });
 });
 
 // --------------------

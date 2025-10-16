@@ -16,7 +16,7 @@ return new class extends Migration
             $table->integer('year');
             $table->string('province_code', 10);
             $table->string('kabupaten_code', 10);
-            $table->string('link_no', 50);
+            $table->unsignedBigInteger('link_id', 50);
             
             // Chainage information
             $table->decimal('chainage_from', 10, 2)->nullable();
@@ -117,8 +117,8 @@ return new class extends Migration
                 ->references('kabupaten_code')->on('kabupaten')
                 ->onDelete('cascade');
 
-            $table->foreign('link_no')
-                ->references('link_no')->on('link')
+            $table->foreign('link_id')
+                ->references('id')->on('link')
                 ->onDelete('cascade');
         });
     }

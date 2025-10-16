@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('road_inventory', function (Blueprint $table) {
             $table->string('province_code');
             $table->string('kabupaten_code');
-            $table->string('link_no');
+            $table->unsignedBigInteger('link_id');
+            $table->integer('year')->nullable();
             $table->integer('chainage_from')->index();
             $table->integer('chainage_to');
             $table->integer('drp_from')->nullable();
@@ -45,8 +46,8 @@ return new class extends Migration
                 ->references('kabupaten_code')->on('kabupaten')
                 ->onDelete('cascade');
 
-            $table->foreign('link_no')
-                ->references('link_no')->on('link')
+            $table->foreign('link_id')
+                ->references('id')->on('link')
                 ->onDelete('cascade');
         });
     }

@@ -15,11 +15,12 @@ class LinkImport implements ToModel, WithHeadingRow
     public function model(array $row)
     {
        return new Link([
-            'link_no'              => $row['link_no'],
+            'year'                 => $row['year'],
             'province_code'        => $row['province_code'],
             'kabupaten_code'       => $row['kabupaten_code'],
+            'link_no'              => $row['link_no'],
+            'link_master_id'       => $row['link_master_id'],
             'link_code'            => $row['link_code'],
-            'link_name'            => $row['link_name'],
             'status'               => $row['status'],
             'function'             => $row['function'],
             'class'                => $row['class'],

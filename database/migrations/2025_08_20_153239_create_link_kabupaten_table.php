@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('link_kabupaten', function (Blueprint $table) {
             $table->string('province_code');
             $table->string('kabupaten_code');
-            $table->string('link_no');
+            $table->unsignedBigInteger('link_id');
             $table->integer('drp_from');
             $table->integer('drp_to');
             $table->string('kabupaten')->nullable();
@@ -29,8 +29,8 @@ return new class extends Migration
                 ->references('kabupaten_code')->on('kabupaten')
                 ->onDelete('cascade');
 
-            $table->foreign('link_no')
-                ->references('link_no')->on('link')
+            $table->foreign('link_id')
+                ->references('id')->on('link')
                 ->onDelete('cascade');
 
         });

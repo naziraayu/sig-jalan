@@ -165,101 +165,108 @@ class RoadConditionController extends Controller
     }
 
     public function show($link_no)
-    {
-        // Ambil data ruas
-        $ruas = Link::with(['province', 'kabupaten'])
-            ->where('link_no', $link_no)
-            ->firstOrFail();
+{
+    $selectedYear = session('selected_year'); // ← TAMBAH INI
 
-        // Ambil tahun yang tersedia
-        $availableYears = RoadCondition::where('link_no', $link_no)
-            ->select('year')
-            ->distinct()
-            ->orderBy('year', 'desc')
-            ->pluck('year');
+    // Ambil data ruas DENGAN FILTER YEAR
+    $ruas = Link::with(['province', 'kabupaten'])
+        ->where('link_no', $link_no)
+        ->when($selectedYear, function($query) use ($selectedYear) {
+            return $query->where('year', $selectedYear);
+        })
+        ->firstOrFail();
 
-        // Ambil data kondisi jalan dengan relasi dan urutkan secara numerik
-        $conditions = RoadCondition::with([
-            'province',
-            'kabupaten',
-            'linkNo',
-            'inventory',
-            'Lshoulder',
-            'Rshoulder',
-            'Ldrain',
-            'Rdrain',
-            'Lslope',
-            'Rslope',
-            'Lfootpath',
-            'Rfootpath'
-        ])->where('link_no', $link_no)
-          ->get()
-          ->sortBy(function($item) {
-              // Urutkan berdasarkan tahun (descending) dan chainage (ascending numerik)
-              return [
-                  -intval($item->year), // Negative untuk descending
-                  floatval($item->chainage_from) // Ascending numerik
-              ];
-          })
-          ->values();
+    // Ambil tahun yang tersedia untuk ruas ini
+    $availableYears = RoadCondition::where('link_no', $link_no)
+        ->select('year')
+        ->distinct()
+        ->orderBy('year', 'desc')
+        ->pluck('year');
 
-        // Hitung SDI untuk setiap segmen
-        $conditionsWithSDI = $conditions->map(function($condition) {
-            $sdi = $this->calculateSDI($condition);
-            $condition->sdi_data = $sdi;
-            return $condition;
-        });
-
-        // Statistik keseluruhan
-        $statistics = [
-            'total_segments' => $conditions->count(),
-            'total_length' => $conditions->sum(function($item) {
-                return $item->chainage_to - $item->chainage_from;
-            }),
-            'avg_iri' => $conditions->where('iri', '>', 0)->avg('iri'),
-            'avg_rci' => $conditions->where('rci', '>', 0)->avg('rci'),
-            'avg_sdi' => $conditionsWithSDI->avg('sdi_data.sdi_final'),
-            'good_condition' => $conditionsWithSDI->where('sdi_data.category', 'Baik')->count(),
-            'fair_condition' => $conditionsWithSDI->where('sdi_data.category', 'Sedang')->count(),
-            'poor_condition' => $conditionsWithSDI->where('sdi_data.category', 'Rusak Ringan')->count(),
-            'very_poor_condition' => $conditionsWithSDI->where('sdi_data.category', 'Rusak Berat')->count(),
+    // Ambil data kondisi jalan DENGAN FILTER YEAR
+    $conditions = RoadCondition::with([
+        'province',
+        'kabupaten',
+        'linkNo',
+        'inventory',
+        'Lshoulder',
+        'Rshoulder',
+        'Ldrain',
+        'Rdrain',
+        'Lslope',
+        'Rslope',
+        'Lfootpath',
+        'Rfootpath'
+    ])
+    ->where('link_no', $link_no)
+    ->when($selectedYear, function($query) use ($selectedYear) {
+        return $query->where('year', $selectedYear); // ← TAMBAH INI
+    })
+    ->get()
+    ->sortBy(function($item) {
+        return [
+            -intval($item->year),
+            floatval($item->chainage_from)
         ];
+    })
+    ->values();
 
-        // Analisis kerusakan per jenis
-        $damage_analysis = [
-            'total_crack_area' => $conditions->sum(function($item) {
-                return ($item->crack_dep_area ?? 0) + 
-                       ($item->oth_crack_area ?? 0) + 
-                       ($item->concrete_cracking_area ?? 0);
-            }),
-            'total_potholes' => $conditions->sum('pothole_count'),
-            'avg_rutting_depth' => $conditions->where('rutting_depth', '>', 0)->avg('rutting_depth'),
-            'segments_with_bleeding' => $conditions->where('bleeding_area', '>', 0)->count(),
-            'segments_with_ravelling' => $conditions->where('ravelling_area', '>', 0)->count(),
-            'segments_with_patching' => $conditions->where('patching_area', '>', 0)->count(),
+    // Hitung SDI untuk setiap segmen
+    $conditionsWithSDI = $conditions->map(function($condition) {
+        $sdi = $this->calculateSDI($condition);
+        $condition->sdi_data = $sdi;
+        return $condition;
+    });
+
+    // Statistik keseluruhan (tetap sama)
+    $statistics = [
+        'total_segments' => $conditions->count(),
+        'total_length' => $conditions->sum(function($item) {
+            return $item->chainage_to - $item->chainage_from;
+        }),
+        'avg_iri' => $conditions->where('iri', '>', 0)->avg('iri'),
+        'avg_rci' => $conditions->where('rci', '>', 0)->avg('rci'),
+        'avg_sdi' => $conditionsWithSDI->avg('sdi_data.sdi_final'),
+        'good_condition' => $conditionsWithSDI->where('sdi_data.category', 'Baik')->count(),
+        'fair_condition' => $conditionsWithSDI->where('sdi_data.category', 'Sedang')->count(),
+        'poor_condition' => $conditionsWithSDI->where('sdi_data.category', 'Rusak Ringan')->count(),
+        'very_poor_condition' => $conditionsWithSDI->where('sdi_data.category', 'Rusak Berat')->count(),
+    ];
+
+    // Analisis kerusakan per jenis (tetap sama)
+    $damage_analysis = [
+        'total_crack_area' => $conditions->sum(function($item) {
+            return ($item->crack_dep_area ?? 0) + 
+                   ($item->oth_crack_area ?? 0) + 
+                   ($item->concrete_cracking_area ?? 0);
+        }),
+        'total_potholes' => $conditions->sum('pothole_count'),
+        'avg_rutting_depth' => $conditions->where('rutting_depth', '>', 0)->avg('rutting_depth'),
+        'segments_with_bleeding' => $conditions->where('bleeding_area', '>', 0)->count(),
+        'segments_with_ravelling' => $conditions->where('ravelling_area', '>', 0)->count(),
+        'segments_with_patching' => $conditions->where('patching_area', '>', 0)->count(),
+    ];
+
+    // Distribusi SDI per tahun (tetap sama)
+    $sdi_by_year = $conditionsWithSDI->groupBy('year')->map(function($yearData) {
+        return [
+            'avg_sdi' => $yearData->avg('sdi_data.sdi_final'),
+            'min_sdi' => $yearData->min('sdi_data.sdi_final'),
+            'max_sdi' => $yearData->max('sdi_data.sdi_final'),
+            'count' => $yearData->count(),
         ];
+    });
 
-        // Distribusi SDI per tahun
-        $sdi_by_year = $conditionsWithSDI->groupBy('year')->map(function($yearData) {
-            return [
-                'avg_sdi' => $yearData->avg('sdi_data.sdi_final'),
-                'min_sdi' => $yearData->min('sdi_data.sdi_final'),
-                'max_sdi' => $yearData->max('sdi_data.sdi_final'),
-                'count' => $yearData->count(),
-            ];
-        });
-
-        return view('jalan.kondisi-jalan.show', compact(
-            'ruas',
-            'conditions',
-            'conditionsWithSDI',
-            'statistics',
-            'damage_analysis',
-            'sdi_by_year',
-            'availableYears'
-        ));
-    }
-
+    return view('jalan.kondisi-jalan.show', compact(
+        'ruas',
+        'conditions',
+        'conditionsWithSDI',
+        'statistics',
+        'damage_analysis',
+        'sdi_by_year',
+        'availableYears'
+    ));
+}   
     /**
      * Fungsi untuk menghitung SDI (Surface Distress Index) sesuai aturan Bina Marga
      */
