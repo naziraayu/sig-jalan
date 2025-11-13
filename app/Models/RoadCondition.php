@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class RoadCondition extends Model
 {
-    use HasFactory;
+    // use HasFactory;
     protected $table = 'road_condition';
     protected $primaryKey = 'null';
     public $incrementing = false;
@@ -15,6 +15,7 @@ class RoadCondition extends Model
         'year',
         'province_code',
         'kabupaten_code',
+        'link_id',
         'link_no',
         'chainage_from',
         'chainage_to',
@@ -122,7 +123,16 @@ class RoadCondition extends Model
         )->where('link.year', $this->year);
     }
 
-    // Scope: Filter by year
+    public function inventory()
+{
+    return $this->belongsTo(RoadInventory::class, 'link_no', 'link_no')
+                ->when($this->chainage_from !== null, function($query) {
+                    return $query->where('chainage_from', '<=', $this->chainage_from);
+                })
+                ->when($this->chainage_to !== null, function($query) {
+                    return $query->where('chainage_to', '>=', $this->chainage_to);
+                });
+}
     public function scopeByYear($query, $year)
     {
         return $query->where('year', $year);

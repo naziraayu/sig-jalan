@@ -4,7 +4,7 @@
 <div class="main-content">
     <section class="section">
         <div class="section-header">
-            <h1>Ruas Jalan Management</h1>
+            <h1>Manajemen Ruas Jalan</h1>
             <div class="section-header-breadcrumb">
                 <div class="breadcrumb-item">
                     <a href="{{ route('dashboard') }}">Dashboard</a>

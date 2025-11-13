@@ -17,11 +17,14 @@ use Maatwebsite\Excel\Facades\Excel;
 class RoadConditionController extends Controller
 {
     public function index()
-    {
+    { 
         $statusRuas = CodeLinkStatus::orderBy('order')->get();
         $provinsi   = Province::orderBy('province_name')->get();
         $kabupaten  = Kabupaten::orderBy('kabupaten_name')->get();
 
+        // Ambil tahun yang dipilih dari session (jika ada)
+        $selectedYear = session('selected_year');
+        
         // Ambil semua tahun yang ada di road_condition
         $availableYears = RoadCondition::select('year')
             ->distinct()
@@ -29,12 +32,12 @@ class RoadConditionController extends Controller
             ->pluck('year');
 
         return view('jalan.kondisi-jalan.index', compact(
-            'statusRuas', 'provinsi', 'kabupaten', 'availableYears'
+            'statusRuas', 'provinsi', 'kabupaten', 'availableYears', 'selectedYear'
         ));
     }
 
     /**
-     * Get ruas berdasarkan tahun yang dipilih
+     * ✅ PERBAIKAN: Get ruas berdasarkan tahun yang dipilih
      */
     public function getRuasByYear(Request $request)
     {
@@ -43,29 +46,76 @@ class RoadConditionController extends Controller
         if (!$year) {
             return response()->json([
                 'success' => false,
-                'message' => 'Tahun tidak valid'
+                'message' => 'Tahun tidak valid',
+                'data' => []
             ]);
         }
 
-        // Ambil semua ruas yang memiliki data di tahun ini
-        $ruasList = RoadCondition::with('linkNo')
-            ->where('year', $year)
-            ->select('link_no')
-            ->whereHas('linkNo')
-            ->groupBy('link_no')
-            ->orderBy('link_no')
-            ->get()
-            ->map(function($item) {
-                return $item->linkNo;
-            })
-            ->filter()
-            ->unique('link_no')
-            ->values();
+        try {
+            // Step 1: Ambil semua link_no yang UNIK dari road_condition untuk tahun ini
+            $linkNos = RoadCondition::where('year', $year)
+                ->distinct()
+                ->pluck('link_no')
+                ->filter() // Hilangkan null values
+                ->unique()
+                ->values();
 
-        return response()->json([
-            'success' => true,
-            'data' => $ruasList
-        ]);
+            Log::info('Link Nos found:', ['count' => $linkNos->count(), 'data' => $linkNos->toArray()]);
+
+            if ($linkNos->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada data ruas untuk tahun ' . $year,
+                    'data' => []
+                ]);
+            }
+
+            // Step 2: Ambil detail ruas dari tabel link
+            $ruasList = Link::whereIn('link_no', $linkNos)
+                ->orderBy('link_code')
+                ->get();
+
+            Log::info('Ruas List found:', ['count' => $ruasList->count()]);
+
+            // Jika tidak ada data di tabel link, kembalikan link_no saja
+            if ($ruasList->isEmpty()) {
+                // Fallback: buat data dari link_no yang ada
+                $ruasList = $linkNos->map(function($linkNo) {
+                    return [
+                        'link_no' => $linkNo,
+                        'link_code' => $linkNo,
+                        'link_name' => 'Ruas ' . $linkNo,
+                    ];
+                });
+            } else {
+                // Format data
+                $ruasList = $ruasList->map(function($link) {
+                    return [
+                        'link_no' => $link->link_no,
+                        'link_code' => $link->link_code ?? $link->link_no,
+                        'link_name' => $link->link_name ?? 'Ruas ' . $link->link_no,
+                    ];
+                });
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $ruasList->values(),
+                'count' => $ruasList->count(),
+                'year' => $year
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error getRuasByYear: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                'data' => []
+            ], 500);
+        }
     }
 
     public function getYears(Request $request)
@@ -97,6 +147,11 @@ class RoadConditionController extends Controller
         $linkNo = $request->get('link_no');
         $year = $request->get('year');
 
+        // Jika tahun tidak dipilih, ambil dari session
+        if (!$year) {
+            $year = session('selected_year');
+        }
+
         // Validasi input
         if (!$linkNo || !$year) {
             return response()->json([
@@ -105,20 +160,27 @@ class RoadConditionController extends Controller
             ]);
         }
 
-        // Ambil data dan urutkan secara numerik
-        $conditions = RoadCondition::where('link_no', $linkNo)
-            ->where('year', $year)
-            ->get()
-            ->sortBy(function($item) {
-                // Konversi chainage_from ke float untuk sorting numerik
-                return floatval($item->chainage_from);
-            })
-            ->values(); // Reset array keys
+        try {
+            // Ambil data dan urutkan secara numerik
+            $conditions = RoadCondition::where('link_no', $linkNo)
+                ->where('year', $year)
+                ->get()
+                ->sortBy(function($item) {
+                    // Konversi chainage_from ke float untuk sorting numerik
+                    return floatval($item->chainage_from);
+                })
+                ->values(); // Reset array keys
 
-        // Ambil semua inventory untuk link ini
-        $inventories = RoadInventory::where('link_no', $linkNo)->get();
+            if ($conditions->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data tidak ditemukan untuk ruas ' . $linkNo . ' tahun ' . $year,
+                ]);
+            }
 
-        if ($conditions->count()) {
+            // Ambil semua inventory untuk link ini
+            $inventories = RoadInventory::where('link_no', $linkNo)->get();
+
             $dataWithSDI = $conditions->map(function($item) use ($inventories) {
                 // Cari inventory yang cocok dengan chainage
                 $inventory = $inventories->first(function($inv) use ($item) {
@@ -128,7 +190,7 @@ class RoadConditionController extends Controller
 
                 $paveWidth = $inventory ? floatval($inventory->pave_width) : 7.0;
 
-                // Temporary set pave_width untuk calculateSDI
+                // Temporary set inventory untuk calculateSDI
                 $item->inventory = $inventory;
                 
                 $sdi = $this->calculateSDI($item);
@@ -155,127 +217,245 @@ class RoadConditionController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $dataWithSDI,
+                'count' => $dataWithSDI->count()
             ]);
-        }
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Data tidak ditemukan untuk ruas dan tahun yang dipilih',
-        ]);
+        } catch (\Exception $e) {
+            Log::error('Error getDetail: ' . $e->getMessage(), [
+                'link_no' => $linkNo,
+                'year' => $year,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function show($link_no)
-{
-    $selectedYear = session('selected_year'); // ← TAMBAH INI
+    {
+        $selectedYear = session('selected_year');
 
-    // Ambil data ruas DENGAN FILTER YEAR
-    $ruas = Link::with(['province', 'kabupaten'])
-        ->where('link_no', $link_no)
-        ->when($selectedYear, function($query) use ($selectedYear) {
-            return $query->where('year', $selectedYear);
-        })
-        ->firstOrFail();
+        // ✅ PERBAIKAN: Ambil ruas dengan prioritas tahun yang dipilih
+        $ruas = Link::with(['province', 'kabupaten'])
+            ->where('link_no', $link_no)
+            ->when($selectedYear, function($query) use ($selectedYear) {
+                // Jika ada selectedYear, prioritaskan tahun tersebut
+                return $query->where('year', $selectedYear);
+            })
+            ->orderBy('year', 'desc') // Ambil tahun terbaru jika tidak ada filter
+            ->first();
 
-    // Ambil tahun yang tersedia untuk ruas ini
-    $availableYears = RoadCondition::where('link_no', $link_no)
-        ->select('year')
-        ->distinct()
-        ->orderBy('year', 'desc')
-        ->pluck('year');
+        // Jika tidak ada data dengan tahun yang dipilih, ambil data tahun terbaru
+        if (!$ruas) {
+            $ruas = Link::with(['province', 'kabupaten'])
+                ->where('link_no', $link_no)
+                ->orderBy('year', 'desc')
+                ->firstOrFail();
+        }
 
-    // Ambil data kondisi jalan DENGAN FILTER YEAR
-    $conditions = RoadCondition::with([
-        'province',
-        'kabupaten',
-        'linkNo',
-        'inventory',
-        'Lshoulder',
-        'Rshoulder',
-        'Ldrain',
-        'Rdrain',
-        'Lslope',
-        'Rslope',
-        'Lfootpath',
-        'Rfootpath'
-    ])
-    ->where('link_no', $link_no)
-    ->when($selectedYear, function($query) use ($selectedYear) {
-        return $query->where('year', $selectedYear); // ← TAMBAH INI
-    })
-    ->get()
-    ->sortBy(function($item) {
-        return [
-            -intval($item->year),
-            floatval($item->chainage_from)
+        // Ambil tahun yang tersedia untuk ruas ini
+        $availableYears = RoadCondition::where('link_no', $link_no)
+            ->select('year')
+            ->distinct()
+            ->orderBy('year', 'desc')
+            ->pluck('year');
+
+        // Ambil data kondisi jalan DENGAN FILTER YEAR
+        $conditions = RoadCondition::where('link_no', $link_no)
+            ->when($selectedYear, function($query) use ($selectedYear) {
+                return $query->where('year', $selectedYear);
+            })
+            ->get()
+            ->sortBy(function($item) {
+                return [
+                    -intval($item->year),
+                    floatval($item->chainage_from)
+                ];
+            })
+            ->values();
+
+        // Load inventories secara manual
+        $inventories = RoadInventory::where('link_no', $link_no)->get();
+
+        // Map conditions dengan inventory
+        $conditions = $conditions->map(function($condition) use ($inventories) {
+            $condition->inventory = $inventories->first(function($inv) use ($condition) {
+                return $inv->chainage_from <= $condition->chainage_from 
+                    && $inv->chainage_to >= $condition->chainage_to;
+            });
+            return $condition;
+        });
+
+        // Hitung SDI untuk setiap segmen
+        $conditionsWithSDI = $conditions->map(function($condition) {
+            $sdi = $this->calculateSDI($condition);
+            $condition->sdi_data = $sdi;
+            return $condition;
+        });
+
+        // Statistik keseluruhan
+        $statistics = [
+            'total_segments' => $conditions->count(),
+            'total_length' => $conditions->sum(function($item) {
+                return $item->chainage_to - $item->chainage_from;
+            }),
+            'avg_iri' => $conditions->where('iri', '>', 0)->avg('iri'),
+            'avg_rci' => $conditions->where('rci', '>', 0)->avg('rci'),
+            'avg_sdi' => $conditionsWithSDI->avg('sdi_data.sdi_final'),
+            'good_condition' => $conditionsWithSDI->where('sdi_data.category', 'Baik')->count(),
+            'fair_condition' => $conditionsWithSDI->where('sdi_data.category', 'Sedang')->count(),
+            'poor_condition' => $conditionsWithSDI->where('sdi_data.category', 'Rusak Ringan')->count(),
+            'very_poor_condition' => $conditionsWithSDI->where('sdi_data.category', 'Rusak Berat')->count(),
         ];
-    })
-    ->values();
 
-    // Hitung SDI untuk setiap segmen
-    $conditionsWithSDI = $conditions->map(function($condition) {
-        $sdi = $this->calculateSDI($condition);
-        $condition->sdi_data = $sdi;
-        return $condition;
-    });
-
-    // Statistik keseluruhan (tetap sama)
-    $statistics = [
-        'total_segments' => $conditions->count(),
-        'total_length' => $conditions->sum(function($item) {
-            return $item->chainage_to - $item->chainage_from;
-        }),
-        'avg_iri' => $conditions->where('iri', '>', 0)->avg('iri'),
-        'avg_rci' => $conditions->where('rci', '>', 0)->avg('rci'),
-        'avg_sdi' => $conditionsWithSDI->avg('sdi_data.sdi_final'),
-        'good_condition' => $conditionsWithSDI->where('sdi_data.category', 'Baik')->count(),
-        'fair_condition' => $conditionsWithSDI->where('sdi_data.category', 'Sedang')->count(),
-        'poor_condition' => $conditionsWithSDI->where('sdi_data.category', 'Rusak Ringan')->count(),
-        'very_poor_condition' => $conditionsWithSDI->where('sdi_data.category', 'Rusak Berat')->count(),
-    ];
-
-    // Analisis kerusakan per jenis (tetap sama)
-    $damage_analysis = [
-        'total_crack_area' => $conditions->sum(function($item) {
-            return ($item->crack_dep_area ?? 0) + 
-                   ($item->oth_crack_area ?? 0) + 
-                   ($item->concrete_cracking_area ?? 0);
-        }),
-        'total_potholes' => $conditions->sum('pothole_count'),
-        'avg_rutting_depth' => $conditions->where('rutting_depth', '>', 0)->avg('rutting_depth'),
-        'segments_with_bleeding' => $conditions->where('bleeding_area', '>', 0)->count(),
-        'segments_with_ravelling' => $conditions->where('ravelling_area', '>', 0)->count(),
-        'segments_with_patching' => $conditions->where('patching_area', '>', 0)->count(),
-    ];
-
-    // Distribusi SDI per tahun (tetap sama)
-    $sdi_by_year = $conditionsWithSDI->groupBy('year')->map(function($yearData) {
-        return [
-            'avg_sdi' => $yearData->avg('sdi_data.sdi_final'),
-            'min_sdi' => $yearData->min('sdi_data.sdi_final'),
-            'max_sdi' => $yearData->max('sdi_data.sdi_final'),
-            'count' => $yearData->count(),
+        // ✅ Damage Analysis - LENGKAP
+        $damage_analysis = [
+            'total_crack_area' => $conditions->sum('crack_dep_area') + 
+                                $conditions->sum('oth_crack_area') + 
+                                $conditions->sum('concrete_cracking_area') + 
+                                $conditions->sum('concrete_structural_cracking_area'),
+            'total_bleeding_area' => $conditions->sum('bleeding_area'),
+            'total_ravelling_area' => $conditions->sum('ravelling_area'),
+            'total_desintegration_area' => $conditions->sum('desintegration_area'),
+            'total_patching_area' => $conditions->sum('patching_area'),
+            'total_pothole_area' => $conditions->sum('pothole_area'),
+            'total_pothole_count' => $conditions->sum('pothole_count'),
+            'total_potholes' => $conditions->sum('pothole_count'),
+            'total_rutting_area' => $conditions->sum('rutting_area'),
+            'avg_rutting_depth' => $conditions->avg('rutting_depth'),
+            'total_edge_damage' => $conditions->sum('edge_damage_area'),
+            'avg_crack_width' => $conditions->avg('crack_width'),
+            'segments_with_bleeding' => $conditions->where('bleeding_area', '>', 0)->count(),
         ];
-    });
 
-    return view('jalan.kondisi-jalan.show', compact(
-        'ruas',
-        'conditions',
-        'conditionsWithSDI',
-        'statistics',
-        'damage_analysis',
-        'sdi_by_year',
-        'availableYears'
-    ));
-}   
+        // ✅ SDI by Year - TAMBAHAN BARU
+        $sdi_by_year = $conditionsWithSDI->groupBy('year')->map(function($items, $year) {
+            return [
+                'avg_sdi' => $items->avg('sdi_data.sdi_final'),
+                'min_sdi' => $items->min('sdi_data.sdi_final'),
+                'max_sdi' => $items->max('sdi_data.sdi_final'),
+                'count' => $items->count(),
+            ];
+        })->sortKeysDesc();
+
+        return view('jalan.kondisi-jalan.show', compact(
+            'ruas',
+            'conditions',
+            'conditionsWithSDI',
+            'statistics',
+            'availableYears',
+            'damage_analysis',
+            'sdi_by_year'
+        ));
+    }
+
     /**
+     * Get detail segmen untuk modal detail
+     */
+    public function getSegmentDetail(Request $request)
+    {
+        $linkNo = $request->get('link_no');
+        $chainageFrom = $request->get('chainage_from');
+        $chainageTo = $request->get('chainage_to');
+        $year = $request->get('year');
+
+        if (!$linkNo || !$chainageFrom || !$chainageTo || !$year) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Parameter tidak lengkap'
+            ]);
+        }
+
+        try {
+            // Ambil data kondisi jalan spesifik
+            $condition = RoadCondition::where('link_no', $linkNo)
+                ->where('chainage_from', $chainageFrom)
+                ->where('chainage_to', $chainageTo)
+                ->where('year', $year)
+                ->first();
+
+            if (!$condition) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data tidak ditemukan'
+                ]);
+            }
+
+            // ✅ Load data Link secara manual
+            $link = Link::where('link_no', $linkNo)->first();
+            
+            // ✅ Load inventory secara manual
+            $inventory = RoadInventory::where('link_no', $linkNo)
+                ->where('chainage_from', '<=', $chainageFrom)
+                ->where('chainage_to', '>=', $chainageTo)
+                ->first();
+
+            // Set inventory untuk calculateSDI
+            $condition->inventory = $inventory;
+
+            // Hitung SDI dengan detail lengkap
+            $sdiDetail = $this->calculateSDIWithDetails($condition);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'condition' => [
+                        'link_no' => [
+                            'link_code' => $link->link_code ?? $linkNo, // ✅ PERBAIKAN
+                            'link_name' => $link->link_name ?? 'Ruas ' . $linkNo, // ✅ PERBAIKAN
+                        ],
+                        'chainage_from' => $condition->chainage_from,
+                        'chainage_to' => $condition->chainage_to,
+                        'year' => $condition->year,
+                    ],
+                    'sdi_detail' => $sdiDetail
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error in getSegmentDetail', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * ✅ METHOD BARU: Public wrapper untuk calculateSDI
+     * Method ini bisa dipanggil dari controller lain
+     */
+    public function calculateSDIPublic($condition)
+    {
+        return $this->calculateSDI($condition);
+    }
+
+    /**
+     * ✅ PERBAIKAN: Pastikan method calculateSDI bisa handle data tanpa relationship
      * Fungsi untuk menghitung SDI (Surface Distress Index) sesuai aturan Bina Marga
      */
     private function calculateSDI($condition)
     {
+        // ✅ PERBAIKAN: Cek apakah inventory sudah di-load atau perlu di-load manual
+        if (!isset($condition->inventory)) {
+            $condition->load('inventory');
+        }
+        
         // Ambil data dari inventory untuk lebar jalan
         $paveWidth = $condition->inventory->pave_width ?? 0;
         
         if ($paveWidth == 0) {
+            Log::warning("Pave width is 0 for condition", [
+                'link_no' => $condition->link_no,
+                'chainage_from' => $condition->chainage_from
+            ]);
+            
             return [
                 'sdi1' => 0,
                 'sdi2' => 0,
@@ -292,11 +472,10 @@ class RoadConditionController extends Controller
         $segmentLength = ($condition->chainage_to - $condition->chainage_from) * 1000;
         
         // Normalisasi ke 100m
-        $normalizedLength = $segmentLength > 0 ? 100 : 100;
+        $normalizedLength = 100;
 
         /**
          * 1. Total Area of Cracks (Luas Retak)
-         * % luas retak = total crack area / (100 * lebar jalan)
          */
         $totalCrackArea = ($condition->crack_dep_area ?? 0) + 
                         ($condition->oth_crack_area ?? 0) + 
@@ -314,7 +493,7 @@ class RoadConditionController extends Controller
             $sdi1 = 5;
         } elseif ($crackPercentage >= 10 && $crackPercentage <= 30) {
             $sdi1 = 20;
-        } else { // > 30%
+        } else {
             $sdi1 = 40;
         }
 
@@ -326,17 +505,16 @@ class RoadConditionController extends Controller
 
         if ($crackWidth > 0) {
             if ($crackWidth < 1) {
-                $sdi2 = $sdi1; // fine crack
+                $sdi2 = $sdi1;
             } elseif ($crackWidth >= 1 && $crackWidth <= 3) {
-                $sdi2 = $sdi1; // medium crack
-            } else { // > 3 mm
+                $sdi2 = $sdi1;
+            } else {
                 $sdi2 = $sdi1 * 2;
             }
         }
 
         /**
-         * 3. Total Number of Potholes (Jumlah Lubang)
-         * Normalisasi ke per 100m
+         * 3. Total Number of Potholes
          */
         $potholeCount = $condition->pothole_count ?? 0;
         $normalizedPotholes = $segmentLength > 0 
@@ -349,13 +527,13 @@ class RoadConditionController extends Controller
                 $sdi3 = $sdi2 + 15;
             } elseif ($normalizedPotholes >= 10 && $normalizedPotholes <= 50) {
                 $sdi3 = $sdi2 + 75;
-            } else { // > 50
+            } else {
                 $sdi3 = $sdi2 + 225;
             }
         }
 
         /**
-         * 4. Average Depth of Wheel Rutting (Bekas Roda)
+         * 4. Average Depth of Wheel Rutting
          */
         $ruttingDepth = $condition->rutting_depth ?? 0;
         $sdi4 = $sdi3;
@@ -363,12 +541,12 @@ class RoadConditionController extends Controller
         if ($ruttingDepth > 0) {
             if ($ruttingDepth < 1) {
                 $X = 0.5;
-                $sdi4 = $sdi3 + (5 * $X);   // +2.5
+                $sdi4 = $sdi3 + (5 * $X);
             } elseif ($ruttingDepth >= 1 && $ruttingDepth <= 3) {
                 $X = 2;
-                $sdi4 = $sdi3 + (5 * $X);   // +10
-            } else { // > 3 cm
-                $sdi4 = $sdi3 + 20;         // FIXED: sesuai aturan (bukan 100)
+                $sdi4 = $sdi3 + (5 * $X);
+            } else {
+                $sdi4 = $sdi3 + 20;
             }
         }
 
@@ -405,85 +583,7 @@ class RoadConditionController extends Controller
             return 'Rusak Berat';
         }
     }
-
-    /**
-     * Get detail segmen untuk modal detail
-     */
-    public function getSegmentDetail(Request $request)
-    {
-        // Log untuk debugging
-        Log::info('getSegmentDetail called', [
-            'link_no' => $request->get('link_no'),
-            'chainage_from' => $request->get('chainage_from'),
-            'chainage_to' => $request->get('chainage_to'),
-            'year' => $request->get('year')
-        ]);
-
-        $linkNo = $request->get('link_no');
-        $chainageFrom = $request->get('chainage_from');
-        $chainageTo = $request->get('chainage_to');
-        $year = $request->get('year');
-
-        if (!$linkNo || !$chainageFrom || !$chainageTo || !$year) {
-            Log::warning('Incomplete parameters');
-            return response()->json([
-                'success' => false,
-                'message' => 'Parameter tidak lengkap'
-            ]);
-        }
-
-        try {
-            // Ambil data kondisi jalan spesifik
-            $condition = RoadCondition::with([
-                'linkNo',
-                'inventory',
-                'province',
-                'kabupaten'
-            ])
-                ->where('link_no', $linkNo)
-                ->where('chainage_from', $chainageFrom)
-                ->where('chainage_to', $chainageTo)
-                ->where('year', $year)
-                ->first();
-
-            if (!$condition) {
-                Log::warning('Condition not found', [
-                    'link_no' => $linkNo,
-                    'chainage' => "$chainageFrom - $chainageTo",
-                    'year' => $year
-                ]);
-                
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Data tidak ditemukan'
-                ]);
-            }
-
-            // Hitung SDI dengan detail lengkap
-            $sdiDetail = $this->calculateSDIWithDetails($condition);
-
-            Log::info('SDI Detail calculated successfully');
-
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'condition' => $condition,
-                    'sdi_detail' => $sdiDetail
-                ]
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error in getSegmentDetail', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
+    
     /**
      * Calculate SDI dengan penjelasan detail setiap tahap
      */
@@ -601,7 +701,7 @@ class RoadConditionController extends Controller
 
         return [
             'raw_data' => [
-                'pave_width' => floatval($paveWidth),  // PENTING: Konversi ke float
+                'pave_width' => floatval($paveWidth),
                 'segment_length' => floatval($segmentLength / 1000),
                 'total_segment_area' => floatval($totalSegmentArea),
                 'crack_dep_area' => floatval($crackDepArea),
@@ -644,14 +744,6 @@ class RoadConditionController extends Controller
                 'category' => $category
             ]
         ];
-    }
-
-    /**
-     * Public wrapper untuk calculateSDI agar bisa dipanggil dari controller lain
-     */
-    public function calculateSDIPublic($condition)
-    {
-        return $this->calculateSDI($condition);
     }
 
     public function import(Request $request)

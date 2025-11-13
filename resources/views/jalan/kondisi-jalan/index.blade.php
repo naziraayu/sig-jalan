@@ -15,6 +15,19 @@
             <h2 class="section-title">Analisis Kondisi Jalan</h2>
             <p class="section-lead">Menampilkan data kondisi jalan dan perhitungan Surface Distress Index (SDI).</p>
 
+            <!-- Info Tahun Terpilih -->
+            @if($selectedYear)
+            <div class="alert alert-primary">
+                <i class="fas fa-calendar-check"></i> 
+                <strong>Tahun yang dipilih: {{ $selectedYear }}</strong> - Data yang ditampilkan sesuai dengan tahun ini.
+            </div>
+            @else
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i> 
+                <strong>Peringatan:</strong> Silakan pilih <strong>Tahun</strong> terlebih dahulu di header atas halaman.
+            </div>
+            @endif
+
             <div class="card">
                 <div class="card-header">
                     <h4>Filter Ruas Jalan</h4>
@@ -24,7 +37,7 @@
 
                         {{-- Status Ruas --}}
                         <div class="form-group col-md-3">
-                            <label for="filterStatus">Pilih Status Ruas</label>
+                            <label for="filterStatus">Status Ruas</label>
                             <select id="filterStatus" class="form-control" disabled>
                                 @foreach($statusRuas as $status)
                                     <option value="{{ $status->code }}"
@@ -33,11 +46,12 @@
                                     </option>
                                 @endforeach
                             </select>
+                            <small class="form-text text-muted">Status ruas saat ini: Kabupaten</small>
                         </div>
 
                         {{-- Provinsi --}}
                         <div class="form-group col-md-3">
-                            <label for="filterProvinsi">Pilih Provinsi</label>
+                            <label for="filterProvinsi">Provinsi</label>
                             <select id="filterProvinsi" class="form-control" disabled>
                                 @foreach($provinsi as $prov)
                                     <option value="{{ $prov->province_code }}"
@@ -46,11 +60,12 @@
                                     </option>
                                 @endforeach
                             </select>
+                            <small class="form-text text-muted">Provinsi saat ini: Jawa Timur</small>
                         </div>
 
                         {{-- Kabupaten --}}
                         <div class="form-group col-md-3">
-                            <label for="filterKabupaten">Pilih Kabupaten</label>
+                            <label for="filterKabupaten">Kabupaten</label>
                             <select id="filterKabupaten" class="form-control">
                                 @foreach($kabupaten as $kab)
                                     <option value="{{ $kab->kabupaten_code }}"
@@ -59,40 +74,33 @@
                                     </option>
                                 @endforeach
                             </select>
+                            <small class="form-text text-muted">Pilih kabupaten untuk melihat ruas</small>
                         </div>
 
-                        {{-- Tahun (PRIORITAS PERTAMA) --}}
-                        <div class="form-group col-md-3">
-                            <label for="filterYear">
-                                Tahun Data <span class="text-danger">*</span>
-                            </label>
-                            <select id="filterYear" class="form-control">
-                                <option value="">-- Pilih Tahun --</option>
-                                @foreach($availableYears as $year)
-                                    <option value="{{ $year }}">{{ $year }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        {{-- Ruas (PRIORITAS KEDUA) --}}
+                        {{-- Ruas --}}
                         <div class="form-group col-md-3">
                             <label for="filterRuas">
                                 Pilih Ruas <span class="text-danger">*</span>
                             </label>
-                            <select id="filterRuas" class="form-control" disabled>
-                                <option value="">-- Pilih Tahun Terlebih Dahulu --</option>
+                            <select id="filterRuas" class="form-control" {{ !$selectedYear ? 'disabled' : '' }}>
+                                <option value="">
+                                    {{ $selectedYear ? '-- Pilih Ruas --' : '-- Pilih Tahun di Header Terlebih Dahulu --' }}
+                                </option>
                             </select>
+                            <small class="form-text text-muted">
+                                {{ $selectedYear ? 'Ruas tersedia untuk tahun ' . $selectedYear : 'Pilih tahun terlebih dahulu' }}
+                            </small>
                         </div>
 
                         {{-- Tombol Filter --}}
-                        <div class="form-group col-md-3 d-flex align-items-end">
+                        <div class="form-group col-md-6 d-flex align-items-end">
                             <button type="button" id="btnFilter" class="btn btn-primary btn-block" disabled>
                                 <i class="fas fa-filter"></i> Tampilkan Data
                             </button>
                         </div>
 
                         {{-- Tombol Reset --}}
-                        <div class="form-group col-md-3 d-flex align-items-end">
+                        <div class="form-group col-md-6 d-flex align-items-end">
                             <button type="button" id="btnReset" class="btn btn-secondary btn-block">
                                 <i class="fas fa-redo"></i> Reset Filter
                             </button>
@@ -167,10 +175,17 @@
 
                 <div class="card-body">
                     <div id="detailRuas">
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle"></i> 
-                            <strong>Petunjuk:</strong> Silakan pilih <strong>Tahun</strong> terlebih dahulu, kemudian pilih <strong>Ruas Jalan</strong> yang tersedia pada tahun tersebut, lalu klik tombol <strong>"Tampilkan Data"</strong> untuk melihat data kondisi jalan dan perhitungan SDI.
-                        </div>
+                        @if(!$selectedYear)
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i> 
+                                <strong>Peringatan:</strong> Silakan pilih <strong>Tahun</strong> terlebih dahulu di header atas halaman, kemudian pilih <strong>Ruas Jalan</strong> untuk melihat data.
+                            </div>
+                        @else
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> 
+                                <strong>Petunjuk:</strong> Pilih <strong>Ruas Jalan</strong> yang tersedia pada tahun <strong>{{ $selectedYear }}</strong>, lalu klik tombol <strong>"Tampilkan Data"</strong> untuk melihat data kondisi jalan dan perhitungan SDI.
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -192,63 +207,90 @@
 <script>
     $(document).ready(function(){
         
-        // ALUR BARU: Ketika TAHUN dipilih (PRIORITAS PERTAMA)
-        $('#filterYear').on('change', function(){
-            let year = $(this).val();
+        // Inisialisasi: Load ruas berdasarkan tahun yang dipilih di header
+        function initializeRuas() {
+            const selectedYear = '{{ $selectedYear }}';
             
-            if(year){
-                // Reset ruas
-                $('#filterRuas').html('<option value="">-- Memuat ruas... --</option>').prop('disabled', true);
+            if (selectedYear) {
+                loadRuasByYear(selectedYear);
+            } else {
+                $('#filterRuas').html('<option value="">-- Pilih Tahun di Header Terlebih Dahulu --</option>').prop('disabled', true);
                 $('#btnFilter').prop('disabled', true);
-                
-                // Muat ruas yang tersedia untuk tahun ini
-                $.ajax({
-                    url: "{{ route('kondisi-jalan.getRuasByYear') }}",
-                    type: "GET",
-                    data: { year: year },
-                    success: function(res){
-                        if(res.success && res.data.length > 0){
-                            let options = '<option value="">-- Pilih Ruas --</option>';
-                            res.data.forEach(function(ruas){
-                                options += `<option value="${ruas.link_no}">${ruas.link_code} - ${ruas.link_name}</option>`;
-                            });
-                            $('#filterRuas').html(options).prop('disabled', false);
-                        } else {
-                            $('#filterRuas').html('<option value="">-- Tidak ada data ruas --</option>');
-                            Swal.fire({
-                                icon: 'warning',
-                                title: 'Peringatan',
-                                text: 'Tidak ada data ruas untuk tahun ini',
+            }
+        }
+
+        // Muat ruas berdasarkan tahun
+        function loadRuasByYear(year) {
+            if(!year) return;
+
+            console.log('Loading ruas for year:', year); // Debug
+
+            $('#filterRuas').html('<option value="">-- Memuat ruas... --</option>').prop('disabled', true);
+            $('#btnFilter').prop('disabled', true);
+            
+            $.ajax({
+                url: "{{ route('kondisi-jalan.getRuasByYear') }}",
+                type: "GET",
+                data: { year: year },
+                success: function(res){
+                    console.log('Response:', res); // Debug
+                    
+                    if(res.success && res.data && res.data.length > 0){
+                        let options = '<option value="">-- Pilih Ruas --</option>';
+                        res.data.forEach(function(ruas){
+                            console.log('Ruas:', ruas); // Debug
+                            options += `<option value="${ruas.link_no}">${ruas.link_code} - ${ruas.link_name}</option>`;
+                        });
+                        $('#filterRuas').html(options).prop('disabled', false);
+                        
+                        // Show success notification
+                        if (typeof iziToast !== 'undefined') {
+                            iziToast.success({
+                                title: 'Berhasil',
+                                message: `${res.data.length} ruas berhasil dimuat`,
+                                position: 'topRight',
+                                timeout: 2000
                             });
                         }
-                    },
-                    error: function(){
-                        $('#filterRuas').html('<option value="">-- Gagal memuat ruas --</option>');
-                        Swal.fire({
-                            icon: 'error',
+                    } else {
+                        $('#filterRuas').html('<option value="">-- Tidak ada data ruas --</option>');
+                        
+                        // Show warning toast
+                        if (typeof iziToast !== 'undefined') {
+                            iziToast.warning({
+                                title: 'Peringatan',
+                                message: res.message || 'Tidak ada data ruas untuk tahun ' + year,
+                                position: 'topRight'
+                            });
+                        }
+                    }
+                },
+                error: function(xhr, status, error){
+                    console.error('Error loading ruas:', {
+                        status: status,
+                        error: error,
+                        response: xhr.responseText
+                    });
+                    
+                    $('#filterRuas').html('<option value="">-- Gagal memuat ruas --</option>');
+                    
+                    // Show error toast
+                    if (typeof iziToast !== 'undefined') {
+                        iziToast.error({
                             title: 'Error',
-                            text: 'Terjadi kesalahan saat memuat data ruas',
+                            message: 'Terjadi kesalahan saat memuat data ruas',
+                            position: 'topRight'
                         });
                     }
-                });
-            } else {
-                $('#filterRuas').html('<option value="">-- Pilih Tahun Terlebih Dahulu --</option>').prop('disabled', true);
-                $('#btnFilter').prop('disabled', true);
-                $('#detailRuas').html(`
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> 
-                        <strong>Petunjuk:</strong> Silakan pilih <strong>Tahun</strong> terlebih dahulu, kemudian pilih <strong>Ruas Jalan</strong> yang tersedia pada tahun tersebut, lalu klik tombol <strong>"Tampilkan Data"</strong> untuk melihat data kondisi jalan dan perhitungan SDI.
-                    </div>
-                `);
-            }
-        });
+                }
+            });
+        }
 
-        // Ketika RUAS dipilih (PRIORITAS KEDUA)
+        // Ketika RUAS dipilih
         $('#filterRuas').on('change', function(){
             let linkNo = $(this).val();
-            let year = $('#filterYear').val();
             
-            if(linkNo && year){
+            if(linkNo){
                 $('#btnFilter').prop('disabled', false);
             } else {
                 $('#btnFilter').prop('disabled', true);
@@ -258,23 +300,27 @@
         // Tombol Filter
         $('#btnFilter').on('click', function(){
             let linkNo = $('#filterRuas').val();
-            let year = $('#filterYear').val();
+            let year = '{{ $selectedYear }}';
             
             if(linkNo && year){
                 loadRoadConditionData(linkNo, year);
             } else {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Peringatan',
-                    text: 'Silakan pilih tahun dan ruas terlebih dahulu!',
-                });
+                if (typeof iziToast !== 'undefined') {
+                    iziToast.warning({
+                        title: 'Peringatan',
+                        message: 'Silakan pilih ruas terlebih dahulu!',
+                        position: 'topRight'
+                    });
+                } else {
+                    alert('Silakan pilih ruas terlebih dahulu!');
+                }
             }
         });
 
         // Tombol Reset
         $('#btnReset').on('click', function(){
-            $('#filterYear').val('').trigger('change');
-            $('#filterRuas').html('<option value="">-- Pilih Tahun Terlebih Dahulu --</option>').prop('disabled', true);
+            // Reset dropdown ruas
+            $('#filterRuas').val('');
             $('#btnFilter').prop('disabled', true);
             
             // Destroy DataTable jika ada
@@ -282,10 +328,11 @@
                 $('#detailRuasTable').DataTable().destroy();
             }
             
+            // Reset tampilan
             $('#detailRuas').html(`
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle"></i> 
-                    <strong>Petunjuk:</strong> Silakan pilih <strong>Tahun</strong> terlebih dahulu, kemudian pilih <strong>Ruas Jalan</strong> yang tersedia pada tahun tersebut, lalu klik tombol <strong>"Tampilkan Data"</strong> untuk melihat data kondisi jalan dan perhitungan SDI.
+                    <strong>Petunjuk:</strong> Pilih <strong>Ruas Jalan</strong> yang tersedia pada tahun <strong>{{ $selectedYear }}</strong>, lalu klik tombol <strong>"Tampilkan Data"</strong> untuk melihat data kondisi jalan dan perhitungan SDI.
                 </div>
             `);
         });
@@ -309,7 +356,8 @@
                     year: year
                 },
                 success: function(res){
-                    if(res.success){
+                    if(res.success && res.data.length > 0){
+                        // Build table HTML
                         let html = `
                             <div class="alert alert-success">
                                 <i class="fas fa-check-circle"></i> 
@@ -325,13 +373,13 @@
                                             <th rowspan="2" class="align-middle text-center">Lebar Jalan (m)</th>
                                             <th colspan="4" class="text-center bg-info text-white">Perhitungan SDI</th>
                                             <th rowspan="2" class="align-middle text-center">Kategori</th>
-                                            <th rowspan="2" class="align-middle text-center">Detail</th>
+                                            <th rowspan="2" class="align-middle text-center">Aksi</th>
                                         </tr>
                                         <tr>
                                             <th class="text-center bg-light">SDI1<br><small>(Luas Retak)</small></th>
                                             <th class="text-center bg-light">SDI2<br><small>(Lebar Retak)</small></th>
                                             <th class="text-center bg-light">SDI3<br><small>(Lubang)</small></th>
-                                            <th class="text-center bg-light">SDI4<br><small>(Final)</small></th>
+                                            <th class="text-center bg-light">SDI Final</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -354,7 +402,7 @@
                             } 
                             else if(item.sdi_category === 'Rusak Ringan') {
                                 badgeClass += ' badge-warning';
-                                badgeStyle = 'background-color: #FF9A00; color: #fff;';
+                                badgeStyle = 'background-color: #FFA500; color: #fff;';
                                 iconClass = 'fa-times-circle';
                             } 
                             else if(item.sdi_category === 'Rusak Berat') {
@@ -378,14 +426,13 @@
                                         </span>
                                     </td>
                                     <td class="text-center">
-                                        <a href="/kondisi-jalan/show/${item.link_no}/${item.year}" class="btn btn-sm btn-info">
-                                            <i class="fas fa-eye"></i> Lihat Ruas
+                                        <a href="/kondisi-jalan/show/${item.link_no}" class="btn btn-sm btn-info" title="Lihat Detail Ruas">
+                                            <i class="fas fa-eye"></i>
                                         </a>
                                     </td>
                                 </tr>
                             `;
                         });
-
 
                         html += `
                                     </tbody>
@@ -401,7 +448,7 @@
                             autoWidth: false,
                             pageLength: 25,
                             lengthMenu: [10, 25, 50, 100, 200],
-                            order: [], // JANGAN SORT, data sudah urut dari backend
+                            order: [[1, 'asc']], // Sort by chainage
                             language: {
                                 url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
                             },
@@ -456,268 +503,9 @@
                 }
             });
         }
+
+        // Initialize on page load
+        initializeRuas();
     });
-
-    // Fungsi untuk menampilkan detail SDI LENGKAP
-    function showSDIDetail(data) {
-        // Show loading
-        Swal.fire({
-            title: 'Memuat Detail...',
-            html: '<div class="spinner-border text-primary" role="status"></div>',
-            showConfirmButton: false,
-            allowOutsideClick: false
-        });
-
-        // Ambil data detail dari server
-        $.ajax({
-            url: "{{ route('kondisi-jalan.getSegmentDetail') }}",
-            type: "GET",
-            data: {
-                link_no: data.link_no,
-                chainage_from: data.chainage_from,
-                chainage_to: data.chainage_to,
-                year: data.year
-            },
-            success: function(res) {
-                if (res.success) {
-                    const sdiData = res.data.sdi_detail;
-                    const condition = res.data.condition;
-                    
-                    // Tentukan badge category
-                    const category = sdiData.final.category;
-                    let badgeClass = 'badge-secondary';
-                    
-                    if (category === 'Baik') badgeClass = 'badge-success';
-                    else if (category === 'Sedang') badgeClass = 'badge-warning';
-                    else if (category === 'Rusak Ringan') badgeClass = 'badge-danger';
-                    else if (category === 'Rusak Berat') badgeClass = 'badge-dark';
-
-                    Swal.fire({
-                        title: `Detail Perhitungan SDI`,
-                        html: `
-                            <div class="text-left" style="max-height: 600px; overflow-y: auto;">
-                                <div class="alert alert-info mb-3">
-                                    <h5 class="text-center mb-2">
-                                        <i class="fas fa-road"></i> 
-                                        <strong>${condition.link_no.link_code} - ${condition.link_no.link_name}</strong>
-                                    </h5>
-                                    <p class="mb-0 text-center">
-                                        Chainage: <strong>${data.chainage_from} - ${data.chainage_to}</strong> | 
-                                        Tahun: <strong>${data.year}</strong>
-                                    </p>
-                                </div>
-                                
-                                <hr>
-                                
-                                <!-- DATA DASAR SEGMEN -->
-                                <h6 class="text-primary mb-2">
-                                    <i class="fas fa-info-circle"></i> Data Dasar Segmen
-                                </h6>
-                                <table class="table table-sm table-bordered mb-3">
-                                    <tr>
-                                        <td width="50%"><strong>Lebar Jalan (Pave Width)</strong></td>
-                                        <td><strong>${sdiData.raw_data.pave_width.toFixed(2)} m</strong></td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Panjang Segmen</strong></td>
-                                        <td>${sdiData.raw_data.segment_length.toFixed(3)} km</td>
-                                    </tr>
-                                    <tr class="bg-light">
-                                        <td><strong>Luas Total Segmen</strong></td>
-                                        <td><strong>${sdiData.raw_data.total_segment_area.toFixed(2)} m²</strong></td>
-                                    </tr>
-                                </table>
-
-                                <!-- TAHAP 1: LUAS RETAK -->
-                                <div class="card mb-3 border-primary">
-                                    <div class="card-header bg-primary text-white py-2">
-                                        <strong><i class="fas fa-layer-group"></i> TAHAP 1: Perhitungan Luas Retak (SDI1)</strong>
-                                    </div>
-                                    <div class="card-body p-2">
-                                        <p class="mb-2"><small><em>${sdiData.calculations.step1.formula}</em></small></p>
-                                        
-                                        <table class="table table-sm table-bordered mb-2">
-                                            <tr>
-                                                <td>Crack Depression Area</td>
-                                                <td class="text-right">${sdiData.raw_data.crack_dep_area.toFixed(2)} m²</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Other Crack Area</td>
-                                                <td class="text-right">${sdiData.raw_data.oth_crack_area.toFixed(2)} m²</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Concrete Cracking Area</td>
-                                                <td class="text-right">${sdiData.raw_data.concrete_cracking_area.toFixed(2)} m²</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Concrete Structural Area</td>
-                                                <td class="text-right">${sdiData.raw_data.concrete_structural_area.toFixed(2)} m²</td>
-                                            </tr>
-                                            <tr class="table-warning">
-                                                <td><strong>Total Luas Retak</strong></td>
-                                                <td class="text-right"><strong>${sdiData.raw_data.total_crack_area.toFixed(2)} m²</strong></td>
-                                            </tr>
-                                            <tr class="table-info">
-                                                <td><strong>% Luas Retak</strong></td>
-                                                <td class="text-right"><strong>${sdiData.raw_data.crack_percentage.toFixed(2)}%</strong></td>
-                                            </tr>
-                                        </table>
-                                        
-                                        <div class="alert alert-success mb-0 py-2">
-                                            <strong>Hasil:</strong> ${sdiData.calculations.step1.explanation}
-                                            <div class="text-right mt-1"><strong>SDI1 = ${sdiData.calculations.step1.value.toFixed(2)}</strong></div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- TAHAP 2: LEBAR RETAK -->
-                                <div class="card mb-3 border-info">
-                                    <div class="card-header bg-info text-white py-2">
-                                        <strong><i class="fas fa-arrows-alt-h"></i> TAHAP 2: Perhitungan Lebar Retak (SDI2)</strong>
-                                    </div>
-                                    <div class="card-body p-2">
-                                        <p class="mb-2"><small><em>${sdiData.calculations.step2.formula}</em></small></p>
-                                        
-                                        <table class="table table-sm table-bordered mb-2">
-                                            <tr>
-                                                <td><strong>Lebar Retak (Crack Width)</strong></td>
-                                                <td class="text-right"><strong>${sdiData.raw_data.crack_width.toFixed(2)} mm</strong></td>
-                                            </tr>
-                                        </table>
-                                        
-                                        <div class="alert alert-success mb-0 py-2">
-                                            <strong>Hasil:</strong> ${sdiData.calculations.step2.explanation}
-                                            <div class="text-right mt-1"><strong>SDI2 = ${sdiData.calculations.step2.value.toFixed(2)}</strong></div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- TAHAP 3: JUMLAH LUBANG -->
-                                <div class="card mb-3 border-warning">
-                                    <div class="card-header bg-warning text-dark py-2">
-                                        <strong><i class="fas fa-circle-notch"></i> TAHAP 3: Perhitungan Jumlah Lubang (SDI3)</strong>
-                                    </div>
-                                    <div class="card-body p-2">
-                                        <p class="mb-2"><small><em>${sdiData.calculations.step3.formula}</em></small></p>
-                                        
-                                        <table class="table table-sm table-bordered mb-2">
-                                            <tr>
-                                                <td><strong>Jumlah Lubang (Pothole)</strong></td>
-                                                <td class="text-right"><strong>${sdiData.raw_data.pothole_count}</strong></td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Normalisasi per 100m</strong></td>
-                                                <td class="text-right"><strong>${sdiData.raw_data.normalized_potholes.toFixed(2)}</strong></td>
-                                            </tr>
-                                            <tr class="table-info">
-                                                <td><strong>Penambahan Nilai</strong></td>
-                                                <td class="text-right"><strong>+ ${sdiData.calculations.step3.addition.toFixed(2)}</strong></td>
-                                            </tr>
-                                        </table>
-                                        
-                                        <div class="alert alert-success mb-0 py-2">
-                                            <strong>Hasil:</strong> ${sdiData.calculations.step3.explanation}
-                                            <div class="text-right mt-1"><strong>SDI3 = ${sdiData.calculations.step3.value.toFixed(2)}</strong></div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- TAHAP 4: KEDALAMAN ALUR -->
-                                <div class="card mb-3 border-danger">
-                                    <div class="card-header bg-danger text-white py-2">
-                                        <strong><i class="fas fa-water"></i> TAHAP 4: Perhitungan Kedalaman Alur Roda (SDI4 - Final)</strong>
-                                    </div>
-                                    <div class="card-body p-2">
-                                        <p class="mb-2"><small><em>${sdiData.calculations.step4.formula}</em></small></p>
-                                        
-                                        <table class="table table-sm table-bordered mb-2">
-                                            <tr>
-                                                <td><strong>Kedalaman Alur (Rutting Depth)</strong></td>
-                                                <td class="text-right"><strong>${sdiData.raw_data.rutting_depth.toFixed(2)} cm</strong></td>
-                                            </tr>
-                                            <tr class="table-info">
-                                                <td><strong>Penambahan Nilai</strong></td>
-                                                <td class="text-right"><strong>+ ${sdiData.calculations.step4.addition.toFixed(2)}</strong></td>
-                                            </tr>
-                                        </table>
-                                        
-                                        <div class="alert alert-success mb-0 py-2">
-                                            <strong>Hasil:</strong> ${sdiData.calculations.step4.explanation}
-                                            <div class="text-right mt-1"><strong>SDI4 = ${sdiData.calculations.step4.value.toFixed(2)}</strong></div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- HASIL AKHIR -->
-                                <div class="card border-dark">
-                                    <div class="card-header bg-dark text-white text-center py-2">
-                                        <h5 class="mb-0"><i class="fas fa-chart-line"></i> HASIL AKHIR PERHITUNGAN SDI</h5>
-                                    </div>
-                                    <div class="card-body text-center p-3">
-                                        <h2 class="text-primary mb-2">${sdiData.final.sdi_final.toFixed(2)}</h2>
-                                        <span class="badge ${badgeClass}" style="font-size: 18px; padding: 10px 20px;">
-                                            <i class="fas fa-flag"></i> ${sdiData.final.category}
-                                        </span>
-                                        
-                                        <div class="mt-3 text-left">
-                                            <small class="text-muted">
-                                                <strong>Referensi Kategori:</strong><br>
-                                                • Baik: SDI < 50<br>
-                                                • Sedang: 50 ≤ SDI < 100<br>
-                                                • Rusak Ringan: 100 ≤ SDI < 150<br>
-                                                • Rusak Berat: SDI ≥ 150
-                                            </small>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- INFO TAMBAHAN -->
-                                <div class="alert alert-light mt-3 mb-0">
-                                    <small>
-                                        <i class="fas fa-info-circle"></i> 
-                                        <strong>Catatan:</strong> Perhitungan SDI mengikuti Panduan Bina Marga untuk evaluasi kondisi permukaan jalan.
-                                    </small>
-                                </div>
-                            </div>
-                        `,
-                        width: 900,
-                        confirmButtonText: '<i class="fas fa-times"></i> Tutup',
-                        confirmButtonColor: '#6777ef',
-                        customClass: {
-                            container: 'sdi-detail-modal',
-                            popup: 'sdi-detail-popup'
-                        }
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: res.message || 'Gagal memuat data detail'
-                    });
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Terjadi kesalahan saat memuat data'
-                });
-            }
-        });
-    }
 </script>
-
-<style>
-.sdi-detail-modal .table {
-    font-size: 14px;
-}
-.sdi-detail-modal .table td {
-    padding: 0.5rem;
-}
-.badge-lg {
-    padding: 0.5rem 1rem;
-    font-size: 14px;
-}
-</style>
 @endpush

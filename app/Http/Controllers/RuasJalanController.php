@@ -156,7 +156,7 @@ class RuasJalanController extends Controller
 
     public function edit($id)
     {
-        $ruas = Link::with('master')->findOrFail($id);
+        $ruas = Link::with('linkMaster')->findOrFail($id);
 
         $provinsi = Province::orderBy('province_name', 'asc')->get();
         $kabupaten = Kabupaten::orderBy('kabupaten_name', 'asc')->get();
@@ -170,7 +170,7 @@ class RuasJalanController extends Controller
 
     public function update(Request $request, $id)
     {
-        $ruas = Link::with('master')->findOrFail($id);
+        $ruas = Link::with('linkMaster')->findOrFail($id);
 
         $validated = $request->validate([
             'link_no' => 'required|unique:link,link_no,' . $ruas->id . ',id',
@@ -187,8 +187,8 @@ class RuasJalanController extends Controller
         DB::beginTransaction();
         try {
             // Update link_master jika link_name berubah
-            if ($ruas->master) {
-                $ruas->master->update([
+            if ($ruas->linkMaster) {
+                $ruas->linkMaster->update([
                     'link_name' => $validated['link_name'],
                     'province_code' => $validated['province_code'],
                     'kabupaten_code' => $validated['kabupaten_code'],
@@ -214,7 +214,7 @@ class RuasJalanController extends Controller
 
     public function show($id)
     {
-        $ruas = Link::with(['master', 'province', 'kabupaten', 'statusRelation', 'functionRelation'])
+        $ruas = Link::with(['linkMaster', 'province', 'kabupaten', 'statusRelation', 'functionRelation'])
                     ->findOrFail($id);
 
         return view('pengaturan_jaringan.ruas_jalan.show', compact('ruas'));
@@ -235,8 +235,8 @@ class RuasJalanController extends Controller
             $ruas->delete();
             
             // Jika tidak ada tahun lain, hapus juga link_master
-            if (!$otherYears && $ruas->master) {
-                $ruas->master->delete();
+            if (!$otherYears && $ruas->linkMaster) {
+                $ruas->linkMaster->delete();
             }
             
             DB::commit();
@@ -303,15 +303,15 @@ class RuasJalanController extends Controller
         }
     }
 
-    public function export()
-    {
-        $selectedYear = $this->getSelectedYear();
+    // public function export()
+    // {
+    //     $selectedYear = $this->getSelectedYear();
         
-        return Excel::download(
-            new LinkExport($selectedYear), 
-            "ruas_jalan_{$selectedYear}.xlsx"
-        );
-    }
+    //     return Excel::download(
+    //         new LinkExport($selectedYear), 
+    //         "ruas_jalan_{$selectedYear}.xlsx"
+    //     );
+    // }
 
     public function getData(Request $request)
     {
@@ -320,7 +320,7 @@ class RuasJalanController extends Controller
         /** @var User|null $user */
         $user = Auth::user();
 
-        $query = Link::with(['master', 'province', 'kabupaten', 'statusRelation', 'functionRelation'])
+        $query = Link::with(['linkMaster', 'province', 'kabupaten', 'statusRelation', 'functionRelation'])
             ->where('link.year', $selectedYear);
 
         // Filter
@@ -332,7 +332,7 @@ class RuasJalanController extends Controller
         }
 
         return DataTables::of($query)
-            ->addColumn('link_name', fn($row) => $row->master?->link_name ?? '-')
+            ->addColumn('link_name', fn($row) => $row->linkMaster?->link_name ?? '-')
             ->addColumn('status_name', fn($row) => $row->statusRelation?->code_description_ind ?? '-')
             ->addColumn('function_name', fn($row) => $row->functionRelation?->code_description_ind ?? '-')
             ->addColumn('province_name', fn($row) => $row->province?->province_name ?? '-')
@@ -385,9 +385,8 @@ class RuasJalanController extends Controller
             $prefix = $year . '3509';
             
             $lastLink = Link::where('link_no', 'like', $prefix . '%')
-                           ->where('year', $year)
-                           ->orderBy('link_no', 'desc')
-                           ->first();
+                        ->orderBy('link_no', 'desc')
+                        ->first();
             
             if ($lastLink) {
                 $lastNumber = (int) substr($lastLink->link_no, -4);
@@ -402,11 +401,11 @@ class RuasJalanController extends Controller
         // FORMAT LAMA (< 2025): PCKKKKKKKKKK
         $prefix = '3509';
         
-        $lastLink = Link::where('link_no', 'like', $prefix . '%')
-                       ->where('link_no', 'not like', '202%')
-                       ->where('year', $year)
-                       ->orderBy('link_no', 'desc')
-                       ->first();
+        $lastLink = Link::where('year', $year)
+                    ->where('link_no', 'like', $prefix . '%')
+                    ->whereRaw('LENGTH(link_no) = 12')
+                    ->orderBy('link_no', 'desc')
+                    ->first();
         
         if ($lastLink) {
             $newNumber = (string)((int)$lastLink->link_no + 1);
@@ -415,7 +414,6 @@ class RuasJalanController extends Controller
         
         return '350900000001';
     }
-
     /**
      * Generate Link Code: 35.09.UUUU
      */

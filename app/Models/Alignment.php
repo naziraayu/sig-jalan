@@ -18,6 +18,7 @@ class Alignment extends Model
     protected $fillable = [
         'province_code',
         'kabupaten_code',
+        'link_master_id',
         'link_no',
         'year',
         'chainage',
@@ -32,6 +33,12 @@ class Alignment extends Model
         'east',
         'north',
     ];
+
+    public function linkMaster()
+    {
+        return $this->belongsTo(LinkMaster::class, 'link_master_id', 'id');
+    }
+
     public function province()
     {
         return $this->belongsTo(Province::class, 'province_code', 'province_code');
@@ -43,8 +50,4 @@ class Alignment extends Model
         return $this->belongsTo(Kabupaten::class, 'kabupaten_code', 'kabupaten_code');
     }
 
-    public function link()
-    {
-        return $this->belongsTo(Link::class, 'link_no', 'link_no');
-    }
 }

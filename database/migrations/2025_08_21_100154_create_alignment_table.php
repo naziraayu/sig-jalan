@@ -16,7 +16,8 @@ return new class extends Migration
             $table->string('province_code');
             $table->string('kabupaten_code');
             $table->unsignedBigInteger('link_master_id'); // relasi ke tabel link
-            $table->integer('year')->nullable();
+            $table->string('link_no');
+            $table->integer('year');
 
             $table->integer('chainage_rb')->nullable();
             $table->integer('gpspoint_north_deg')->nullable();

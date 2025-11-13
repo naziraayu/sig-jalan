@@ -427,6 +427,10 @@ function showDetailModal(linkNo, chainageFrom, chainageTo, year) {
                 const data = res.data.sdi_detail;
                 const condition = res.data.condition;
                 
+                // ✅ TAMBAHKAN VALIDASI NULL
+                const linkCode = condition.link_no?.link_code || linkNo;
+                const linkName = condition.link_no?.link_name || 'Ruas ' + linkNo;
+                
                 // Tentukan badge category
                 const category = data.final.category;
                 let badgeClass = 'badge-secondary';
@@ -440,8 +444,6 @@ function showDetailModal(linkNo, chainageFrom, chainageTo, year) {
                     customStyle = 'background-color: #FFA500; color: #fff;';
                 } else if (category === 'Rusak Berat') {
                     badgeClass = 'badge-dark';
-                } else {
-                    badgeClass = 'badge-secondary';
                 }
 
                 Swal.fire({
@@ -451,7 +453,7 @@ function showDetailModal(linkNo, chainageFrom, chainageTo, year) {
                             <div class="alert alert-info mb-3">
                                 <h5 class="text-center mb-2">
                                     <i class="fas fa-road"></i> 
-                                    <strong>${condition.link_no.link_code} - ${condition.link_no.link_name}</strong>
+                                    <strong>${linkCode} - ${linkName}</strong>
                                 </h5>
                                 <p class="mb-0 text-center">
                                     Chainage: <strong>${chainageFrom} - ${chainageTo}</strong> | 

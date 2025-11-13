@@ -18,12 +18,12 @@ class LinkMaster extends Model
     // Relasi ke Link (multiple years)
     public function links()
     {
-        return $this->hasMany(Link::class, 'master_link_id');
+        return $this->hasMany(Link::class, 'link_master_id', 'id');
     }
 
-    public function link_no()
+    public function alignments()
     {
-        return $this->hasMany(Link::class, 'link_no');
+        return $this->hasMany(Alignment::class, 'link_master_id', 'id');
     }
 
     // Relasi ke Province

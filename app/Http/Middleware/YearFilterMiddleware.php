@@ -4,12 +4,13 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response;
 
 class YearFilterMiddleware
 {
-    /**
+     /**
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
@@ -30,8 +31,7 @@ class YearFilterMiddleware
             session(['selected_year' => $year]);
         }
         
-        // Share ke semua views
-        view()->share('currentYear', $year);
+        // ✅ Share ke semua views (cukup 1 variable)
         view()->share('selectedYear', $year);
         
         // Tambahkan ke request attributes untuk diakses di controller
@@ -41,22 +41,22 @@ class YearFilterMiddleware
     }
     
     /**
-     * Get latest year from database tables
+     * Get latest year from link table (master data)
      * 
      * @return int
      */
     private function getLatestYear(): int
     {
         try {
-            $latestYear = collect([
-                DB::table('link')->max('year'),
-                DB::table('road_inventory')->max('year'),
-                DB::table('road_condition')->max('year')
-            ])->filter()->max();
+            // ✅ Cukup query link table saja (lebih efisien)
+            $latestYear = DB::table('link')
+                ->whereNotNull('year')
+                ->max('year');
             
             return $latestYear ?? now()->year;
         } catch (\Exception $e) {
             // Fallback ke tahun sekarang jika terjadi error
+            Log::warning('Failed to get latest year: ' . $e->getMessage());
             return now()->year;
         }
     }

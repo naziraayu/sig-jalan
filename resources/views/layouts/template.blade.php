@@ -324,7 +324,7 @@
             yearFilter.empty();
 
             if (years.length === 0) {
-              yearFilter.append('<option value="">Tidak ada data tahun</option>');
+              yearFilter.append('<option value="">Tidak ada data tahun</option>'); 
               hideLoading();
               return;
             }

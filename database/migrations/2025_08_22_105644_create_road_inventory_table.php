@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('province_code');
             $table->string('kabupaten_code');
             $table->unsignedBigInteger('link_id');
+            $table->string('link_no');
             $table->integer('year')->nullable();
             $table->integer('chainage_from')->index();
             $table->integer('chainage_to');

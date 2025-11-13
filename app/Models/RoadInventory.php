@@ -7,13 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 class RoadInventory extends Model
 {
     protected $table = "road_inventory";
-    protected $primaryKey = 'nul';
-    public $incrementing = false;
-    protected $keyType = 'string';
+    protected $primaryKey = 'id'; // <- biasanya pakai id, tapi ubah sesuai strukturmu
+    public $incrementing = true;
+    protected $keyType = 'int';
 
     protected $fillable = [
         'province_code',
         'kabupaten_code',
+        'link_id',
         'link_no',
         'year',
         'chainage_from',
@@ -45,49 +46,37 @@ class RoadInventory extends Model
         'chainage_to' => 'decimal:2',
     ];
 
+    // 🔗 Relasi ke Link
+    public function link()
+    {
+        return $this->belongsTo(Link::class, 'link_id', 'id');
+    }
+
+    // 🔗 Relasi ke LinkMaster melalui Link
+    public function linkMaster()
+    {
+        return $this->hasOneThrough(
+            LinkMaster::class,
+            Link::class,
+            'id',          // Foreign key di tabel link
+            'id',          // Primary key di tabel link_master
+            'link_id',     // Foreign key di tabel road_inventory
+            'link_master_id' // Foreign key di tabel link
+        );
+    }
+
+    // 🔗 Relasi ke tabel referensi
     public function province()
     {
         return $this->belongsTo(Province::class, 'province_code', 'province_code');
     }
 
-    // Relasi ke Kabupaten
     public function kabupaten()
     {
         return $this->belongsTo(Kabupaten::class, 'kabupaten_code', 'kabupaten_code');
     }
 
-    public function linkNo()
-    {
-        return $this->belongsTo(Link::class, 'link_no', 'link_no')
-                    ->where('year', $this->year);
-    }
-
-    // Relasi ke LinkMaster via Link
-    public function master()
-    {
-        return $this->hasOneThrough(
-            LinkMaster::class,
-            Link::class,
-            'link_no',
-            'id',
-            'link_no',
-            'master_link_id'
-        )->where('link.year', $this->year);
-    }
-
-    // Scope: Filter by year
-    public function scopeByYear($query, $year)
-    {
-        return $query->where('year', $year);
-    }
-
-    // Scope: With link and master
-    public function scopeWithRelations($query)
-    {
-        return $query->with(['link.master']);
-    }
-
-     public function pavementType()
+    public function pavementType()
     {
         return $this->belongsTo(CodePavementType::class, 'pave_type', 'code');
     }
@@ -130,5 +119,16 @@ class RoadInventory extends Model
     public function impassableReason()
     {
         return $this->belongsTo(CodeImpassable::class, 'impassable_reason', 'code');
+    }
+
+    // Scope filter
+    public function scopeByYear($query, $year)
+    {
+        return $query->where('year', $year);
+    }
+
+    public function scopeWithRelations($query)
+    {
+        return $query->with(['link', 'link.linkMaster']);
     }
 }

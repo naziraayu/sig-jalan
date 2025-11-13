@@ -7,16 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 class Link extends Model
 {
     protected $table = 'link';
-    
-    // ✅ PERBAIKI: Primary key adalah 'id', bukan 'link_no'
     protected $primaryKey = 'id';
-    public $incrementing = true; // auto increment
-    protected $keyType = 'int'; // integer
-
+    public $incrementing = true;
+    protected $keyType = 'int';
+    
     protected $fillable = [
         'year',
-        'link_no', // ✅ Bukan PK, tapi unique identifier
-        'link_master_id', // ✅ FK ke link_master.id
+        'link_no',
+        'link_master_id',
         'province_code',
         'kabupaten_code',
         'link_code',
@@ -43,89 +41,144 @@ class Link extends Model
         'link_length_actual' => 'decimal:2',
     ];
 
-    // ✅ Relasi ke LinkMaster (untuk ambil link_name)
-    public function master()
+    // ====================================
+    // ✅ RELASI - SUDAH DIPERBAIKI
+    // ====================================
+
+    /**
+     * Relasi ke LinkMaster (untuk ambil link_name dan link_code)
+     * FK: link_master_id -> link_master.id
+     */
+    public function linkMaster()
     {
         return $this->belongsTo(LinkMaster::class, 'link_master_id', 'id');
     }
 
-    public function linkNo()
-    {
-        return $this->belongsTo(LinkMaster::class, 'link_no', 'link_no');
-    }
-
-    // Relasi ke Province
+    /**
+     * Relasi ke Province
+     * FK: province_code -> provinces.province_code
+     */
     public function province()
     {
         return $this->belongsTo(Province::class, 'province_code', 'province_code');
     }
 
-    // Relasi ke Kabupaten
+    /**
+     * Relasi ke Kabupaten
+     * FK: kabupaten_code -> kabupaten.kabupaten_code
+     */
     public function kabupaten()
     {
         return $this->belongsTo(Kabupaten::class, 'kabupaten_code', 'kabupaten_code');
     }
 
+    /**
+     * Relasi ke CodeLinkStatus
+     * FK: status -> code_link_status.code
+     */
     public function statusRelation()
     {
         return $this->belongsTo(CodeLinkStatus::class, 'status', 'code');
     }
 
+    /**
+     * Relasi ke CodeLinkFunction
+     * FK: function -> code_link_function.code
+     */
     public function functionRelation()
     {
         return $this->belongsTo(CodeLinkFunction::class, 'function', 'code');
     }
 
+    /**
+     * Relasi ke DRP (Detail Ruas Panggal)
+     * FK: link_id -> drp.link_id
+     */
     public function drp()
     {
-        return $this->hasMany(DRP::class, 'link_no', 'link_no')
-                    ->where('year', $this->year);
+        return $this->hasMany(DRP::class, 'link_id', 'id');
     }
 
-    public function scopeWithoutDRP($query)
-    {
-        return $query->whereDoesntHave('drp');
-    }
-    
-    public function scopeWithDRP($query)
-    {
-        return $query->whereHas('drp');
-    }
-
+    /**
+     * Relasi ke RoadInventory
+     * FK: link_id -> road_inventory.link_id
+     */
     public function roadInventories()
     {
-        return $this->hasMany(RoadInventory::class, 'link_no', 'link_no')
-                    ->where('year', $this->year);
+        return $this->hasMany(RoadInventory::class, 'link_id', 'id');
     }
 
+    /**
+     * Relasi ke RoadCondition
+     * FK: link_id -> road_condition.link_id
+     */
     public function roadConditions()
     {
-        return $this->hasMany(RoadCondition::class, 'link_no', 'link_no')
-                    ->where('year', $this->year);
+        return $this->hasMany(RoadCondition::class, 'link_id', 'id');
     }
 
-    // ✅ Accessor untuk ambil link_name dari master
-    public function getLinkNameAttribute()
-    {
-        return $this->master?->link_name;
-    }
+    // ====================================
+    // ✅ SCOPES
+    // ====================================
 
-    // Scope: Filter by year
+    /**
+     * Scope: Filter by year
+     */
     public function scopeByYear($query, $year)
     {
         return $query->where('year', $year);
     }
 
-    // Scope: With master
+    /**
+     * Scope: With master relation
+     */
     public function scopeWithMaster($query)
     {
-        return $query->with('master');
+        return $query->with('linkMaster');
     }
     
-    // Scope: Current year from session
+    /**
+     * Scope: Current year from session
+     */
     public function scopeCurrentYear($query)
     {
         $year = session('selected_year', now()->year);
         return $query->where('year', $year);
+    }
+
+    /**
+     * Scope: Without DRP
+     */
+    public function scopeWithoutDRP($query)
+    {
+        return $query->whereDoesntHave('drp');
+    }
+    
+    /**
+     * Scope: With DRP
+     */
+    public function scopeWithDRP($query)
+    {
+        return $query->whereHas('drp');
+    }
+
+    // ====================================
+    // ✅ ACCESSORS
+    // ====================================
+
+    /**
+     * Accessor untuk ambil link_name dari master
+     */
+    public function getLinkNameAttribute()
+    {
+        return $this->linkMaster?->link_name;
+    }
+
+    /**
+     * Accessor untuk ambil link_code dari master
+     */
+    public function getLinkCodeAttribute()
+    {
+        return $this->linkMaster?->link_code;
     }
 }

@@ -14,9 +14,10 @@ return new class extends Migration
         Schema::create('road_condition', function (Blueprint $table) {
             // Basic information
             $table->integer('year');
-            $table->string('province_code', 10);
-            $table->string('kabupaten_code', 10);
-            $table->unsignedBigInteger('link_id', 50);
+            $table->string('province_code');
+            $table->string('kabupaten_code');
+            $table->unsignedBigInteger('link_id');
+            $table->string('link_no');
             
             // Chainage information
             $table->decimal('chainage_from', 10, 2)->nullable();

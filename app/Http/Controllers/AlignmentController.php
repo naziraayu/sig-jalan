@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Alignment;
 use Illuminate\Http\Request;
+use App\Models\RoadCondition;
+use App\Models\RoadInventory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class AlignmentController extends Controller
 {
@@ -19,9 +22,8 @@ class AlignmentController extends Controller
     public function getCoords(Request $request)
     {
         try {
-            $selectedYear = $request->get('year') ?? session('selected_year'); // ← TAMBAH INI
+            $selectedYear = $request->get('year') ?? session('selected_year');
 
-            // Query dengan filter year
             $query = "
                 SELECT 
                     a.link_no, 
@@ -31,11 +33,9 @@ class AlignmentController extends Controller
                 INNER JOIN kabupaten k ON a.kabupaten_code = k.kabupaten_code
             ";
 
-            // Tambahkan kondisi WHERE
             $conditions = ["k.kabupaten_name LIKE '%JEMBER%'"];
             $bindings = [];
 
-            // Filter year jika ada (cek apakah alignment punya relasi ke link dengan year)
             if ($selectedYear) {
                 $query .= " INNER JOIN link l ON a.link_no = l.link_no";
                 $conditions[] = "l.year = ?";
@@ -47,7 +47,6 @@ class AlignmentController extends Controller
 
             $data = DB::select($query, $bindings);
 
-            // Group manual
             $grouped = collect($data)->groupBy('link_no')->map(function ($items, $linkNo) {
                 return [
                     'link_no' => $linkNo,
@@ -96,97 +95,133 @@ class AlignmentController extends Controller
     }
 
     /**
-     * API untuk menampilkan alignment dengan SDI per segmen
-     * UPDATED VERSION - dengan filter year dari session/request
+     * ✅ FINAL FIX: API untuk menampilkan alignment dengan SDI per segmen
+     * Tanpa pakai kolom ID, langsung pakai composite key
      */
     public function getCoordsWithSDI(Request $request)
-    {
-        try {
-            // Prioritaskan year dari request, fallback ke session, terakhir ke tahun sekarang
-            $year = $request->get('year') ?? session('selected_year') ?? date('Y'); // ← UBAH INI
-            
-            // 1. Ambil semua segmen road_condition untuk tahun ini di Jember
-            $segments = DB::table('road_condition as rc')
-                ->join('kabupaten as k', 'rc.kabupaten_code', '=', 'k.kabupaten_code')
-                ->where('k.kabupaten_name', 'LIKE', '%JEMBER%')
-                ->where('rc.year', $year)
-                ->select('rc.link_no', 'rc.chainage_from', 'rc.chainage_to', 'rc.year')
-                ->orderBy('rc.link_no')
-                ->orderBy('rc.chainage_from')
+{
+    try {
+        set_time_limit(600); // izinkan eksekusi sampai 10 menit
+        ini_set('memory_limit', '1G');
+
+
+        $year = $request->get('year') ?? session('selected_year') ?? date('Y');
+        Log::info("getCoordsWithSDI called", ['year' => $year]);
+
+        // 💾 Gunakan cache agar cepat diakses ulang
+        return Cache::remember("coords_sdi_{$year}", 3600, function () use ($year) {
+            $segments = RoadCondition::where('year', $year)
+                ->whereHas('kabupaten', function ($query) {
+                    $query->where('kabupaten_name', 'LIKE', '%JEMBER%');
+                })
+                ->orderBy('link_no')
+                ->orderBy('chainage_from')
                 ->get();
 
+            Log::info("Segments found", ['count' => $segments->count()]);
+
+            if ($segments->isEmpty()) {
+                Log::warning("No segments found for year", ['year' => $year]);
+                return [];
+            }
+
+            // 🔹 Kumpulkan semua link_no unik dari segmen
+            $linkNos = $segments->pluck('link_no')->unique();
+
+            // 🔹 Ambil semua koordinat sekaligus
+            $allCoords = DB::table('alignment')
+                ->whereIn('link_no', $linkNos)
+                ->select('link_no', 'chainage', 'north as lat', 'east as lng')
+                ->orderBy('link_no')
+                ->orderBy('chainage')
+                ->get()
+                ->groupBy('link_no');
+
+            Log::info("Alignment coords loaded", ['link_count' => $allCoords->count()]);
+
+            // 🔹 Ambil semua inventory sekaligus
+            $inventories = RoadInventory::whereIn('link_no', $linkNos)->get()
+                ->groupBy('link_no');
+
+            $roadConditionController = app(RoadConditionController::class);
             $result = [];
 
-            foreach ($segments as $segment) {
-                // 2. Ambil koordinat alignment yang masuk dalam segmen ini
-                $coords = DB::table('alignment')
-                    ->where('link_no', $segment->link_no)
-                    ->whereBetween('chainage', [$segment->chainage_from, $segment->chainage_to])
-                    ->orderBy('chainage')
-                    ->select('north as lat', 'east as lng', 'chainage')
-                    ->get();
+            foreach ($segments as $condition) {
+                $coordsAll = $allCoords[$condition->link_no] ?? collect();
 
-                // Skip kalau ga ada koordinat untuk segmen ini
+                // Filter chainage sesuai segmen
+                $coords = $coordsAll->filter(function ($c) use ($condition) {
+                    return $c->chainage >= $condition->chainage_from && $c->chainage <= $condition->chainage_to;
+                })->values();
+
                 if ($coords->isEmpty()) {
-                    Log::warning("No coordinates found for segment", [
-                        'link_no' => $segment->link_no,
-                        'chainage' => "{$segment->chainage_from} - {$segment->chainage_to}"
+                    Log::warning("No coordinates found", [
+                        'link_no' => $condition->link_no,
+                        'chainage' => "{$condition->chainage_from} - {$condition->chainage_to}"
                     ]);
                     continue;
                 }
 
-                // 3. Hitung SDI untuk segmen ini
-                $condition = \App\Models\RoadCondition::where('link_no', $segment->link_no)
-                    ->where('chainage_from', $segment->chainage_from)
-                    ->where('chainage_to', $segment->chainage_to)
-                    ->where('year', $segment->year)
-                    ->with('inventory')
-                    ->first();
+                // Ambil inventory yang sesuai
+                $invGroup = $inventories[$condition->link_no] ?? collect();
+                $inventory = $invGroup->first(function ($inv) use ($condition) {
+                    return $inv->chainage_from <= $condition->chainage_from
+                        && $inv->chainage_to >= $condition->chainage_to;
+                });
 
+                $condition->inventory = $inventory;
+
+                // 🔹 Hitung SDI
                 $sdi = null;
                 $category = 'Tidak Ada Data';
+                try {
+                    $sdi = $roadConditionController->calculateSDIPublic($condition);
+                    $category = $sdi['category'];
 
-                if ($condition) {
-                    try {
-                        $sdi = app(RoadConditionController::class)->calculateSDIPublic($condition);
-                        $category = $sdi['category'];
-                    } catch (\Exception $e) {
-                        Log::error("Error calculating SDI", [
-                            'link_no' => $segment->link_no,
-                            'error' => $e->getMessage()
-                        ]);
-                    }
+                    Log::info("SDI OK", [
+                        'link_no' => $condition->link_no,
+                        'sdi_final' => $sdi['sdi_final'],
+                        'category' => $category,
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error("Error calculating SDI", [
+                        'link_no' => $condition->link_no,
+                        'error' => $e->getMessage()
+                    ]);
                 }
 
-                // 4. Format data untuk frontend
+                // 🔹 Format output untuk frontend
                 $result[] = [
-                    'link_no' => $segment->link_no,
-                    'chainage_from' => (float) $segment->chainage_from,
-                    'chainage_to' => (float) $segment->chainage_to,
-                    'coords' => $coords->map(function($c) {
-                        return [
-                            'lat' => (float) $c->lat,
-                            'lng' => (float) $c->lng
-                        ];
-                    })->values()->toArray(),
+                    'link_no' => $condition->link_no,
+                    'chainage_from' => (float) $condition->chainage_from,
+                    'chainage_to' => (float) $condition->chainage_to,
+                    'coords' => $coords->map(fn($c) => [
+                        'lat' => (float) $c->lat,
+                        'lng' => (float) $c->lng,
+                    ])->values()->toArray(),
                     'sdi_final' => $sdi ? (float) $sdi['sdi_final'] : null,
                     'category' => $category,
-                    'year' => (int) $segment->year
+                    'year' => (int) $condition->year
                 ];
             }
 
             Log::info("getCoordsWithSDI completed", [
                 'year' => $year,
-                'total_segments' => count($result)
+                'segments_processed' => count($result),
+                'segments_found' => $segments->count()
             ]);
 
-            return response()->json($result);
+            return $result;
+        });
 
-        } catch (\Exception $e) {
-            Log::error("Error getCoordsWithSDI: " . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
-            ]);
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+    } catch (\Exception $e) {
+        Log::error("Error getCoordsWithSDI: " . $e->getMessage(), [
+            'trace' => $e->getTraceAsString()
+        ]);
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
+
 }
