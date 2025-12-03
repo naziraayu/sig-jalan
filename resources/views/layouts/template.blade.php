@@ -21,6 +21,8 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
 
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
   <!-- ✅ TAMBAH: iziToast CSS -->
   <link rel="stylesheet" href="{{ asset('assets/modules/izitoast/css/iziToast.min.css') }}">
 
@@ -197,6 +199,8 @@
   <script src="{{ asset('assets/modules/nicescroll/jquery.nicescroll.min.js') }}"></script>
   <script src="{{ asset('assets/modules/moment.min.js') }}"></script>
   <script src="{{ asset('assets/js/stisla.js') }}"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>

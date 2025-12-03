@@ -51,7 +51,7 @@
                         @if($user->hasPermission('detail', 'ruas_jalan'))
                             <li><a class="nav-link" href="{{ route(name: 'ruas-jalan.index') }}">Ruas Jalan</a></li>
                         @endif
-                        {{-- @if($user->hasPermission('detail', 'drp'))
+                        @if($user->hasPermission('detail', 'drp'))
                             <li><a class="nav-link" href="{{ route(name: 'drp.index') }}">DRP</a></li>
                         @endif
                         @if($user->hasPermission('detail', 'kelas_jalan'))
@@ -62,7 +62,7 @@
                         @endif
                         @if($user->hasPermission('detail', 'ruas_jalan_kecamatan'))
                             <li><a class="nav-link" href="{{ route(name: 'ruas-jalan-kecamatan.index') }}">Ruas Jalan/Kecamatan</a></li>
-                        @endif --}}
+                        @endif
                     </ul>
                 </li>
             @endif

@@ -267,7 +267,8 @@ $(document).ready(function(){
                             
                             let linkNoValue = item.link?.link_no ?? linkNo;
                             let detailUrl = "{{ route('inventarisasi-jalan.show', ':linkNo') }}".replace(':linkNo', linkNoValue);
-                            
+                            let editUrl = "{{ route('inventarisasi-jalan.edit', ':linkNo') }}".replace(':linkNo', linkNoValue);
+
                             html += `
                                 <tr>
                                     <td class="text-center">${index + 1}</td>
@@ -279,11 +280,20 @@ $(document).ready(function(){
                                     <td class="text-right">${item.row ? parseFloat(item.row).toFixed(2) : '-'}</td>
                                     <td class="text-center">${statusBadge}</td>
                                     <td class="text-center">
-                                        <a href="${detailUrl}" 
-                                           class="btn btn-sm btn-info" 
-                                           title="Lihat Detail Lengkap">
-                                            <i class="fas fa-eye"></i> Detail
-                                        </a>
+                                        <div class="btn-group" role="group">
+                                            <a href="${detailUrl}" 
+                                            class="btn btn-sm btn-info" 
+                                            title="Lihat Detail Lengkap">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            @if(auth()->user()->hasPermission('update','inventarisasi_jalan'))
+                                                <a href="${editUrl}"
+                                                class="btn btn-sm btn-warning" 
+                                                title="Edit Data">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             `;

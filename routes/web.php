@@ -356,17 +356,25 @@ Route::middleware(['auth'])->group(function () {
             return response()->json($years);
         });
 
-        // CRUD - urutkan route yang spesifik dulu sebelum yang pakai parameter
+        // Index
         Route::get('/', [InventarisasiJalanController::class, 'index'])
             ->middleware('permission:read,inventarisasi_jalan')->name('index');
+        
+        // Create
         Route::get('/create', [InventarisasiJalanController::class, 'create'])
             ->middleware('permission:add,inventarisasi_jalan')->name('create');
+        
+        // Store
         Route::post('/', [InventarisasiJalanController::class, 'store'])
             ->middleware('permission:add,inventarisasi_jalan')->name('store');
+        
+        // Get ruas detail
+        Route::get('/get-ruas-detail/{linkNo}', [InventarisasiJalanController::class, 'getRuasDetail'])
+            ->name('get-ruas-detail');
+        
+        // Get detail for table
         Route::get('/detail', [InventarisasiJalanController::class, 'getDetail'])
             ->name('getDetail');
-        Route::get('/show/{link_no}', [InventarisasiJalanController::class, 'show'])
-            ->middleware('permission:read,inventarisasi_jalan')->name('show');
         
         // Import & Export
         Route::post('/import', [InventarisasiJalanController::class, 'import'])
@@ -374,12 +382,20 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/export', [InventarisasiJalanController::class, 'export'])
             ->middleware('permission:export,inventarisasi_jalan')->name('export');
         
-        // Route dengan parameter di akhir agar tidak bentrok
-        Route::get('/{inventarisasi}/edit', [InventarisasiJalanController::class, 'edit'])
+        // ✅ EDIT - Harus sebelum show agar tidak bentrok
+        Route::get('/edit/{link_no}', [InventarisasiJalanController::class, 'edit'])
             ->middleware('permission:update,inventarisasi_jalan')->name('edit');
-        Route::put('/{inventarisasi}', [InventarisasiJalanController::class, 'update'])
+        
+        // ✅ UPDATE
+        Route::put('/update/{link_no}', [InventarisasiJalanController::class, 'update'])
             ->middleware('permission:update,inventarisasi_jalan')->name('update');
-        Route::delete('/{inventarisasi}', [InventarisasiJalanController::class, 'destroy'])
+        
+        // Show - Di akhir agar tidak bentrok dengan route lain
+        Route::get('/show/{link_no}', [InventarisasiJalanController::class, 'show'])
+            ->middleware('permission:read,inventarisasi_jalan')->name('show');
+        
+        // ✅ DELETE (jika diperlukan untuk hapus per ruas)
+        Route::delete('/delete/{link_no}', [InventarisasiJalanController::class, 'destroy'])
             ->middleware('permission:delete,inventarisasi_jalan')->name('destroy');
     });
 

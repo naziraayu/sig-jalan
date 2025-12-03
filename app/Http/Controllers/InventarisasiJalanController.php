@@ -5,18 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\Link;
 use App\Models\Province;
 use App\Models\Kabupaten;
+use App\Models\CodeTerrain;
 use Illuminate\Http\Request;
 use App\Models\RoadInventory;
+use App\Models\CodeImpassable;
 use App\Models\CodeLinkStatus;
+use App\Models\CodePavementType;
+use Illuminate\Support\Facades\Log;
 use App\Exports\RoadInventoryExport;
 use App\Imports\RoadInventoryImport;
 use Maatwebsite\Excel\Facades\Excel;
 
 class InventarisasiJalanController extends Controller
 {
-    /**
-     * Display listing of road segments
-     */
     public function index()
     {
         $selectedYear = session('selected_year');
@@ -25,7 +26,7 @@ class InventarisasiJalanController extends Controller
         $provinsi   = Province::orderBy('province_name')->get();
         $kabupaten  = Kabupaten::orderBy('kabupaten_name')->get();
 
-        // ✅ Hanya ambil ruas yang PUNYA data di road_inventory
+        // ✅ Ambil semua ruas yang PUNYA data di road_inventory untuk tahun terpilih
         $ruasjalan = Link::with('linkMaster')
             ->when($selectedYear, function($query) use ($selectedYear) {
                 return $query->where('year', $selectedYear);
@@ -38,6 +39,7 @@ class InventarisasiJalanController extends Controller
                     });
                 }
             })
+            ->orderBy('link_no')
             ->get()
             ->unique('link_no');
 
@@ -46,9 +48,125 @@ class InventarisasiJalanController extends Controller
         ));
     }
 
-    /**
-     * Get detail inventories for selected link_no
-     */
+    public function create()
+    {
+        $selectedYear = session('selected_year');
+        
+        // ✅ Validasi: Harus pilih tahun dulu
+        if (!$selectedYear) {
+            return redirect()->route('inventarisasi-jalan.index')
+                ->with('error', 'Silakan pilih tahun terlebih dahulu!');
+        }
+        
+        // ✅ Ambil ruas jalan yang tersedia untuk tahun yang dipilih
+        $ruasJalan = Link::with('linkMaster')
+            ->where('year', $selectedYear)
+            ->orderBy('link_no')
+            ->get()
+            ->unique('link_no');
+        
+        // ✅ Ambil data dropdown untuk step 2
+        $pavementTypes = CodePavementType::orderBy('order')->get();
+        $terrainTypes = CodeTerrain::orderBy('order')->get();
+        $impassableReasons = CodeImpassable::orderBy('order')->get();
+        
+        return view('jalan.inventarisasi-jalan.create', compact(
+            'ruasJalan', 
+            'selectedYear',
+            'pavementTypes',
+            'terrainTypes',
+            'impassableReasons'
+        ));
+    }
+
+    public function getRuasDetail($linkNo)
+    {
+        $selectedYear = session('selected_year');
+        
+        $link = Link::with('linkMaster')
+            ->where('link_no', $linkNo)
+            ->when($selectedYear, function($query) use ($selectedYear) {
+                return $query->where('year', $selectedYear);
+            })
+            ->first();
+        
+        if (!$link) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ruas tidak ditemukan'
+            ], 404);
+        }
+        
+        return response()->json([
+            'success' => true,
+            'link_name' => $link->linkMaster->link_name ?? 'Tidak ada nama',
+            'link_length_official' => $link->linkMaster->link_length_official ?? 0,
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        try {
+            // ✅ Ambil data dari request JSON
+            $surveySetup = $request->input('survey_setup');
+            $inventoryData = $request->input('inventory_data');
+            
+            // ✅ Validasi basic
+            if (empty($inventoryData)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data inventarisasi tidak boleh kosong'
+                ], 422);
+            }
+            
+            // ✅ Validasi link_id harus ada
+            if (empty($surveySetup['link_id'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Link ID tidak ditemukan'
+                ], 422);
+            }
+            
+            // ✅ Prepare data untuk batch insert
+            $dataToInsert = [];
+            foreach ($inventoryData as $item) {
+                $dataToInsert[] = [
+                    'province_code' => $surveySetup['province_code'] ?? null,
+                    'kabupaten_code' => $surveySetup['kabupaten_code'] ?? null,
+                    'link_id' => $surveySetup['link_id'],
+                    'link_no' => $surveySetup['link_no'],
+                    'year' => $surveySetup['year'],
+                    'chainage_from' => $item['chainage_from'],
+                    'chainage_to' => $item['chainage_to'],
+                    'pave_type' => $item['pave_type'] ?? null,
+                    'pave_width' => $item['pave_width'] ?? null,
+                    'row' => $item['row'] ?? null,
+                    'terrain' => $item['terrain'] ?? null,
+                    'impassable' => $item['impassable'] ?? 0,
+                    'impassable_reason' => $item['impassable_reason'] ?? null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+            
+            // ✅ Batch insert ke database
+            RoadInventory::insert($dataToInsert);
+            
+            return response()->json([
+                'success' => true,
+                'message' => count($dataToInsert) . ' segmen inventarisasi berhasil disimpan!'
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error saving road inventory: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function getDetail(Request $request)
     {
         $linkNo = $request->get('link_no');
@@ -92,9 +210,6 @@ class InventarisasiJalanController extends Controller
         ]);
     }
 
-    /**
-     * Show detail page for specific link
-     */
     public function show($link_no)
     {
         $selectedYear = session('selected_year');
@@ -180,6 +295,122 @@ class InventarisasiJalanController extends Controller
             'problematic_segments',
             'impassable_reasons'
         ));
+    }
+
+    public function edit($link_no)
+    {
+        $selectedYear = session('selected_year');
+        
+        if (!$selectedYear) {
+            return redirect()->route('inventarisasi-jalan.index')
+                ->with('error', 'Silakan pilih tahun terlebih dahulu!');
+        }
+        
+        // Ambil data link berdasarkan link_no dan year
+        $link = Link::with('linkMaster')
+            ->where('link_no', $link_no)
+            ->where('year', $selectedYear)
+            ->firstOrFail();
+        
+        // Ambil data inventories yang sudah ada
+        $existingData = RoadInventory::with([
+            'pavementType',
+            'terrainType',
+            'impassableReason'
+        ])
+        ->where('link_id', $link->id)
+        ->orderBy('chainage_from')
+        ->get();
+        
+        if ($existingData->isEmpty()) {
+            return redirect()->route('inventarisasi-jalan.index')
+                ->with('error', 'Data inventarisasi tidak ditemukan untuk ruas ini!');
+        }
+        
+        // Ambil data dropdown untuk form
+        $pavementTypes = CodePavementType::orderBy('order')->get();
+        $terrainTypes = CodeTerrain::orderBy('order')->get();
+        $impassableReasons = CodeImpassable::orderBy('order')->get();
+        
+        // Ambil semua ruas jalan untuk dropdown (meskipun disabled, tetap perlu untuk tampilan)
+        $ruasJalan = Link::with('linkMaster')
+            ->where('year', $selectedYear)
+            ->orderBy('link_no')
+            ->get()
+            ->unique('link_no');
+        
+        return view('jalan.inventarisasi-jalan.edit', compact(
+            'link',
+            'existingData',
+            'ruasJalan',
+            'selectedYear',
+            'pavementTypes',
+            'terrainTypes',
+            'impassableReasons'
+        ));
+    }
+
+    public function update(Request $request, $link_no)
+    {
+        try {
+            $surveySetup = $request->input('survey_setup');
+            $inventoryData = $request->input('inventory_data');
+            
+            if (empty($inventoryData)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data inventarisasi tidak boleh kosong'
+                ], 422);
+            }
+            
+            if (empty($surveySetup['link_id'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Link ID tidak ditemukan'
+                ], 422);
+            }
+            
+            // Hapus data lama untuk link_id ini
+            RoadInventory::where('link_id', $surveySetup['link_id'])->delete();
+            
+            // Prepare data untuk batch insert
+            $dataToInsert = [];
+            foreach ($inventoryData as $item) {
+                $dataToInsert[] = [
+                    'province_code' => $surveySetup['province_code'] ?? null,
+                    'kabupaten_code' => $surveySetup['kabupaten_code'] ?? null,
+                    'link_id' => $surveySetup['link_id'],
+                    'link_no' => $surveySetup['link_no'],
+                    'year' => $surveySetup['year'],
+                    'chainage_from' => $item['chainage_from'],
+                    'chainage_to' => $item['chainage_to'],
+                    'pave_type' => $item['pave_type'] ?? null,
+                    'pave_width' => $item['pave_width'] ?? null,
+                    'row' => $item['row'] ?? null,
+                    'terrain' => $item['terrain'] ?? null,
+                    'impassable' => $item['impassable'] ?? 0,
+                    'impassable_reason' => $item['impassable_reason'] ?? null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+            
+            // Batch insert data baru
+            RoadInventory::insert($dataToInsert);
+            
+            return response()->json([
+                'success' => true,
+                'message' => count($dataToInsert) . ' segmen inventarisasi berhasil diperbarui!'
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error updating road inventory: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui data: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
