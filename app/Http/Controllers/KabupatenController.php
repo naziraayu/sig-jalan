@@ -73,20 +73,4 @@ class KabupatenController extends Controller
         Kabupaten::query()->delete();
         return redirect()->route('kabupaten.index')->with('success','Semua kabupaten berhasil dihapus.');
     }
-
-    // Import & Export
-    public function import(Request $request)
-    {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,csv'
-        ]);
-
-        Excel::import(new KabupatenImport, $request->file('file'));
-        return back()->with('success','Data kabupaten berhasil diimport.');
-    }
-
-    public function export()
-    {
-        return Excel::download(new KabupatenExport, 'kabupaten.xlsx');
-    }
 }

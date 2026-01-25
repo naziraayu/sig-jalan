@@ -9,10 +9,13 @@ class RoadCondition extends Model
 {
     // use HasFactory;
     protected $table = 'road_condition';
-    protected $primaryKey = 'null';
+    protected $primaryKey = null;
     public $incrementing = false;
     protected $fillable = [
         'year',
+        'sdi_value',
+        'sdi_category',
+        'reference_year',
         'province_code',
         'kabupaten_code',
         'link_id',
@@ -88,11 +91,17 @@ class RoadCondition extends Model
 
      protected $casts = [
         'year' => 'integer',
+        'reference_year' => 'integer',
         'roughness' => 'boolean',
         'paved' => 'boolean',
         'chainage_from' => 'decimal:2',
         'chainage_to' => 'decimal:2',
     ];
+
+    public function link()
+    {
+        return $this->belongsTo(Link::class, 'link_id', 'id');
+    }
 
     public function province()
     {
@@ -107,7 +116,7 @@ class RoadCondition extends Model
     public function linkNo()
     {
         return $this->belongsTo(Link::class, 'link_no', 'link_no')
-                    ->where('year', $this->year);
+                    ->where('year', $this->reference_year);
     }
 
     // Relasi ke LinkMaster via Link
@@ -120,22 +129,28 @@ class RoadCondition extends Model
             'id',
             'link_no',
             'master_link_id'
-        )->where('link.year', $this->year);
+        )->where('link.year', $this->reference_year);
     }
 
     public function inventory()
-{
-    return $this->belongsTo(RoadInventory::class, 'link_no', 'link_no')
-                ->when($this->chainage_from !== null, function($query) {
-                    return $query->where('chainage_from', '<=', $this->chainage_from);
-                })
-                ->when($this->chainage_to !== null, function($query) {
-                    return $query->where('chainage_to', '>=', $this->chainage_to);
-                });
-}
+    {
+        return $this->belongsTo(RoadInventory::class, 'link_no', 'link_no')
+                    ->when($this->chainage_from !== null, function($query) {
+                        return $query->where('chainage_from', '<=', $this->chainage_from);
+                    })
+                    ->when($this->chainage_to !== null, function($query) {
+                        return $query->where('chainage_to', '>=', $this->chainage_to);
+                    });
+    }
+
     public function scopeByYear($query, $year)
     {
         return $query->where('year', $year);
+    }
+
+    public function scopeByReferenceYear($query, $year)
+    {
+        return $query->where('reference_year', $year);
     }
 
     // Scope: With link and master

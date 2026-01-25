@@ -30,7 +30,7 @@
                                     <td>{{ $ruas->link_no }}</td>
                                 </tr>
                                 <tr>
-                                    <th>Kode Ruas (Link Code)</th>
+                                    <th>Kode Ruas (Kode SK)</th>
                                     <td>{{ $ruas->link_code }}</td>
                                 </tr>
                                 <tr>

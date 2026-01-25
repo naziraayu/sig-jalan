@@ -4,7 +4,7 @@
 <div class="main-content">
     <section class="section">
         <div class="section-header">
-            <h1>Balai Management</h1>
+            <h1>Manajemen Balai</h1>
             <div class="section-header-breadcrumb">
                 <div class="breadcrumb-item">
                     <a href="{{ route('dashboard') }}">Dashboard</a>
@@ -29,14 +29,9 @@
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-danger">
-                                    <i class="fas fa-trash"></i> Hapus Semua
+                                    <i class="fas fa-trash"></i> Hapus Semua Data
                                 </button>
                             </form>
-                        @endif
-                        @if(auth()->user()->hasPermission('import','balai') || auth()->user()->hasPermission('export','balai'))
-                            <button type="button" class="btn btn-success mr-2" data-toggle="modal" data-target="#modalImportExport">
-                                <i class="fas fa-exchange-alt"></i> Import / Export
-                            </button>
                         @endif
                         @if(auth()->user()->hasPermission('add','balai'))
                             <a href="{{ route('balai.create') }}" class="btn btn-primary">
@@ -107,13 +102,6 @@
         </div>
     </section>
 </div>
-
-{{-- Modal Import Export --}}
-@include('components.modals.import_export', [
-    'title' => 'Import / Export Balai',
-    'importRoute' => route('balai.import'),
-    'exportRoute' => route('balai.export'),
-])
 
 @endsection
 

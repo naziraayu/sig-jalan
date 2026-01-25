@@ -4,7 +4,7 @@
 <div class="main-content">
     <section class="section">
         <div class="section-header">
-            <h1>Kabupaten Management</h1>
+            <h1>Manajemen Kabupaten</h1>
             <div class="section-header-breadcrumb">
                 <div class="breadcrumb-item">
                     <a href="{{ route('dashboard') }}">Dashboard</a>
@@ -31,11 +31,6 @@
                                     <i class="fas fa-trash"></i> Hapus Semua Data
                                 </button>
                             </form>
-                        @endif
-                        @if(auth()->user()->hasPermission('import','kabupaten') || auth()->user()->hasPermission('export','kabupaten'))
-                            <button type="button" class="btn btn-success mr-2" data-toggle="modal" data-target="#modalImportExport">
-                                <i class="fas fa-exchange-alt"></i> Import / Export
-                            </button>
                         @endif
                         @if(auth()->user()->hasPermission('add','kabupaten'))
                             <a href="{{ route('kabupaten.create') }}" class="btn btn-primary">
@@ -124,13 +119,6 @@
         </div>
     </section>
 </div>
-
-{{-- Modal Import Export --}}
-@include('components.modals.import_export', [
-    'title' => 'Import / Export Kabupaten',
-    'importRoute' => route('kabupaten.import'),
-    'exportRoute' => route('kabupaten.export'),
-])
 
 @endsection
 

@@ -19,9 +19,6 @@ use Yajra\DataTables\Facades\DataTables;
 
 class RuasJalanController extends Controller
 {
-    /**
-     * Helper: Get selected year from session or default to current year
-     */
     private function getSelectedYear()
     {
         return session('selected_year', now()->year);
@@ -75,10 +72,6 @@ class RuasJalanController extends Controller
             'currentYear'
         ));
     }
-
-    /**
-     * ✅ AJAX: Generate Link No & Code berdasarkan tahun
-     */
     public function generateCodes(Request $request)
     {
         $year = $request->input('year', now()->year);
@@ -96,7 +89,7 @@ class RuasJalanController extends Controller
             'link_no' => 'required|unique:link,link_no',
             'province_code' => 'required',
             'kabupaten_code' => 'required',
-            'link_code' => 'required',
+            'link_code' => 'required', // ✅ Pastikan required
             'link_name' => 'required|string|max:191',
             'status' => 'nullable',
             'function' => 'nullable',
@@ -107,7 +100,7 @@ class RuasJalanController extends Controller
 
         DB::beginTransaction();
         try {
-            // 1. Cek apakah link_master sudah ada (berdasarkan link_name + lokasi)
+            // 1. Cek apakah link_master sudah ada
             $linkMaster = LinkMaster::where('link_name', $validated['link_name'])
                                     ->where('province_code', $validated['province_code'])
                                     ->where('kabupaten_code', $validated['kabupaten_code'])
@@ -125,8 +118,8 @@ class RuasJalanController extends Controller
 
             // 3. Cek apakah link dengan tahun ini sudah ada
             $existingLink = Link::where('link_master_id', $linkMaster->id)
-                               ->where('year', $validated['year'])
-                               ->first();
+                            ->where('year', $validated['year'])
+                            ->first();
 
             if ($existingLink) {
                 DB::rollBack();
@@ -138,6 +131,11 @@ class RuasJalanController extends Controller
             // 4. Buat Link baru
             $linkData = $request->except('link_name');
             $linkData['link_master_id'] = $linkMaster->id;
+            
+            // ✅ PASTIKAN link_code ada
+            if (empty($linkData['link_code'])) {
+                $linkData['link_code'] = $this->generateLinkCode($validated['year']);
+            }
 
             Link::create($linkData);
 
@@ -153,7 +151,7 @@ class RuasJalanController extends Controller
                 ->withErrors(['error' => 'Gagal menyimpan data: ' . $e->getMessage()]);
         }
     }
-
+    
     public function edit($id)
     {
         $ruas = Link::with('linkMaster')->findOrFail($id);
@@ -285,99 +283,75 @@ class RuasJalanController extends Controller
         }
     }
 
-    public function import(Request $request)
-    {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,csv,xls'
-        ]);
-
-        try {
-            Excel::import(new LinkImport, $request->file('file'));
-            
-            return redirect()->route('ruas-jalan.index')
-                ->with('success', 'Data ruas jalan berhasil di import!');
-                
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->withErrors(['error' => 'Gagal import data: ' . $e->getMessage()]);
-        }
-    }
-
-    // public function export()
-    // {
-    //     $selectedYear = $this->getSelectedYear();
-        
-    //     return Excel::download(
-    //         new LinkExport($selectedYear), 
-    //         "ruas_jalan_{$selectedYear}.xlsx"
-    //     );
-    // }
-
     public function getData(Request $request)
-    {
-        $selectedYear = $this->getSelectedYear();
-        
-        /** @var User|null $user */
-        $user = Auth::user();
+{
+    $selectedYear = $this->getSelectedYear();
+    
+    /** @var User|null $user */
+    $user = Auth::user();
 
-        $query = Link::with(['linkMaster', 'province', 'kabupaten', 'statusRelation', 'functionRelation'])
-            ->where('link.year', $selectedYear);
+    // ✅ PERBAIKAN: Pastikan select link.* dan join dengan benar
+    $query = Link::query()
+        ->select([
+            'link.*',  // Ambil semua kolom dari tabel link
+        ])
+        ->with(['linkMaster', 'province', 'kabupaten', 'statusRelation', 'functionRelation'])
+        ->where('link.year', $selectedYear);
 
-        // Filter
-        if ($request->filterProvinsi) {
-            $query->where('link.province_code', $request->filterProvinsi);
-        }
-        if ($request->filterKabupaten) {
-            $query->where('link.kabupaten_code', $request->filterKabupaten);
-        }
-
-        return DataTables::of($query)
-            ->addColumn('link_name', fn($row) => $row->linkMaster?->link_name ?? '-')
-            ->addColumn('status_name', fn($row) => $row->statusRelation?->code_description_ind ?? '-')
-            ->addColumn('function_name', fn($row) => $row->functionRelation?->code_description_ind ?? '-')
-            ->addColumn('province_name', fn($row) => $row->province?->province_name ?? '-')
-            ->addColumn('kabupaten_name', fn($row) => $row->kabupaten?->kabupaten_name ?? '-')
-            ->addColumn('actions', function ($row) use ($user) {
-                $btn = '<div class="d-flex gap-1 justify-content-center">';
-
-                if ($user && $user->hasPermission('detail', 'ruas_jalan')) {
-                    $btn .= '<a href="'.route('ruas-jalan.show', $row->id).'" 
-                                class="btn btn-info btn-sm" title="Detail Data">
-                                <i class="fas fa-eye"></i>
-                             </a>';
-                }
-
-                if ($user && $user->hasPermission('update', 'ruas_jalan')) {
-                    $btn .= '<a href="'.route('ruas-jalan.edit', $row->id).'" 
-                                class="btn btn-warning btn-sm" title="Edit Data">
-                                <i class="fas fa-edit"></i>
-                             </a>';
-                }
-
-                if ($user && $user->hasPermission('delete', 'ruas_jalan')) {
-                    $btn .= '<form action="'.route('ruas-jalan.destroy', $row->id).'" 
-                                    method="POST" 
-                                    style="display:inline;" 
-                                    onsubmit="return confirm(\'Yakin ingin menghapus ruas jalan ini?\')">
-                                    '.csrf_field().method_field('DELETE').'
-                                    <button type="submit" 
-                                            class="btn btn-danger btn-sm" 
-                                            title="Hapus Data">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>';
-                }
-
-                $btn .= '</div>';
-                return $btn;
-            })
-            ->rawColumns(['actions'])
-            ->make(true);
+    // Filter
+    if ($request->filterProvinsi) {
+        $query->where('link.province_code', $request->filterProvinsi);
+    }
+    if ($request->filterKabupaten) {
+        $query->where('link.kabupaten_code', $request->filterKabupaten);
     }
 
-    /**
-     * Generate Link No based on year
-     */
+    return DataTables::of($query)
+        ->addColumn('link_name', fn($row) => $row->linkMaster?->link_name ?? '-')
+        ->addColumn('status_name', fn($row) => $row->statusRelation?->code_description_ind ?? '-')
+        ->addColumn('function_name', fn($row) => $row->functionRelation?->code_description_ind ?? '-')
+        ->addColumn('province_name', fn($row) => $row->province?->province_name ?? '-')
+        ->addColumn('kabupaten_name', fn($row) => $row->kabupaten?->kabupaten_name ?? '-')
+        // ✅ TAMBAHKAN: Pastikan link_code ter-render
+        ->editColumn('link_code', fn($row) => $row->link_code ?? '<span class="text-muted">-</span>')
+        ->addColumn('actions', function ($row) use ($user) {
+            $btn = '<div class="d-flex gap-1 justify-content-center">';
+
+            if ($user && $user->hasPermission('detail', 'ruas_jalan')) {
+                $btn .= '<a href="'.route('ruas-jalan.show', $row->id).'" 
+                            class="btn btn-info btn-sm" title="Detail Data">
+                            <i class="fas fa-eye"></i>
+                         </a>';
+            }
+
+            if ($user && $user->hasPermission('update', 'ruas_jalan')) {
+                $btn .= '<a href="'.route('ruas-jalan.edit', $row->id).'" 
+                            class="btn btn-warning btn-sm" title="Edit Data">
+                            <i class="fas fa-edit"></i>
+                         </a>';
+            }
+
+            if ($user && $user->hasPermission('delete', 'ruas_jalan')) {
+                $btn .= '<form action="'.route('ruas-jalan.destroy', $row->id).'" 
+                                method="POST" 
+                                style="display:inline;" 
+                                onsubmit="return confirm(\'Yakin ingin menghapus ruas jalan ini?\')">
+                                '.csrf_field().method_field('DELETE').'
+                                <button type="submit" 
+                                        class="btn btn-danger btn-sm" 
+                                        title="Hapus Data">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>';
+            }
+
+            $btn .= '</div>';
+            return $btn;
+        })
+        ->rawColumns(['actions', 'link_code'])
+        ->make(true);
+}
+
     private function generateLinkNo($year)
     {
         // FORMAT BARU (2025+): YYYYPCKKKK
@@ -414,9 +388,7 @@ class RuasJalanController extends Controller
         
         return '350900000001';
     }
-    /**
-     * Generate Link Code: 35.09.UUUU
-     */
+
     private function generateLinkCode($year)
     {
         $lastCode = Link::where('year', $year)

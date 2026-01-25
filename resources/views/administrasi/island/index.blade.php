@@ -4,12 +4,12 @@
 <div class="main-content">
     <section class="section">
         <div class="section-header">
-            <h1>Island Management</h1>
+            <h1>Manajemen Pulau</h1>
             <div class="section-header-breadcrumb">
                 <div class="breadcrumb-item">
                     <a href="{{ route('dashboard') }}">Dashboard</a>
                 </div>
-                <div class="breadcrumb-item active">Island</div>
+                <div class="breadcrumb-item active">Pulau</div>
             </div>
         </div>
 
@@ -29,14 +29,9 @@
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-danger">
-                                    <i class="fas fa-trash"></i> Hapus Semua
+                                    <i class="fas fa-trash"></i> Hapus Semua Data
                                 </button>
                             </form>
-                        @endif
-                        @if(auth()->user()->hasPermission('import','pulau') || auth()->user()->hasPermission('export','pulau'))
-                            <button type="button" class="btn btn-primary mr-2" data-toggle="modal" data-target="#modalImportExport">
-                                <i class="fas fa-exchange-alt"></i> Import / Export
-                            </button>
                         @endif
                         @if(auth()->user()->hasPermission('add','pulau'))
                             <a href="{{ route('island.create') }}" class="btn btn-primary">
@@ -107,13 +102,6 @@
         </div>
     </section>
 </div>
-
-{{-- Modal Import Export --}}
-@include('components.modals.import_export', [
-    'title' => 'Import / Export Pulau',
-    'importRoute' => route('island.import'),
-    'exportRoute' => route('island.export'),
-])
 
 @endsection
 

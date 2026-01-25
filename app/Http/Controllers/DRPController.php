@@ -427,31 +427,4 @@ private function generateAutoDescription($data)
         }
     }
 
-    // Import & Export Methods
-    public function import(Request $request)
-    {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv|max:10240', // Max 10MB
-        ]);
-
-        try {
-            Excel::import(new DRPImport, $request->file('file'));
-            
-            return redirect()->back()->with('success', 'Data berhasil diimport!');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal import data: ' . $e->getMessage());
-        }
-    }
-
-    public function export()
-    {
-        try {
-            $fileName = 'drp_data_' . date('Y-m-d_H-i-s') . '.xlsx';
-            
-            return Excel::download(new DRPExport(), $fileName);
-
-        } catch (\Exception $e) {
-            return back()->with('error', 'Terjadi kesalahan saat mengexport data: ' . $e->getMessage());
-        }
-    }
 }

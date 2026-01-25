@@ -4,12 +4,12 @@
 <div class="main-content">
     <section class="section">
         <div class="section-header">
-            <h1>Province Management</h1>
+            <h1>Manajemen Provinsi</h1>
             <div class="section-header-breadcrumb">
                 <div class="breadcrumb-item">
                 <a href="{{ route('dashboard') }}">Dashboard</a>
                 </div>
-                <div class="breadcrumb-item active">Provinces</div>
+                <div class="breadcrumb-item active">Provinsi</div>
             </div>
         </div>
 
@@ -31,11 +31,6 @@
                                     <i class="fas fa-trash"></i> Hapus Semua Data
                                 </button>
                             </form>
-                        @endif
-                        @if(auth()->user()->hasPermission('import','provinsi') || auth()->user()->hasPermission('export','provinsi'))
-                            <button type="button" class="btn btn-success mr-2" data-toggle="modal" data-target="#modalImportExport">
-                                <i class="fas fa-exchange-alt"></i> Import / Export
-                            </button>
                         @endif
                         @if(auth()->user()->hasPermission('add','provinsi'))
                             <a href="{{ route('provinces.create') }}" class="btn btn-primary">
@@ -122,13 +117,6 @@
         </div>
     </section>
 </div>
-
-{{-- Include modal reusable --}}
-@include('components.modals.import_export', [
-    'title' => 'Import / Export Provinsi',
-    'importRoute' => route('provinces.import'),
-    'exportRoute' => route('provinces.export'),
-])
 
 @endsection
 

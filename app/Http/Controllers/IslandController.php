@@ -73,19 +73,4 @@ class IslandController extends Controller
         return redirect()->route('island.index')->with('success', 'Semua pulau berhasil dihapus.');
     }
 
-    public function import(Request $request)
-    {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv'
-        ]);
-
-        Excel::import(new IslandImport, $request->file('file'));
-
-        return redirect()->route('island.index')->with('success', 'Data pulau berhasil diimport.');
-    }
-
-    public function export()
-    {
-        return Excel::download(new IslandExport, 'islands.xlsx');
-    }
 }

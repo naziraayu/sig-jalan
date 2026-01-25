@@ -15,10 +15,11 @@ use App\Http\Controllers\KabupatenController;
 use App\Http\Controllers\KecamatanController;
 use App\Http\Controllers\LinkClassController;
 use App\Http\Controllers\RuasJalanController;
+use App\Http\Controllers\YearFilterController;
+use App\Http\Controllers\ImportExportController;
 use App\Http\Controllers\LinkKecamatanController;
 use App\Http\Controllers\RoadConditionController;
 use App\Http\Controllers\InventarisasiJalanController;
-use App\Http\Controllers\YearFilterController;
 
 // --------------------
 // Public Routes
@@ -27,10 +28,19 @@ Route::get('/', function () {
     return view('auth.login');
 });
 
+Route::get('/test', function () {
+    return 'Laravel OK';
+});
+
+Route::get('/debug-compare', [App\Http\Controllers\DebugController::class, 'compareQueries']);
+
+
 // --------------------
 // Authenticated Routes
 // --------------------
 Route::middleware(['auth'])->group(function () {
+
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // --------------------
     // Users Routes
@@ -79,11 +89,6 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{province}', [ProvinceController::class, 'destroy'])
             ->middleware('permission:delete,provinsi')->name('destroy');
 
-        // Import & Export
-        Route::post('/import', [ProvinceController::class, 'import'])
-            ->middleware('permission:import,provinsi')->name('import');
-        Route::get('/export', [ProvinceController::class, 'export'])
-            ->middleware('permission:export,provinsi')->name('export');
     });
 
     // --------------------
@@ -109,11 +114,6 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{balai}', [BalaiController::class, 'destroy'])
             ->middleware('permission:delete,balai')->name('destroy');
 
-        // Import & Export
-        Route::post('/import', [BalaiController::class, 'import'])
-            ->middleware('permission:import,balai')->name('import');
-        Route::get('/export', [BalaiController::class, 'export'])
-            ->middleware('permission:export,balai')->name('export');
     });
 
     // --------------------
@@ -135,12 +135,6 @@ Route::middleware(['auth'])->group(function () {
             ->middleware('permission:update,pulau')->name('update');
         Route::delete('/{island}', [IslandController::class, 'destroy'])
             ->middleware('permission:delete,pulau')->name('destroy');
-
-        // Import & Export
-        Route::post('/import', [IslandController::class, 'import'])
-            ->middleware('permission:import,pulau')->name('import');
-        Route::get('/export', [IslandController::class, 'export'])
-            ->middleware('permission:export,pulau')->name('export');
     });
 
     // --------------------
@@ -162,12 +156,6 @@ Route::middleware(['auth'])->group(function () {
             ->middleware('permission:update,kabupaten')->name('update');
         Route::delete('/{kabupaten}', [KabupatenController::class, 'destroy'])
             ->middleware('permission:delete,kabupaten')->name('destroy');
-
-        // Import & Export
-        Route::post('/import', [KabupatenController::class, 'import'])
-            ->middleware('permission:import,kabupaten')->name('import');
-        Route::get('/export', [KabupatenController::class, 'export'])
-            ->middleware('permission:export,kabupaten')->name('export');
     });
 
     // --------------------
@@ -189,12 +177,6 @@ Route::middleware(['auth'])->group(function () {
             ->middleware('permission:update,kecamatan')->name('update');
         Route::delete('/{kecamatan}', [KecamatanController::class, 'destroy'])
             ->middleware('permission:delete,kecamatan')->name('destroy');
-
-        // Import & Export
-        Route::post('/import', [KecamatanController::class, 'import'])
-            ->middleware('permission:import,kecamatan')->name('import');
-        Route::get('/export', [KecamatanController::class, 'export'])
-            ->middleware('permission:export,kecamatan')->name('export');
     });
 
     // --------------------
@@ -224,11 +206,6 @@ Route::middleware(['auth'])->group(function () {
             ->middleware('permission:delete,ruas_jalan')->name('destroy');
 
         Route::post('/generate-codes', [RuasJalanController::class, 'generateCodes'])->name('generateCodes');
-
-        Route::post('/import', [RuasJalanController::class, 'import'])
-            ->middleware('permission:import,ruas_jalan')->name('import');
-        Route::get('/export', [RuasJalanController::class, 'export'])
-            ->middleware('permission:export,ruas_jalan')->name('export');
     });
 
     // --------------------
@@ -263,12 +240,6 @@ Route::middleware(['auth'])->group(function () {
             ->middleware('permission:update,drp')->name('update');
         Route::delete('/{drp}', [DRPController::class, 'destroy'])
             ->middleware('permission:delete,drp')->name('destroy');
-
-        // Import & Export
-        Route::post('/import', [DRPController::class, 'import'])
-            ->middleware('permission:import,drp')->name('import');
-        Route::get('/export', [DRPController::class, 'export'])
-            ->middleware('permission:export,drp')->name('export');
     });
 
     // --------------------
@@ -290,12 +261,6 @@ Route::middleware(['auth'])->group(function () {
             ->name('getDetail');
         Route::get('/show/{link_no}', [LinkClassController::class, 'show'])
             ->middleware('permission:read,kelas_jalan')->name('show');
-        
-        // Import & Export
-        Route::post('/import', [LinkClassController::class, 'import'])
-            ->middleware('permission:import,kelas_jalan')->name('import');
-        Route::get('/export', [LinkClassController::class, 'export'])
-            ->middleware('permission:export,kelas_jalan')->name('export');
         
         // Route dengan parameter di akhir agar tidak bentrok
         Route::get('/{linkclass}/edit', [LinkClassController::class, 'edit'])
@@ -325,12 +290,6 @@ Route::middleware(['auth'])->group(function () {
             ->name('getDetail');
         Route::get('/show/{link_no}', [LinkKecamatanController::class, 'show'])
             ->middleware('permission:read,ruas_jalan_kecamatan')->name('show');
-        
-        // Import & Export
-        Route::post('/import', [LinkKecamatanController::class, 'import'])
-            ->middleware('permission:import,ruas_jalan_kecamatan')->name('import');
-        Route::get('/export', [LinkKecamatanController::class, 'export'])
-            ->middleware('permission:export,ruas_jalan_kecamatan')->name('export');
         
         // Route dengan parameter di akhir agar tidak bentrok
         Route::get('/{linkKecamatan}/edit', [LinkKecamatanController::class, 'edit'])
@@ -376,12 +335,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/detail', [InventarisasiJalanController::class, 'getDetail'])
             ->name('getDetail');
         
-        // Import & Export
-        Route::post('/import', [InventarisasiJalanController::class, 'import'])
-            ->middleware('permission:import,inventarisasi_jalan')->name('import');
-        Route::get('/export', [InventarisasiJalanController::class, 'export'])
-            ->middleware('permission:export,inventarisasi_jalan')->name('export');
-        
         // ✅ EDIT - Harus sebelum show agar tidak bentrok
         Route::get('/edit/{link_no}', [InventarisasiJalanController::class, 'edit'])
             ->middleware('permission:update,inventarisasi_jalan')->name('edit');
@@ -406,7 +359,7 @@ Route::middleware(['auth'])->group(function () {
         // Hapus semua
         Route::delete('/destroy-all', [RoadConditionController::class, 'destroyAll'])
             ->middleware('permission:delete,kondisi_jalan')->name('destroyAll');
-
+        
         // CRUD
         Route::get('/', [RoadConditionController::class, 'index'])
             ->middleware('permission:read,kondisi_jalan')->name('index');
@@ -414,29 +367,30 @@ Route::middleware(['auth'])->group(function () {
             ->middleware('permission:add,kondisi_jalan')->name('create');
         Route::post('/', [RoadConditionController::class, 'store'])
             ->middleware('permission:add,kondisi_jalan')->name('store');
+        
+        // AJAX Routes untuk form
         Route::get('/detail', [RoadConditionController::class, 'getDetail'])
             ->name('getDetail');
         Route::get('/get-years', [RoadConditionController::class, 'getYears'])
             ->name('getYears');
         Route::get('/get-ruas-by-year', [RoadConditionController::class, 'getRuasByYear'])
             ->name('getRuasByYear');
+        Route::get('/get-chainage-by-ruas', [RoadConditionController::class, 'getChainageByRuas'])
+            ->name('getChainageByRuas'); // ✅ ROUTE BARU
         Route::get('/segment-detail', [RoadConditionController::class, 'getSegmentDetail'])
             ->name('getSegmentDetail');
+        
+        // Show dengan parameter year optional
         Route::get('/show/{link_no}/{year?}', [RoadConditionController::class, 'show'])
             ->middleware('permission:read,kondisi_jalan')->name('show');
-
-        // Import & Export
-        Route::post('/import', [RoadConditionController::class, 'import'])
-            ->middleware('permission:import,kondisi_jalan')->name('import');
-        Route::get('/export', [RoadConditionController::class, 'export'])
-            ->middleware('permission:export,kondisi_jalan')->name('export');
-
-        // Route dengan parameter di akhir agar tidak bentrok
-        Route::get('/{kondisi}/edit', [RoadConditionController::class, 'edit'])
+        
+        // Edit, Update, Delete dengan composite key
+        // Format: /kondisi-jalan/{link_no}/{chainage_from}/{chainage_to}/{year}/edit
+        Route::get('/{link_no}/{chainage_from}/{chainage_to}/{year}/edit', [RoadConditionController::class, 'edit'])
             ->middleware('permission:update,kondisi_jalan')->name('edit');
-        Route::put('/{kondisi}', [RoadConditionController::class, 'update'])
+        Route::put('/{link_no}/{chainage_from}/{chainage_to}/{year}', [RoadConditionController::class, 'update'])
             ->middleware('permission:update,kondisi_jalan')->name('update');
-        Route::delete('/{kondisi}', [RoadConditionController::class, 'destroy'])
+        Route::delete('/{link_no}/{chainage_from}/{chainage_to}/{year}', [RoadConditionController::class, 'destroy'])
             ->middleware('permission:delete,kondisi_jalan')->name('destroy');
     });
 
@@ -444,6 +398,19 @@ Route::middleware(['auth'])->group(function () {
     // Map Routes
     // --------------------
 
+    // --------------------
+    // Import Export Routes (Terpusat)
+    // --------------------
+    Route::prefix('import-export')->name('import_export.')->group(function () {
+        Route::get('/', [ImportExportController::class, 'index'])
+            ->middleware('permission:detail,import_export')->name('index');
+        
+        Route::post('/export', [ImportExportController::class, 'export'])
+            ->name('export');
+        
+        Route::post('/import', [ImportExportController::class, 'import'])
+            ->name('import');
+    });
 
     // --------------------
     // Profile Routes
@@ -457,10 +424,23 @@ Route::middleware(['auth'])->group(function () {
 
     // View peta
     Route::get('/peta/alignment', [AlignmentController::class, 'showMap']);
-
-    // API JSON untuk koordinat
-    Route::get('/api/alignment/coords', [AlignmentController::class, 'getCoords'])->name('api.coords');
-    Route::get('/api/alignment/coords-sdi', [AlignmentController::class, 'getCoordsWithSDI'])->name('api.coords.sdi');
+    Route::prefix('api/alignment')->group(function () {
+    
+    // Get list kecamatan dengan jumlah segmen
+    Route::get('/kecamatan-list', [AlignmentController::class, 'getKecamatanList']);
+    
+    // Get koordinat dengan SDI berdasarkan kecamatan
+    Route::get('/coords-sdi-by-kecamatan', [AlignmentController::class, 'getCoordsWithSDIByKecamatan']);
+    
+    // Get semua koordinat dengan SDI (untuk semua kecamatan)
+    Route::get('/coords-sdi', [AlignmentController::class, 'getCoordsWithSDI']);
+    
+    // Get koordinat saja (tanpa SDI)
+    Route::get('/coords', [AlignmentController::class, 'getCoords']);
+    
+    // Get list tahun yang tersedia
+    Route::get('/available-years', [AlignmentController::class, 'getAvailableYears']);
+});
 
     Route::prefix('year-filter')->name('year.filter.')->group(function () {
         Route::get('/available', [YearFilterController::class, 'getAvailableYears'])->name('available');
@@ -472,7 +452,7 @@ Route::middleware(['auth'])->group(function () {
 // --------------------
 // Dashboard (Superadmin Only)
 // --------------------
-Route::middleware(['auth', 'role:superadmin'])->get('/dashboard', [DashboardController::class, 'index'])
-    ->name('dashboard');
+// Route::middleware(['auth', 'role:superadmin'])->get('/dashboard', [DashboardController::class, 'index'])
+//     ->name('dashboard');
 
 require __DIR__.'/auth.php';

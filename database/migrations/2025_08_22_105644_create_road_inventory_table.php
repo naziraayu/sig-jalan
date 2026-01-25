@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('link_no');
             $table->integer('year')->nullable();
             $table->integer('chainage_from')->index();
-            $table->integer('chainage_to');
+            $table->integer('chainage_to')->nullable();
             $table->integer('drp_from')->nullable();
             $table->integer('offset_from')->nullable();
             $table->integer('drp_to')->nullable();

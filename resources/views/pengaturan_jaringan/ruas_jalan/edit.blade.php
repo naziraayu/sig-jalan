@@ -38,14 +38,14 @@
 
                         <div class="form-row">
                             <div class="form-group col-md-3">
-                                <label>Link No</label>
+                                <label>Nomor SK</label>
                                 <input type="text" name="link_no" 
                                     class="form-control" 
                                     value="{{ old('link_no', $ruas->link_no) }}" readonly>
                             </div>
 
                             <div class="form-group col-md-3">
-                                <label>Kode Ruas (Link Code)</label>
+                                <label>Kode Ruas (Kode SK)</label>
                                 <input type="text" name="link_code" 
                                     class="form-control" 
                                     value="{{ old('link_code', $ruas->link_code) }}" readonly>

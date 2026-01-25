@@ -32,4 +32,21 @@ class Kecamatan extends Model
     {
         return $this->belongsTo(Kabupaten::class, 'kabupaten_code', 'kabupaten_code');
     }
+    public function links()
+    {
+        return $this->belongsToMany(
+            Link::class,           // ✅ Model tujuan: Link
+            'link_kecamatan',      // Pivot table
+            'kecamatan_code',      // FK di pivot ke kecamatan
+            'link_id',             // FK di pivot ke link
+            'kecamatan_code',      // Local key di kecamatan
+            'id'                   // Local key di link
+        );
+    }
+
+    // ✅ TAMBAHAN: Relasi ke LinkKecamatan (pivot)
+    public function linkKecamatans()
+    {
+        return $this->hasMany(LinkKecamatan::class, 'kecamatan_code', 'kecamatan_code');
+    }
 }

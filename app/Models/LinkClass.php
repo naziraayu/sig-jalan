@@ -14,7 +14,7 @@ class LinkClass extends Model
     protected $fillable = [
         'province_code',
         'kabupaten_code',
-        'link_no',
+        'link_id',
         'class',
         'kmClass',
     ];

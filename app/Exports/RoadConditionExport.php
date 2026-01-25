@@ -4,45 +4,154 @@ namespace App\Exports;
 
 use App\Models\RoadCondition;
 use Maatwebsite\Excel\Concerns\FromQuery;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
+use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 
-class RoadConditionExport implements FromQuery, WithHeadings, WithMapping, WithColumnFormatting
+class RoadConditionExport implements 
+    FromQuery, 
+    WithHeadings, 
+    WithMapping, 
+    WithColumnFormatting,
+    WithChunkReading,
+    ShouldAutoSize,
+    WithStrictNullComparison
 {
-    /**
-     * Ambil data pakai query, bukan ::all()
-     */
-    public function query()
+    protected $year;
+    protected $provinceCode;
+
+    public function __construct($year = null, $provinceCode = null)
     {
-        // TAMBAHKAN orderBy yang jelas
-        return RoadCondition::query()
-            ->orderBy('year', 'desc')
-            ->orderBy('link_no', 'asc')
-            ->orderBy('chainage_from', 'asc');
+        $this->year = $year;
+        $this->provinceCode = $provinceCode;
     }
 
-    /**
-     * Mapping tiap row supaya urutan kolom sesuai
-     */
+    public function query()
+    {
+        // ✅ OPTIMIZED: Gunakan select() yang lebih efisien
+        $query = RoadCondition::query()
+            ->select([ 
+                'year',
+                'sdi_value',
+                'sdi_category',
+                'reference_year',
+                'province_code',
+                'kabupaten_code',
+                'link_id',
+                'link_no',
+                'chainage_from',
+                'chainage_to',
+                'drp_from',
+                'offset_from',
+                'drp_to',
+                'offset_to',
+                'roughness',
+                'bleeding_area',
+                'ravelling_area',
+                'desintegration_area',
+                'crack_dep_area',
+                'patching_area',
+                'oth_crack_area',
+                'pothole_area',
+                'rutting_area',
+                'edge_damage_area',
+                'crossfall_area',
+                'depressions_area',
+                'erosion_area',
+                'waviness_area',
+                'gravel_thickness_area',
+                'concrete_cracking_area',
+                'concrete_spalling_area',
+                'concrete_structural_cracking_area',
+                'concrete_corner_break_no',
+                'concrete_pumping_no',
+                'concrete_blowouts_area',
+                'crack_width',
+                'pothole_count',
+                'rutting_depth',
+                'shoulder_l',
+                'shoulder_r',
+                'drain_l',
+                'drain_r',
+                'slope_l',
+                'slope_r',
+                'footpath_l',
+                'footpath_r',
+                'sign_l',
+                'sign_r',
+                'guide_post_l',
+                'guide_post_r',
+                'barrier_l',
+                'barrier_r',
+                'road_marking_l',
+                'road_marking_r',
+                'iri',
+                'rci',
+                'analysis_base_year',
+                'segment_tti',
+                'survey_by',
+                'paved',
+                'pavement',
+                'check_data',
+                'composition',
+                'crack_type',
+                'pothole_size',
+                'should_cond_l',
+                'should_cond_r',
+                'crossfall_shape',
+                'gravel_size',
+                'gravel_thickness',
+                'distribution',
+                'edge_damage_area_r',
+                'survey_by2',
+                'survey_date',
+                'section_status',
+            ]);
+
+        // ✅ FIXED: Terapkan filter tahun jika diberikan
+        if ($this->year) {
+            $query->where('year', $this->year);
+        }
+
+        // ✅ FIXED: Terapkan filter provinsi jika diberikan
+        if ($this->provinceCode) {
+            $query->where('province_code', $this->provinceCode);
+        }
+
+        return $query->orderBy('year', 'desc')
+                    ->orderBy('link_no', 'asc')
+                    ->orderBy('chainage_from', 'asc');
+    }
+
+    public function chunkSize(): int
+    {
+        // ✅ OPTIMIZED: Naikkan chunk size untuk performa lebih baik
+        // 500 terlalu kecil, 1000-2000 lebih optimal untuk data besar
+        return 1000;
+    }
+
     public function map($row): array
     {
         return [
             $row->year,
+            $row->sdi_value,
+            $row->sdi_category,
+            $row->reference_year,
             $row->province_code,
             $row->kabupaten_code,
-            "\t" .$row->link_no,
+            $row->link_id,
+            $row->link_no,
             $row->chainage_from,
             $row->chainage_to,
             $row->drp_from,
             $row->offset_from,
             $row->drp_to,
             $row->offset_to,
-            $row->roughness,
+            $row->roughness ? 'Ya' : 'Tidak',
             $row->bleeding_area,
             $row->ravelling_area,
             $row->desintegration_area,
@@ -87,7 +196,7 @@ class RoadConditionExport implements FromQuery, WithHeadings, WithMapping, WithC
             $row->analysis_base_year,
             $row->segment_tti,
             $row->survey_by,
-            $row->paved,
+            $row->paved ? 'Ya' : 'Tidak',
             $row->pavement,
             $row->check_data,
             $row->composition,
@@ -106,43 +215,44 @@ class RoadConditionExport implements FromQuery, WithHeadings, WithMapping, WithC
         ];
     }
 
-    /**
-     * Heading untuk kolom Excel
-     */
     public function headings(): array
     {
         return [
             'Year',
+            'SDI_Value',
+            'SDI_Category',
+            'Reference_Year',
             'Province_Code',
             'Kabupaten_Code',
+            'Link_Id',
             'Link_No',
-            'ChainageFrom',
-            'ChainageTo',
+            'Chainage_From',
+            'Chainage_To',
             'DRP_From',
             'Offset_From',
             'DRP_To',
             'Offset_To',
             'Roughness',
-            'Bleeding_area',
-            'Ravelling_area',
-            'Desintegration_area',
-            'CrackDep_area',
-            'Patching_area',
-            'OtherCrack_area',
-            'Pothole_area',
-            'Rutting_area',
-            'EdgeDamage_area',
-            'Crossfall_area',
-            'Depressions_area',
-            'Erosion_area',
-            'Waviness_area',
-            'GravelThickness_area',
-            'Concrete_Cracking_area',
-            'Concrete_Spalling_area',
-            'Concrete_StructuralCracking_area',
-            'Concrete_CornerBreakNo',
-            'Concrete_PumpingNo',
-            'Concrete_Blowouts_area',
+            'Bleeding_Area',
+            'Ravelling_Area',
+            'Desintegration_Area',
+            'Crack_Dep_Area',
+            'Patching_Area',
+            'Oth_Crack_Area',
+            'Pothole_Area',
+            'Rutting_Area',
+            'Edge_Damage_Area',
+            'Crossfall_Area',
+            'Depressions_Area',
+            'Erosion_Area',
+            'Waviness_Area',
+            'Gravel_Thickness_Area',
+            'Concrete_Cracking_Area',
+            'Concrete_Spalling_Area',
+            'Concrete_Structural_Cracking_Area',
+            'Concrete_Corner_Break_No',
+            'Concrete_Pumping_No',
+            'Concrete_Blowouts_Area',
             'Crack_Width',
             'Pothole_Count',
             'Rutting_Depth',
@@ -156,53 +266,45 @@ class RoadConditionExport implements FromQuery, WithHeadings, WithMapping, WithC
             'Footpath_R',
             'Sign_L',
             'Sign_R',
-            'GuidePost_L',
-            'GuidePost_R',
+            'Guide_Post_L',
+            'Guide_Post_R',
             'Barrier_L',
             'Barrier_R',
-            'RoadMarking_L',
-            'RoadMarking_R',
+            'Road_Marking_L',
+            'Road_Marking_R',
             'IRI',
             'RCI',
-            'AnalysisBaseYear',
-            'SegmentTTI',
-            'SurveyBy',
+            'Analysis_Base_Year',
+            'Segment_TTI',
+            'Survey_By',
             'Paved',
             'Pavement',
-            'CheckData',
+            'Check_Data',
             'Composition',
-            'CrackType',
-            'PotholeSize',
-            'ShoulderCond_L',
-            'ShoulderCond_R',
-            'CrossfallShape',
-            'GravelSize',
-            'GravelThickness',
+            'Crack_Type',
+            'Pothole_Size',
+            'Should_Cond_L',
+            'Should_Cond_R',
+            'Crossfall_Shape',
+            'Gravel_Size',
+            'Gravel_Thickness',
             'Distribution',
-            'EdgeDamage_areaR',
-            'SurveyBy2',
-            'SurveyDate',
-            'SectionStatus',
+            'Edge_Damage_Area_R',
+            'Survey_By2',
+            'Survey_Date',
+            'Section_Status',
         ];
     }
 
-     /**
-     * Baca per chunk (misal 500 rows sekali proses)
-     */
-    // public function chunkSize(): int
-    // {
-    //     return 1000;
-    // }
-
-    /**
-     * Format kolom tertentu sebagai text
-     */
     public function columnFormats(): array
     {
         return [
-            'D' => NumberFormat::FORMAT_TEXT,  // Kolom D = Link_No
-            'B' => NumberFormat::FORMAT_TEXT,  // Kolom B = Province_Code
-            'C' => NumberFormat::FORMAT_TEXT,  // Kolom C = Kabupaten_Code
+            'E' => NumberFormat::FORMAT_TEXT, // Province_Code
+            'F' => NumberFormat::FORMAT_TEXT, // Kabupaten_Code
+            'G' => NumberFormat::FORMAT_TEXT, // Link_Id
+            'H' => NumberFormat::FORMAT_TEXT, // Link_No
+            'I' => NumberFormat::FORMAT_NUMBER_00, // Chainage_From
+            'J' => NumberFormat::FORMAT_NUMBER_00, // Chainage_To
         ];
     }
 }

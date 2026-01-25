@@ -132,15 +132,6 @@
                             @endif
                         @endif
 
-                        {{-- Tombol Import / Export --}}
-                        @if(auth()->user()->hasPermission('import','inventarisasi_jalan') || auth()->user()->hasPermission('export','inventarisasi_jalan'))
-                            <button type="button" class="btn btn-icon icon-left btn-success mr-2" 
-                                data-toggle="modal" data-target="#modalImportExport"
-                                @if(!$selectedYear) disabled title="Pilih tahun terlebih dahulu" @endif>
-                                <i class="fas fa-file-excel"></i> Import / Export
-                            </button>
-                        @endif
-
                         {{-- Tombol Tambah Data --}}
                         @if(auth()->user()->hasPermission('add','inventarisasi_jalan'))
                             <a href="{{ route('inventarisasi-jalan.create') }}" 
@@ -176,13 +167,6 @@
         </div>
     </section>
 </div>
-
-{{-- Modal Import Export --}}
-@include('components.modals.import_export', [
-    'title' => 'Import / Export Inventarisasi Jalan' . ($selectedYear ? ' - Tahun ' . $selectedYear : ''),
-    'importRoute' => route('inventarisasi-jalan.import'),
-    'exportRoute' => route('inventarisasi-jalan.export'),
-]) 
 
 @endsection
 
@@ -245,11 +229,11 @@ $(document).ready(function(){
                                     <thead class="thead-dark">
                                         <tr>
                                             <th style="width: 50px;">No</th>
-                                            <th>Chainage From (Km)</th>
-                                            <th>Chainage To (Km)</th>
+                                            <th>Chainage From (m)</th>
+                                            <th>Chainage To (m)</th>
                                             <th>Panjang (m)</th>
                                             <th>Tipe Perkerasan</th>
-                                            <th>Lebar (m)</th>
+                                            <th>Lebar Perkerasan (m)</th>
                                             <th>ROW (m)</th>
                                             <th>Status</th>
                                             <th style="width: 100px;">Aksi</th>
@@ -260,7 +244,7 @@ $(document).ready(function(){
 
                         // ✅ Loop data
                         res.data.forEach(function(item, index){
-                            let panjang = (item.chainage_to - item.chainage_from) * 1000; // Convert to meters
+                            let panjang = (item.chainage_to - item.chainage_from); // Convert to meters
                             let statusBadge = item.impassable == 1 
                                 ? '<span class="badge badge-danger"><i class="fas fa-times-circle"></i> Tidak Dapat Dilalui</span>' 
                                 : '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Dapat Dilalui</span>';
@@ -272,9 +256,9 @@ $(document).ready(function(){
                             html += `
                                 <tr>
                                     <td class="text-center">${index + 1}</td>
-                                    <td>${parseFloat(item.chainage_from).toFixed(3)}</td>
-                                    <td>${parseFloat(item.chainage_to).toFixed(3)}</td>
-                                    <td class="text-right">${panjang.toFixed(2)}</td>
+                                    <td>${parseFloat(item.chainage_from)}</td>
+                                    <td>${parseFloat(item.chainage_to)}</td>
+                                    <td class="text-right">${panjang}</td>
                                     <td>${item.pavement_type?.code_description_ind ?? '-'}</td>
                                     <td class="text-right">${item.pave_width ? parseFloat(item.pave_width).toFixed(2) : '-'}</td>
                                     <td class="text-right">${item.row ? parseFloat(item.row).toFixed(2) : '-'}</td>

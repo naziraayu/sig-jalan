@@ -102,7 +102,7 @@
                                 <h4>Rata-rata IRI</h4>
                             </div>
                             <div class="card-body">
-                                {{ number_format($statistics['avg_iri'], 2) }}
+                                {{ $statistics['avg_iri'] ? number_format($statistics['avg_iri'], 2) : '-' }}
                             </div>
                         </div>
                     </div>
@@ -117,7 +117,7 @@
                                 <h4>Rata-rata SDI</h4>
                             </div>
                             <div class="card-body">
-                                {{ number_format($statistics['avg_sdi'], 2) }}
+                                {{ $statistics['avg_sdi'] ? number_format($statistics['avg_sdi'], 2) : '-' }}
                             </div>
                         </div>
                     </div>
@@ -306,6 +306,7 @@
                                     <th rowspan="2">No</th>
                                     <th rowspan="2">Tahun</th>
                                     <th rowspan="2">Chainage</th>
+                                    <th rowspan="2">Tipe Perkerasan</th>
                                     <th rowspan="2">Lebar (m)</th>
                                     <th colspan="4" class="text-center bg-info text-white">SDI</th>
                                     <th rowspan="2">Kategori</th>
@@ -320,15 +321,49 @@
                             </thead>
                             <tbody>
                                 @foreach($conditionsWithSDI as $index => $condition)
+                                @php
+                                    // ✅ DETEKSI TIPE PERKERASAN
+                                    $pavementType = $condition->pavement ?? 'AS';
+                                    $isNonAspal = in_array($pavementType, ['BT', 'BL', 'NA', 'TD']);
+                                    
+                                    $pavementLabels = [
+                                        'AS' => 'Aspal',
+                                        'BT' => 'Beton',
+                                        'BL' => 'Blok',
+                                        'NA' => 'Non Aspal',
+                                        'TD' => 'Tak Dapat Dilalui'
+                                    ];
+                                    $pavementLabel = $pavementLabels[$pavementType] ?? 'Aspal';
+                                @endphp
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
                                     <td class="text-center">{{ $condition->year }}</td>
                                     <td>{{ $condition->chainage_from }} - {{ $condition->chainage_to }}</td>
+                                    <td class="text-center">
+                                        {{-- ✅ BADGE TIPE PERKERASAN --}}
+                                        @if($isNonAspal)
+                                            <span class="badge badge-warning">
+                                                <i class="fas fa-exclamation-triangle"></i> {{ $pavementLabel }}
+                                            </span>
+                                        @else
+                                            <span class="badge badge-secondary">{{ $pavementLabel }}</span>
+                                        @endif
+                                    </td>
                                     <td class="text-center">{{ number_format($condition->inventory->pave_width ?? 0, 2) }}</td>
-                                    <td class="text-center">{{ number_format($condition->sdi_data['sdi1'], 2) }}</td>
-                                    <td class="text-center">{{ number_format($condition->sdi_data['sdi2'], 2) }}</td>
-                                    <td class="text-center">{{ number_format($condition->sdi_data['sdi3'], 2) }}</td>
-                                    <td class="text-center font-weight-bold">{{ number_format($condition->sdi_data['sdi_final'], 2) }}</td>
+                                    
+                                    {{-- ✅ SDI VALUES: Tampilkan N/A jika non-aspal --}}
+                                    @if($isNonAspal)
+                                        <td class="text-center text-muted">N/A</td>
+                                        <td class="text-center text-muted">N/A</td>
+                                        <td class="text-center text-muted">N/A</td>
+                                        <td class="text-center text-muted">N/A</td>
+                                    @else
+                                        <td class="text-center">{{ number_format($condition->sdi_data['sdi1'], 2) }}</td>
+                                        <td class="text-center">{{ number_format($condition->sdi_data['sdi2'], 2) }}</td>
+                                        <td class="text-center">{{ number_format($condition->sdi_data['sdi3'], 2) }}</td>
+                                        <td class="text-center font-weight-bold">{{ number_format($condition->sdi_data['sdi_final'], 2) }}</td>
+                                    @endif
+                                    
                                     <td class="text-center">
                                         @php
                                             $category = $condition->sdi_data['category'];
@@ -358,12 +393,27 @@
                                         <span class="{{ $badgeClass }}" style="{{ $badgeStyle }}">
                                             {{ $category }}
                                         </span>
+                                        
+                                        {{-- ✅ BADGE TAMBAHAN UNTUK NON-ASPAL --}}
+                                        @if($isNonAspal)
+                                            <br>
+                                            <small class="text-muted">
+                                                <i class="fas fa-info-circle"></i> SDI tidak applicable
+                                            </small>
+                                        @endif
                                     </td>
                                     <td class="text-center">
-                                        <button class="btn btn-sm btn-info" 
-                                                onclick='showDetailModal("{{ $condition->link_no }}", "{{ $condition->chainage_from }}", "{{ $condition->chainage_to }}", "{{ $condition->year }}")'>
-                                            <i class="fas fa-calculator"></i> Detail SDI
-                                        </button>
+                                        {{-- ✅ TOMBOL DETAIL: Disable untuk non-aspal --}}
+                                        @if($isNonAspal)
+                                            <button class="btn btn-sm btn-secondary" disabled title="Detail SDI hanya untuk perkerasan Aspal">
+                                                <i class="fas fa-ban"></i> N/A
+                                            </button>
+                                        @else
+                                            <button class="btn btn-sm btn-info" 
+                                                    onclick='showDetailModal("{{ $condition->link_no }}", "{{ $condition->chainage_from }}", "{{ $condition->chainage_to }}", "{{ $condition->year }}")'>
+                                                <i class="fas fa-calculator"></i> Detail SDI
+                                            </button>
+                                        @endif
                                     </td>
                                 </tr>
                                 @endforeach
@@ -393,7 +443,7 @@ $(document).ready(function() {
     $('#conditionTable').DataTable({
         responsive: true,
         pageLength: 10,
-        order: [[1, 'desc'], [2, 'asc']],
+        order: [],
         language: {
             url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
         }
@@ -403,6 +453,7 @@ $(document).ready(function() {
 // Fungsi untuk menampilkan detail SDI LENGKAP
 function showDetailModal(linkNo, chainageFrom, chainageTo, year) {
     console.log('showDetailModal called with:', {linkNo, chainageFrom, chainageTo, year});
+    
     // Show loading
     Swal.fire({
         title: 'Memuat Detail...',
@@ -431,7 +482,53 @@ function showDetailModal(linkNo, chainageFrom, chainageTo, year) {
                 const linkCode = condition.link_no?.link_code || linkNo;
                 const linkName = condition.link_no?.link_name || 'Ruas ' + linkNo;
                 
-                // Tentukan badge category
+                // ✅ CEK APAKAH NON-ASPAL
+                if (data.final && data.final.note && data.final.note.includes('Non-Aspal')) {
+                    Swal.fire({
+                        title: `Detail Kondisi Jalan`,
+                        html: `
+                            <div class="text-center py-4">
+                                <div class="alert alert-warning mb-3">
+                                    <h5 class="text-center mb-2">
+                                        <i class="fas fa-road"></i> 
+                                        <strong>${linkCode} - ${linkName}</strong>
+                                    </h5>
+                                    <p class="mb-0 text-center">
+                                        Chainage: <strong>${chainageFrom} - ${chainageTo}</strong> | 
+                                        Tahun: <strong>${year}</strong>
+                                    </p>
+                                </div>
+                                
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                                    <h4>Perkerasan Non-Aspal</h4>
+                                    <p class="mb-0">
+                                        Metode SDI (Surface Distress Index) hanya berlaku untuk perkerasan <strong>Aspal</strong>.
+                                        <br><br>
+                                        Segmen ini menggunakan perkerasan <strong>${data.raw_data.pavement_type || 'Non-Aspal'}</strong>, 
+                                        sehingga kategori kondisi otomatis ditetapkan sebagai:
+                                    </p>
+                                </div>
+                                
+                                <h2 class="text-danger mb-3">Rusak Berat</h2>
+                                
+                                <div class="alert alert-info text-left">
+                                    <small>
+                                        <strong><i class="fas fa-info-circle"></i> Catatan:</strong><br>
+                                        Untuk perkerasan Beton, Blok, atau Non-Aspal lainnya, diperlukan metode evaluasi yang berbeda 
+                                        seperti PCI (Pavement Condition Index) atau metode visual assessment.
+                                    </small>
+                                </div>
+                            </div>
+                        `,
+                        width: 700,
+                        confirmButtonText: '<i class="fas fa-times"></i> Tutup',
+                        confirmButtonColor: '#6777ef',
+                    });
+                    return;
+                }
+                
+                // ✅ JIKA ASPAL, TAMPILKAN DETAIL SDI LENGKAP
                 const category = data.final.category;
                 let badgeClass = 'badge-secondary';
                 let customStyle = '';
@@ -457,7 +554,8 @@ function showDetailModal(linkNo, chainageFrom, chainageTo, year) {
                                 </h5>
                                 <p class="mb-0 text-center">
                                     Chainage: <strong>${chainageFrom} - ${chainageTo}</strong> | 
-                                    Tahun: <strong>${year}</strong>
+                                    Tahun: <strong>${year}</strong> |
+                                    Perkerasan: <strong>Aspal</strong>
                                 </p>
                             </div>
                             
@@ -474,7 +572,7 @@ function showDetailModal(linkNo, chainageFrom, chainageTo, year) {
                                 </tr>
                                 <tr>
                                     <td><strong>Panjang Segmen</strong></td>
-                                    <td>${data.raw_data.segment_length.toFixed(3)} m    </td>
+                                    <td>${data.raw_data.segment_length.toFixed(3)} m</td>
                                 </tr>
                                 <tr class="bg-light">
                                     <td><strong>Luas Total Segmen</strong></td>
@@ -499,16 +597,8 @@ function showDetailModal(linkNo, chainageFrom, chainageTo, year) {
                                             <td>Other Crack Area</td>
                                             <td class="text-right">${data.raw_data.oth_crack_area.toFixed(2)} m²</td>
                                         </tr>
-                                        <tr>
-                                            <td>Concrete Cracking Area</td>
-                                            <td class="text-right">${data.raw_data.concrete_cracking_area.toFixed(2)} m²</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Concrete Structural Area</td>
-                                            <td class="text-right">${data.raw_data.concrete_structural_area.toFixed(2)} m²</td>
-                                        </tr>
                                         <tr class="table-warning">
-                                            <td><strong>Total Luas Retak</strong></td>
+                                            <td><strong>Total Luas Retak (Aspal saja)</strong></td>
                                             <td class="text-right"><strong>${data.raw_data.total_crack_area.toFixed(2)} m²</strong></td>
                                         </tr>
                                         <tr class="table-info">
@@ -612,7 +702,6 @@ function showDetailModal(linkNo, chainageFrom, chainageTo, year) {
                                     <span class="badge ${badgeClass}" style="font-size: 18px; padding: 10px 20px; ${customStyle}">
                                         <i class="fas fa-flag"></i> ${data.final.category}
                                     </span>
-
                                     
                                     <div class="mt-3 text-left">
                                         <small class="text-muted">
@@ -630,7 +719,7 @@ function showDetailModal(linkNo, chainageFrom, chainageTo, year) {
                             <div class="alert alert-light mt-3 mb-0">
                                 <small>
                                     <i class="fas fa-info-circle"></i> 
-                                    <strong>Catatan:</strong> Perhitungan SDI mengikuti Panduan Bina Marga untuk evaluasi kondisi permukaan jalan.
+                                    <strong>Catatan:</strong> Perhitungan SDI mengikuti Panduan Bina Marga untuk evaluasi kondisi permukaan jalan <strong>Aspal</strong>.
                                 </small>
                             </div>
                         </div>

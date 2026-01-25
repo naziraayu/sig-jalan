@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Alignment;
+use App\Models\Kecamatan;
 use Illuminate\Http\Request;
 use App\Models\RoadCondition;
 use App\Models\RoadInventory;
@@ -18,11 +19,20 @@ class AlignmentController extends Controller
         return view('peta.kabupaten.index');
     }
 
-    // API JSON untuk data koordinat - dikelompokkan per link_no
+    /**
+     * ✅ DIPERBAIKI: Gunakan reference year untuk query link
+     */
     public function getCoords(Request $request)
     {
         try {
             $selectedYear = $request->get('year') ?? session('selected_year');
+            
+            // ✅ Ambil reference year dari database (SAMA seperti Dashboard)
+            $referenceYear = RoadCondition::where('year', $selectedYear)
+                ->whereHas('kabupaten', function ($query) {
+                    $query->where('kabupaten_name', 'LIKE', '%JEMBER%');
+                })
+                ->value('reference_year') ?? ($selectedYear - 1);
 
             $query = "
                 SELECT 
@@ -36,10 +46,11 @@ class AlignmentController extends Controller
             $conditions = ["k.kabupaten_name LIKE '%JEMBER%'"];
             $bindings = [];
 
-            if ($selectedYear) {
+            if ($referenceYear) {
+                // ✅ Join ke link dengan reference year
                 $query .= " INNER JOIN link l ON a.link_no = l.link_no";
                 $conditions[] = "l.year = ?";
-                $bindings[] = $selectedYear;
+                $bindings[] = $referenceYear;
             }
 
             $query .= " WHERE " . implode(" AND ", $conditions);
@@ -59,6 +70,12 @@ class AlignmentController extends Controller
                 ];
             })->values();
 
+            Log::info("getCoords completed", [
+                'selected_year' => $selectedYear,
+                'reference_year' => $referenceYear,
+                'link_count' => $grouped->count()
+            ]);
+
             return response()->json($grouped);
 
         } catch (\Exception $e) {
@@ -67,9 +84,6 @@ class AlignmentController extends Controller
         }
     }
 
-    /**
-     * Get available years untuk dropdown
-     */
     public function getAvailableYears()
     {
         try {
@@ -94,41 +108,75 @@ class AlignmentController extends Controller
         }
     }
 
-    /**
-     * ✅ FINAL FIX: API untuk menampilkan alignment dengan SDI per segmen
-     * Tanpa pakai kolom ID, langsung pakai composite key
+    /** 
+     * ✅ DIPERBAIKI TOTAL
+     * CATATAN: Endpoint ini untuk SEMUA kecamatan (tanpa filter)
+     * Jika ingin filter kecamatan, gunakan getCoordsWithSDIByKecamatan()
      */
     public function getCoordsWithSDI(Request $request)
-{
-    try {
-        set_time_limit(600); // izinkan eksekusi sampai 10 menit
-        ini_set('memory_limit', '1G');
+    {
+        try {
+            set_time_limit(600);
+            ini_set('memory_limit', '1G');
 
-
-        $year = $request->get('year') ?? session('selected_year') ?? date('Y');
-        Log::info("getCoordsWithSDI called", ['year' => $year]);
-
-        // 💾 Gunakan cache agar cepat diakses ulang
-        return Cache::remember("coords_sdi_{$year}", 3600, function () use ($year) {
-            $segments = RoadCondition::where('year', $year)
+            $surveyYear = $request->get('year') ?? session('selected_year') ?? date('Y');
+            
+            // ✅ Ambil reference year dari database
+            $referenceYear = RoadCondition::where('year', $surveyYear)
                 ->whereHas('kabupaten', function ($query) {
                     $query->where('kabupaten_name', 'LIKE', '%JEMBER%');
                 })
+                ->value('reference_year');
+            
+            if (!$referenceYear) {
+                $referenceYear = $surveyYear - 1;
+            }
+            
+            Log::info("getCoordsWithSDI called", [
+                'survey_year' => $surveyYear,
+                'reference_year' => $referenceYear
+            ]);
+
+            // ✅ PERBAIKAN: JANGAN gunakan cache untuk endpoint ini
+            // Karena ini digunakan untuk SEMUA kecamatan tanpa filter
+            // Cache hanya berguna jika ada parameter yang konsisten
+            
+            // ✅ STRICT FILTER seperti Dashboard
+            $segments = RoadCondition::where('year', $surveyYear)
+                ->where('reference_year', $referenceYear)
+                ->whereNotNull('sdi_value')
+                ->whereNotNull('sdi_category')
+                ->whereHas('kabupaten', function ($query) {
+                    $query->where('kabupaten_name', 'LIKE', '%JEMBER%');
+                })
+                ->with(['link.linkMaster:id,link_no,link_name'])
                 ->orderBy('link_no')
                 ->orderBy('chainage_from')
                 ->get();
 
-            Log::info("Segments found", ['count' => $segments->count()]);
+            Log::info("Segments found", [
+                'count' => $segments->count(),
+                'survey_year' => $surveyYear,
+                'reference_year' => $referenceYear
+            ]);
 
             if ($segments->isEmpty()) {
-                Log::warning("No segments found for year", ['year' => $year]);
-                return [];
+                Log::warning("No segments with SDI found", [
+                    'survey_year' => $surveyYear,
+                    'reference_year' => $referenceYear
+                ]);
+                
+                // ✅ PERBAIKAN: Return format yang konsisten
+                return response()->json([
+                    'success' => true,
+                    'data' => [],
+                    'message' => 'Tidak ada data untuk tahun yang dipilih'
+                ]);
             }
 
-            // 🔹 Kumpulkan semua link_no unik dari segmen
             $linkNos = $segments->pluck('link_no')->unique();
 
-            // 🔹 Ambil semua koordinat sekaligus
+            // Ambil SEMUA koordinat untuk link yang ada
             $allCoords = DB::table('alignment')
                 ->whereIn('link_no', $linkNos)
                 ->select('link_no', 'chainage', 'north as lat', 'east as lng')
@@ -139,89 +187,502 @@ class AlignmentController extends Controller
 
             Log::info("Alignment coords loaded", ['link_count' => $allCoords->count()]);
 
-            // 🔹 Ambil semua inventory sekaligus
-            $inventories = RoadInventory::whereIn('link_no', $linkNos)->get()
-                ->groupBy('link_no');
-
-            $roadConditionController = app(RoadConditionController::class);
             $result = [];
+            $skippedCount = 0;
+            $fallbackCount = 0;
+            $rangeCount = 0;
 
             foreach ($segments as $condition) {
                 $coordsAll = $allCoords[$condition->link_no] ?? collect();
 
-                // Filter chainage sesuai segmen
-                $coords = $coordsAll->filter(function ($c) use ($condition) {
-                    return $c->chainage >= $condition->chainage_from && $c->chainage <= $condition->chainage_to;
-                })->values();
-
-                if ($coords->isEmpty()) {
-                    Log::warning("No coordinates found", [
-                        'link_no' => $condition->link_no,
-                        'chainage' => "{$condition->chainage_from} - {$condition->chainage_to}"
+                // Skip kalau link ini tidak punya koordinat sama sekali
+                if ($coordsAll->isEmpty()) {
+                    $skippedCount++;
+                    Log::warning("No coordinates found for link", [
+                        'link_no' => $condition->link_no
                     ]);
                     continue;
                 }
 
-                // Ambil inventory yang sesuai
-                $invGroup = $inventories[$condition->link_no] ?? collect();
-                $inventory = $invGroup->first(function ($inv) use ($condition) {
-                    return $inv->chainage_from <= $condition->chainage_from
-                        && $inv->chainage_to >= $condition->chainage_to;
-                });
+                // ===== OPSI 1B: STEP 1 - Coba ambil SEMUA koordinat dalam range =====
+                $coords = $coordsAll->filter(function ($c) use ($condition) {
+                    return $c->chainage >= $condition->chainage_from 
+                        && $c->chainage <= $condition->chainage_to;
+                })->values();
 
-                $condition->inventory = $inventory;
-
-                // 🔹 Hitung SDI
-                $sdi = null;
-                $category = 'Tidak Ada Data';
-                try {
-                    $sdi = $roadConditionController->calculateSDIPublic($condition);
-                    $category = $sdi['category'];
-
-                    Log::info("SDI OK", [
+                // ===== STEP 2: Kalau dapat >= 2 titik, pakai semua titik dalam range =====
+                if ($coords->count() >= 2) {
+                    $rangeCount++;
+                    Log::debug("Using coordinates in range", [
                         'link_no' => $condition->link_no,
-                        'sdi_final' => $sdi['sdi_final'],
-                        'category' => $category,
+                        'chainage' => "{$condition->chainage_from} - {$condition->chainage_to}",
+                        'points_found' => $coords->count(),
+                        'chainages' => $coords->pluck('chainage')->implode(', ')
                     ]);
-                } catch (\Exception $e) {
-                    Log::error("Error calculating SDI", [
+                } 
+                // ===== STEP 3: Kalau dapat < 2 titik, pakai FALLBACK (cari terdekat) =====
+                else {
+                    $fallbackCount++;
+                    
+                    // Cari koordinat terdekat ke chainage_from
+                    $nearestStart = $coordsAll->sortBy(function($c) use ($condition) {
+                        return abs($c->chainage - $condition->chainage_from);
+                    })->first();
+                    
+                    // Cari koordinat terdekat ke chainage_to
+                    $nearestEnd = $coordsAll->sortBy(function($c) use ($condition) {
+                        return abs($c->chainage - $condition->chainage_to);
+                    })->first();
+                    
+                    // Kalau start dan end sama (titik yang sama), ambil 2 titik berurutan
+                    if ($nearestStart && $nearestEnd && $nearestStart->chainage == $nearestEnd->chainage) {
+                        // Cari index titik ini dalam collection
+                        $index = $coordsAll->search(function($c) use ($nearestStart) {
+                            return $c->chainage == $nearestStart->chainage 
+                                && $c->lat == $nearestStart->lat 
+                                && $c->lng == $nearestStart->lng;
+                        });
+                        
+                        // Ambil titik ini dan titik berikutnya (atau sebelumnya)
+                        if ($index !== false) {
+                            if ($index < $coordsAll->count() - 1) {
+                                // Ambil current dan next
+                                $coords = collect([$coordsAll[$index], $coordsAll[$index + 1]]);
+                            } else if ($index > 0) {
+                                // Ambil previous dan current
+                                $coords = collect([$coordsAll[$index - 1], $coordsAll[$index]]);
+                            } else {
+                                // Hanya ada 1 titik total untuk link ini
+                                $coords = collect([$nearestStart]);
+                            }
+                        } else {
+                            $coords = collect([$nearestStart]);
+                        }
+                    } else {
+                        // Start dan end berbeda, pakai keduanya
+                        $coords = collect([$nearestStart, $nearestEnd]);
+                    }
+                    
+                    Log::debug("Using fallback coordinates", [
                         'link_no' => $condition->link_no,
-                        'error' => $e->getMessage()
+                        'chainage_requested' => "{$condition->chainage_from} - {$condition->chainage_to}",
+                        'chainage_used' => $coords->pluck('chainage')->implode(', '),
+                        'points_in_range' => $coordsAll->filter(function ($c) use ($condition) {
+                            return $c->chainage >= $condition->chainage_from 
+                                && $c->chainage <= $condition->chainage_to;
+                        })->count(),
+                        'distance_from' => $nearestStart ? abs($nearestStart->chainage - $condition->chainage_from) : 'N/A',
+                        'distance_to' => $nearestEnd ? abs($nearestEnd->chainage - $condition->chainage_to) : 'N/A'
                     ]);
                 }
 
-                // 🔹 Format output untuk frontend
+                // ===== STEP 4: Final check - pastikan minimal ada 2 titik =====
+                if ($coords->count() < 2) {
+                    $skippedCount++;
+                    Log::warning("Insufficient coordinates for segment", [
+                        'link_no' => $condition->link_no,
+                        'chainage' => "{$condition->chainage_from} - {$condition->chainage_to}",
+                        'points_available' => $coords->count(),
+                        'total_coords_for_link' => $coordsAll->count()
+                    ]);
+                    continue;
+                }
+
+                // ===== STEP 5: Masukkan ke result =====
                 $result[] = [
                     'link_no' => $condition->link_no,
+                    'link_name' => $condition->link->linkMaster->link_name ?? 'Nama ruas tidak tersedia',
                     'chainage_from' => (float) $condition->chainage_from,
                     'chainage_to' => (float) $condition->chainage_to,
                     'coords' => $coords->map(fn($c) => [
                         'lat' => (float) $c->lat,
                         'lng' => (float) $c->lng,
                     ])->values()->toArray(),
-                    'sdi_final' => $sdi ? (float) $sdi['sdi_final'] : null,
-                    'category' => $category,
-                    'year' => (int) $condition->year
+                    'sdi_final' => (float) $condition->sdi_value,
+                    'category' => $condition->sdi_category,
+                    'year' => (int) $condition->year,
+                    'reference_year' => (int) $condition->reference_year
                 ];
             }
 
             Log::info("getCoordsWithSDI completed", [
-                'year' => $year,
+                'survey_year' => $surveyYear,
+                'reference_year' => $referenceYear,
+                'total_segments' => $segments->count(),
                 'segments_processed' => count($result),
-                'segments_found' => $segments->count()
+                'segments_with_range_coords' => $rangeCount,
+                'segments_with_fallback' => $fallbackCount,
+                'segments_skipped' => $skippedCount,
+                'success_rate' => $segments->count() > 0 ? round((count($result) / $segments->count()) * 100, 2) . '%' : '0%'
             ]);
 
-            return $result;
-        });
+            // ✅ PERBAIKAN: Return format yang konsisten
+            return response()->json([
+                'success' => true,
+                'data' => $result,
+                'count' => count($result),
+                'stats' => [
+                    'total' => $segments->count(),
+                    'displayed' => count($result),
+                    'range_coords' => $rangeCount,
+                    'fallback' => $fallbackCount,
+                    'skipped' => $skippedCount,
+                    'success_rate' => $segments->count() > 0 ? round((count($result) / $segments->count()) * 100, 2) . '%' : '0%'
+                ]
+            ]);
 
-    } catch (\Exception $e) {
-        Log::error("Error getCoordsWithSDI: " . $e->getMessage(), [
-            'trace' => $e->getTraceAsString()
-        ]);
-        return response()->json([
-            'error' => $e->getMessage()
-        ], 500);
+        } catch (\Exception $e) {
+            Log::error("Error getCoordsWithSDI: " . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
-}
 
+    /**
+     * ✅ DIPERBAIKI: Filter STRICT seperti Dashboard
+     */
+    public function getKecamatanList(Request $request)
+    {
+        try {
+            $surveyYear = $request->get('year') ?? session('selected_year') ?? date('Y');
+            
+            // ✅ Ambil reference year dari database
+            $referenceYear = RoadCondition::where('year', $surveyYear)
+                ->whereHas('kabupaten', function ($query) {
+                    $query->where('kabupaten_name', 'LIKE', '%JEMBER%');
+                })
+                ->value('reference_year') ?? ($surveyYear - 1);
+            
+            Log::info("getKecamatanList called", [
+                'survey_year' => $surveyYear,
+                'reference_year' => $referenceYear
+            ]);
+            
+            // ✅ STRICT FILTER seperti Dashboard
+            $kecamatans = DB::table('link_kecamatan as lk')
+                ->join('link as l', function($join) use ($referenceYear) {
+                    $join->on('lk.link_id', '=', 'l.id');
+                    if ($referenceYear) {
+                        $join->where('l.year', '=', $referenceYear);
+                    }
+                })
+                ->join('kecamatan as k', 'lk.kecamatan_code', '=', 'k.kecamatan_code')
+                ->join('kabupaten as kab', 'lk.kabupaten_code', '=', 'kab.kabupaten_code')
+                ->join('road_condition as rc', function($join) use ($surveyYear, $referenceYear) {
+                    $join->on('l.link_no', '=', 'rc.link_no')
+                         ->where('rc.year', '=', $surveyYear);
+                    if ($referenceYear) {
+                        $join->where('rc.reference_year', '=', $referenceYear);
+                    }
+                })
+                ->where('kab.kabupaten_name', 'LIKE', '%JEMBER%')
+                ->whereNotNull('rc.sdi_value')
+                ->whereNotNull('rc.sdi_category')
+                ->select(
+                    'k.kecamatan_code',
+                    'k.kecamatan_name',
+                    DB::raw('COUNT(DISTINCT l.id) as total_links'),
+                    DB::raw('COUNT(DISTINCT CONCAT(rc.link_no, "-", rc.chainage_from, "-", rc.chainage_to)) as total_segments')
+                )
+                ->groupBy('k.kecamatan_code', 'k.kecamatan_name')
+                ->orderBy('k.kecamatan_name')
+                ->get();
+
+            Log::info("getKecamatanList completed", [
+                'survey_year' => $surveyYear,
+                'reference_year' => $referenceYear,
+                'kecamatan_count' => $kecamatans->count()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data' => $kecamatans,
+                'year' => $surveyYear,
+                'reference_year' => $referenceYear
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Error getKecamatanList: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * ✅ DIPERBAIKI TOTAL dengan VALIDASI INPUT dan CACHE KEY yang BENAR
+     */
+    public function getCoordsWithSDIByKecamatan(Request $request)
+    {
+        try {
+            // ✅ PERBAIKAN 1: VALIDASI INPUT (CRITICAL!)
+            $validated = $request->validate([
+                'year' => 'required|integer|min:2000|max:' . (date('Y') + 1),
+                'kecamatan_codes' => 'required|array|min:1',
+                'kecamatan_codes.*' => 'string|max:10'
+            ], [
+                'year.required' => 'Tahun harus diisi',
+                'year.integer' => 'Tahun harus berupa angka',
+                'kecamatan_codes.required' => 'Pilih minimal 1 kecamatan',
+                'kecamatan_codes.min' => 'Pilih minimal 1 kecamatan'
+            ]);
+
+            set_time_limit(600); // ✅ 10 menit
+            ini_set('memory_limit', '1G');
+
+            $surveyYear = $validated['year'];
+            $kecamatanCodes = $validated['kecamatan_codes'];
+            
+            // ✅ Ambil reference year dari database
+            $referenceYear = RoadCondition::where('year', $surveyYear)
+                ->whereHas('kabupaten', function ($query) {
+                    $query->where('kabupaten_name', 'LIKE', '%JEMBER%');
+                })
+                ->value('reference_year') ?? ($surveyYear - 1);
+            
+            Log::info('getCoordsWithSDIByKecamatan called', [
+                'survey_year' => $surveyYear,
+                'reference_year' => $referenceYear,
+                'kecamatan_codes' => $kecamatanCodes,
+                'kecamatan_count' => count($kecamatanCodes)
+            ]);
+
+            // ✅ PERBAIKAN 2: CACHE KEY yang BENAR (include kecamatan!)
+            sort($kecamatanCodes); // Supaya [1,2,3] = [3,2,1]
+            $kecKey = implode('_', $kecamatanCodes);
+            $cacheKey = "coords_sdi_kec_{$surveyYear}_ref_{$referenceYear}_{$kecKey}_v3";
+            
+            // ✅ PERBAIKAN 3: Gunakan cache dengan key yang benar
+            return Cache::remember($cacheKey, 3600, function () use ($surveyYear, $referenceYear, $kecamatanCodes) {
+                
+                // ✅ STRICT FILTER seperti Dashboard
+                $segments = RoadCondition::where('year', $surveyYear)
+                    ->where('reference_year', $referenceYear)
+                    ->whereNotNull('sdi_value')
+                    ->whereNotNull('sdi_category')
+                    ->whereHas('kabupaten', function ($query) {
+                        $query->where('kabupaten_name', 'LIKE', '%JEMBER%');
+                    })
+                    ->whereHas('link', function($query) use ($kecamatanCodes, $referenceYear) {
+                        if ($referenceYear) {
+                            $query->where('year', $referenceYear);
+                        }
+                        $query->whereHas('linkKecamatans', function($q) use ($kecamatanCodes) {
+                            $q->whereIn('kecamatan_code', $kecamatanCodes);
+                        });
+                    })
+                    ->with(['link.linkMaster:id,link_no,link_name'])
+                    ->orderBy('link_no')
+                    ->orderBy('chainage_from')
+                    ->get();
+                
+                Log::info('Segments found', [
+                    'count' => $segments->count(),
+                    'survey_year' => $surveyYear,
+                    'reference_year' => $referenceYear
+                ]);
+
+                if ($segments->isEmpty()) {
+                    return [
+                        'success' => true,
+                        'data' => [],
+                        'message' => 'Tidak ada data untuk kecamatan yang dipilih',
+                        'count' => 0,
+                        'stats' => [
+                            'total' => 0,
+                            'displayed' => 0,
+                            'range_coords' => 0,
+                            'fallback' => 0,
+                            'skipped' => 0,
+                            'success_rate' => '0%'
+                        ]
+                    ];
+                }
+
+                $linkNos = $segments->pluck('link_no')->unique();
+
+                $allCoords = DB::table('alignment')
+                    ->whereIn('link_no', $linkNos)
+                    ->select('link_no', 'chainage', 'north as lat', 'east as lng')
+                    ->orderBy('link_no')
+                    ->orderBy('chainage')
+                    ->get()
+                    ->groupBy('link_no');
+
+                Log::info('Alignment coords loaded', ['link_count' => $allCoords->count()]);
+
+                $result = [];
+                $skippedCount = 0;
+                $fallbackCount = 0;
+                $rangeCount = 0;
+
+                foreach ($segments as $condition) {
+                    $coordsAll = $allCoords[$condition->link_no] ?? collect();
+
+                    // Skip kalau link ini tidak punya koordinat sama sekali
+                    if ($coordsAll->isEmpty()) {
+                        $skippedCount++;
+                        Log::warning("No coordinates found for link", [
+                            'link_no' => $condition->link_no
+                        ]);
+                        continue;
+                    }
+
+                    // ===== OPSI 1B: STEP 1 - Coba ambil SEMUA koordinat dalam range =====
+                    $coords = $coordsAll->filter(function ($c) use ($condition) {
+                        return $c->chainage >= $condition->chainage_from 
+                            && $c->chainage <= $condition->chainage_to;
+                    })->values();
+
+                    // ===== STEP 2: Kalau dapat >= 2 titik, pakai semua titik dalam range =====
+                    if ($coords->count() >= 2) {
+                        $rangeCount++;
+                        Log::debug("Using coordinates in range", [
+                            'link_no' => $condition->link_no,
+                            'chainage' => "{$condition->chainage_from} - {$condition->chainage_to}",
+                            'points_found' => $coords->count(),
+                            'chainages' => $coords->pluck('chainage')->implode(', ')
+                        ]);
+                    } 
+                    // ===== STEP 3: Kalau dapat < 2 titik, pakai FALLBACK (cari terdekat) =====
+                    else {
+                        $fallbackCount++;
+                        
+                        // Cari koordinat terdekat ke chainage_from
+                        $nearestStart = $coordsAll->sortBy(function($c) use ($condition) {
+                            return abs($c->chainage - $condition->chainage_from);
+                        })->first();
+                        
+                        // Cari koordinat terdekat ke chainage_to
+                        $nearestEnd = $coordsAll->sortBy(function($c) use ($condition) {
+                            return abs($c->chainage - $condition->chainage_to);
+                        })->first();
+                        
+                        // Kalau start dan end sama (titik yang sama), ambil 2 titik berurutan
+                        if ($nearestStart && $nearestEnd && $nearestStart->chainage == $nearestEnd->chainage) {
+                            // Cari index titik ini dalam collection
+                            $index = $coordsAll->search(function($c) use ($nearestStart) {
+                                return $c->chainage == $nearestStart->chainage 
+                                    && $c->lat == $nearestStart->lat 
+                                    && $c->lng == $nearestStart->lng;
+                            });
+                            
+                            // Ambil titik ini dan titik berikutnya (atau sebelumnya)
+                            if ($index !== false) {
+                                if ($index < $coordsAll->count() - 1) {
+                                    // Ambil current dan next
+                                    $coords = collect([$coordsAll[$index], $coordsAll[$index + 1]]);
+                                } else if ($index > 0) {
+                                    // Ambil previous dan current
+                                    $coords = collect([$coordsAll[$index - 1], $coordsAll[$index]]);
+                                } else {
+                                    // Hanya ada 1 titik total untuk link ini
+                                    $coords = collect([$nearestStart]);
+                                }
+                            } else {
+                                $coords = collect([$nearestStart]);
+                            }
+                        } else {
+                            // Start dan end berbeda, pakai keduanya
+                            $coords = collect([$nearestStart, $nearestEnd]);
+                        }
+                        
+                        Log::debug("Using fallback coordinates", [
+                            'link_no' => $condition->link_no,
+                            'chainage_requested' => "{$condition->chainage_from} - {$condition->chainage_to}",
+                            'chainage_used' => $coords->pluck('chainage')->implode(', '),
+                            'points_in_range' => $coordsAll->filter(function ($c) use ($condition) {
+                                return $c->chainage >= $condition->chainage_from 
+                                    && $c->chainage <= $condition->chainage_to;
+                            })->count(),
+                            'distance_from' => $nearestStart ? abs($nearestStart->chainage - $condition->chainage_from) : 'N/A',
+                            'distance_to' => $nearestEnd ? abs($nearestEnd->chainage - $condition->chainage_to) : 'N/A'
+                        ]);
+                    }
+
+                    // ===== STEP 4: Final check - pastikan minimal ada 2 titik =====
+                    if ($coords->count() < 2) {
+                        $skippedCount++;
+                        Log::warning("Insufficient coordinates for segment", [
+                            'link_no' => $condition->link_no,
+                            'chainage' => "{$condition->chainage_from} - {$condition->chainage_to}",
+                            'points_available' => $coords->count(),
+                            'total_coords_for_link' => $coordsAll->count()
+                        ]);
+                        continue;
+                    }
+
+                    // ===== STEP 5: Masukkan ke result =====
+                    $result[] = [
+                        'link_no' => $condition->link_no,
+                        'link_id' => $condition->link_id,
+                        'link_name' => $condition->link->linkMaster->link_name ?? 'Nama ruas tidak tersedia',
+                        'chainage_from' => (float) $condition->chainage_from,
+                        'chainage_to' => (float) $condition->chainage_to,
+                        'coords' => $coords->map(fn($c) => [
+                            'lat' => (float) $c->lat,
+                            'lng' => (float) $c->lng,
+                        ])->values()->toArray(),
+                        'sdi_final' => (float) $condition->sdi_value,
+                        'category' => $condition->sdi_category,
+                        'year' => (int) $condition->year,
+                        'reference_year' => (int) $condition->reference_year
+                    ];
+                }
+
+                Log::info('getCoordsWithSDIByKecamatan completed', [
+                    'survey_year' => $surveyYear,
+                    'reference_year' => $referenceYear,
+                    'total_segments' => $segments->count(),
+                    'segments_processed' => count($result),
+                    'segments_with_range_coords' => $rangeCount,
+                    'segments_with_fallback' => $fallbackCount,
+                    'segments_skipped' => $skippedCount,
+                    'success_rate' => $segments->count() > 0 ? round((count($result) / $segments->count()) * 100, 2) . '%' : '0%'
+                ]);
+
+                // ✅ PERBAIKAN 4: Return format yang konsisten
+                return [
+                    'success' => true,
+                    'data' => $result,
+                    'count' => count($result),
+                    'stats' => [
+                        'total' => $segments->count(),
+                        'displayed' => count($result),
+                        'range_coords' => $rangeCount,
+                        'fallback' => $fallbackCount,
+                        'skipped' => $skippedCount,
+                        'success_rate' => $segments->count() > 0 ? round((count($result) / $segments->count()) * 100, 2) . '%' : '0%'
+                    ]
+                ];
+            }); // End Cache::remember - ini akan return response dari cache
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // ✅ Handle validation error
+            Log::warning("Validation failed in getCoordsWithSDIByKecamatan", [
+                'errors' => $e->errors()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => 'Validasi gagal',
+                'details' => $e->errors()
+            ], 422);
+            
+        } catch (\Exception $e) {
+            Log::error("Error getCoordsWithSDIByKecamatan: " . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

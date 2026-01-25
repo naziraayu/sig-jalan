@@ -14,7 +14,7 @@ class LinkKabupaten extends Model
     protected $fillable = [
         'province_code',
         'kabupaten_code',
-        'link_no',
+        'link_id',
         'drp_from',
         'drp_to',
         'kabupaten',

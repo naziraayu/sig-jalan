@@ -10,11 +10,12 @@ class LinkKecamatan extends Model
     protected $primaryKey = null;
     public $incrementing = false;
     protected $keyType = 'string';
+    public $timestamps = false;
 
     protected $fillable = [
         'province_code',
         'kabupaten_code',
-        'link_no',
+        'link_id',
         'drp_from',
         'drp_to',
         'kecamatan_code',
@@ -30,9 +31,24 @@ class LinkKecamatan extends Model
         return $this->belongsTo(Kabupaten::class, 'kabupaten_code', 'kabupaten_code');
     }
 
-    public function linkNo()
+    public function link()
     {
-        return $this->belongsTo(Link::class, 'link_no', 'link_no');
+        return $this->belongsTo(Link::class, 'link_id', 'id');
+    }
+
+    /**
+     * ✅ TAMBAHAN: Relasi ke RoadCondition melalui Link
+     */
+    public function roadConditions()
+    {
+        return $this->hasManyThrough(
+            RoadCondition::class,
+            Link::class,
+            'id',        // FK di tabel link
+            'link_id',   // FK di tabel road_condition
+            'link_id',   // Local key di link_kecamatan
+            'id'         // Local key di link
+        );
     }
 
     /// Relasi ke titik DRP awal - dengan filter link_no

@@ -78,23 +78,4 @@ class ProvinceController extends Controller
         return redirect()->route('provinces.index')
             ->with('success', 'Semua data provinsi berhasil dihapus!');
     }
-
-
-    // EXPORT
-    public function export()
-    {
-        return Excel::download(new ProvinceExport, 'provinces.xlsx');
-    }
-
-    // IMPORT
-    public function import(Request $request)
-    {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,xls',
-        ]);
-
-        Excel::import(new ProvinceImport, $request->file('file'));
-
-        return redirect()->route('provinces.index')->with('success', 'Provinsi berhasil diimport.');
-    }
 }

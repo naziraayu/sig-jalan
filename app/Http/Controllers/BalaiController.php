@@ -73,18 +73,4 @@ class BalaiController extends Controller
 
         return redirect()->route('balai.index')->with('success', 'Semua balai berhasil dihapus.');
     }
-
-
-    // Import & Export
-    public function import(Request $request)
-    {
-        $request->validate(['file' => 'required|mimes:xlsx,xls']);
-        Excel::import(new BalaiImport, $request->file('file'));
-        return redirect()->route('balai.index')->with('success', 'Data balai berhasil diimport.');
-    }
-
-    public function export()
-    {
-        return Excel::download(new BalaiExport, 'balai.xlsx');
-    }
 }

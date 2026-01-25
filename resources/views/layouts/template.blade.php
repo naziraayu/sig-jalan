@@ -192,6 +192,7 @@
   <script>
     window.jQuery || document.write('<script src="{{ asset("assets/modules/jquery.min.js") }}"><\/script>');
   </script>
+  
 
   <script src="{{ asset('assets/modules/popper.js') }}"></script>
   <script src="{{ asset('assets/modules/tooltip.js') }}"></script>

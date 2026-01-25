@@ -160,28 +160,4 @@ class LinkClassController extends Controller
         return redirect()->route('kelas-jalan.index')
             ->with('success', 'Semua data kelas jalan berhasil dihapus.');
     }
-
-    public function import(Request $request)
-    {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv|max:10240', // Max 10MB
-        ]);
-
-        try {
-            Excel::import(new LinkClassImport, $request->file('file'));
-            
-            return redirect()->back()->with('success', 'Data berhasil diimport!');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal import data: ' . $e->getMessage());
-        }
-    }
-
-    public function export()
-    {
-        try {
-            return Excel::download(new LinkClassExport, 'kelas-jalan_' . date('Y-m-d_H-i-s') . '.xlsx');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal export data: ' . $e->getMessage());
-        }
-    }
 }

@@ -59,7 +59,7 @@
                                             data-link-length="{{ $ruas->link_length_official ?? 0 }}"
                                             data-province="{{ $ruas->province_code }}"
                                             data-kabupaten="{{ $ruas->kabupaten_code }}">
-                                        {{ $ruas->linkMaster?->link_code ?? $ruas->link_no }}
+                                        {{ $ruas->linkMaster?->link_code ?? $ruas->link_no }} - {{ $ruas->linkMaster?->link_name ?? 'Tidak ada nama' }}
                                     </option>
                                 @endforeach
                             </select>

@@ -71,7 +71,7 @@
                         </div>
                         <div class="card-wrap">
                             <div class="card-header">
-                                <h4>Rata-rata Lebar</h4>
+                                <h4>Rata-rata Lebar Perkerasan</h4>
                             </div>
                             <div class="card-body">
                                 {{ number_format($statistics['average_width'], 2) }} m
@@ -164,11 +164,11 @@
                                         <h6 class="mb-0">
                                             <i class="fas fa-road"></i> 
                                             Segmen {{ $index + 1 }} 
-                                            ({{ number_format($inventory->chainage_from, 3) }} - {{ number_format($inventory->chainage_to, 3) }}m)
+                                            ({{ number_format($inventory->chainage_from) }} - {{ number_format($inventory->chainage_to) }} m)
                                         </h6>
                                         <div class="card-header-action">
                                             <span class="badge {{ $inventory->impassable == 1 ? 'badge-light' : 'badge-light' }}">
-                                                {{ number_format($inventory->chainage_to - $inventory->chainage_from, 3) }}m
+                                                {{ number_format($inventory->chainage_to - $inventory->chainage_from) }} m
                                             </span>
                                         </div>
                                     </div>
@@ -180,7 +180,7 @@
                                                 <table class="table table-sm table-borderless">
                                                     <tr>
                                                         <td class="text-muted">Lebar Perkerasan:</td>
-                                                        <td><strong>{{ $inventory->pave_width ? number_format($inventory->pave_width, 2) . 'm' : '-' }}</strong></td>
+                                                        <td><strong>{{ $inventory->pave_width ? number_format($inventory->pave_width) . ' m' : '-' }}</strong></td>
                                                     </tr>
                                                     <tr>
                                                         <td class="text-muted">Tipe Perkerasan:</td>
@@ -188,7 +188,7 @@
                                                     </tr>
                                                     <tr>
                                                         <td class="text-muted">ROW:</td>
-                                                        <td><strong>{{ $inventory->row ? number_format($inventory->row, 2) . 'm' : '-' }}</strong></td>
+                                                        <td><strong>{{ $inventory->row ? number_format($inventory->row) . ' m' : '-' }}</strong></td>
                                                     </tr>
                                                     <tr>
                                                         <td class="text-muted">Terrain:</td>
@@ -289,12 +289,12 @@
                                 <tr class="{{ $inventory->impassable == 1 ? 'table-danger' : '' }}">
                                     <td><strong>{{ $index + 1 }}</strong></td>
                                     <td>
-                                        {{ number_format($inventory->chainage_from, 3) }} - {{ number_format($inventory->chainage_to, 3) }}<br>
-                                        <small class="text-muted">({{ number_format($inventory->chainage_to - $inventory->chainage_from, 3) }}m)</small>
+                                        {{ number_format($inventory->chainage_from) }} - {{ number_format($inventory->chainage_to) }}<br>
+                                        <small class="text-muted">({{ number_format($inventory->chainage_to - $inventory->chainage_from) }}m)</small>
                                     </td>
-                                    <td>{{ $inventory->pave_width ? number_format($inventory->pave_width, 2) . 'm' : '-' }}</td>
+                                    <td>{{ $inventory->pave_width ? number_format($inventory->pave_width) . ' m' : '-' }}</td>
                                     <td>{{ $inventory->pavementType->code_description_ind ?? '-' }}</td>
-                                    <td>{{ $inventory->row ? number_format($inventory->row, 2) . 'm' : '-' }}</td>
+                                    <td>{{ $inventory->row ? number_format($inventory->row) . ' m' : '-' }}</td>
                                     <td>{{ $inventory->terrainType->code_description_ind ?? '-' }}</td>
                                     <td>
                                         @if($inventory->impassable == 1)
@@ -329,7 +329,7 @@
                                 <div class="mb-3">
                                     <div class="d-flex justify-content-between mb-1">
                                         <span>{{ $pavementType->code_description_ind ?? $type }}</span>
-                                        <span>{{ $count }} segmen ({{ number_format($percentage, 1) }}%)</span>
+                                        <span>{{ $count }} segmen ({{ number_format($percentage) }}%)</span>
                                     </div>
                                     <div class="progress">
                                         <div class="progress-bar bg-primary" style="width: {{ $percentage }}%"></div>
@@ -357,7 +357,7 @@
                                 <div class="mb-3">
                                     <div class="d-flex justify-content-between mb-1">
                                         <span>{{ $terrainType->code_description_ind ?? $type }}</span>
-                                        <span>{{ $count }} segmen ({{ number_format($percentage, 1) }}%)</span>
+                                        <span>{{ $count }} segmen ({{ number_format($percentage) }}%)</span>
                                     </div>
                                     <div class="progress">
                                         <div class="progress-bar bg-success" style="width: {{ $percentage }}%"></div>
@@ -383,7 +383,7 @@
                                 <i class="fas fa-arrow-left fa-2x text-primary mb-2"></i>
                                 <h6>Bahu Kiri</h6>
                                 <p class="mb-0">{{ $shoulder_analysis['left_shoulder_exists'] }}/{{ $statistics['total_segments'] }} segmen</p>
-                                <small class="text-muted">Rata-rata: {{ number_format($shoulder_analysis['avg_left_shoulder'], 2) }}m</small>
+                                <small class="text-muted">Rata-rata: {{ number_format($shoulder_analysis['avg_left_shoulder']) }} m</small>
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -391,7 +391,7 @@
                                 <i class="fas fa-arrow-right fa-2x text-info mb-2"></i>
                                 <h6>Bahu Kanan</h6>
                                 <p class="mb-0">{{ $shoulder_analysis['right_shoulder_exists'] }}/{{ $statistics['total_segments'] }} segmen</p>
-                                <small class="text-muted">Rata-rata: {{ number_format($shoulder_analysis['avg_right_shoulder'], 2) }}m</small>
+                                <small class="text-muted">Rata-rata: {{ number_format($shoulder_analysis['avg_right_shoulder']) }} m</small>
                             </div>
                         </div>
                         <div class="col-md-6">

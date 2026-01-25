@@ -156,13 +156,6 @@
                             </form>
                         @endif
 
-                        {{-- Import / Export --}}
-                        @if(auth()->user()->hasPermission('import','kondisi_jalan') || auth()->user()->hasPermission('export','kondisi_jalan'))
-                            <button type="button" class="btn btn-icon icon-left btn-success" data-toggle="modal" data-target="#modalImportExport">
-                                <i class="fas fa-file-excel"></i> Import / Export
-                            </button>
-                        @endif
-
                         {{-- Tambah Data --}}
                         @if(auth()->user()->hasPermission('add','kondisi_jalan'))
                             <a href="{{ route('kondisi-jalan.create') }}" class="btn btn-icon icon-left btn-primary">
@@ -194,13 +187,6 @@
     </section>
 </div>
 
-{{-- Modal Import Export --}}
-@include('components.modals.import_export', [
-    'title' => 'Import / Export Kondisi Jalan',
-    'importRoute' => route('kondisi-jalan.import'),
-    'exportRoute' => route('kondisi-jalan.export'),
-]) 
-
 @endsection
 
 @push('scripts')
@@ -223,7 +209,7 @@
         function loadRuasByYear(year) {
             if(!year) return;
 
-            console.log('Loading ruas for year:', year); // Debug
+            console.log('Loading ruas for year:', year);
 
             $('#filterRuas').html('<option value="">-- Memuat ruas... --</option>').prop('disabled', true);
             $('#btnFilter').prop('disabled', true);
@@ -233,17 +219,16 @@
                 type: "GET",
                 data: { year: year },
                 success: function(res){
-                    console.log('Response:', res); // Debug
+                    console.log('Response:', res);
                     
                     if(res.success && res.data && res.data.length > 0){
                         let options = '<option value="">-- Pilih Ruas --</option>';
                         res.data.forEach(function(ruas){
-                            console.log('Ruas:', ruas); // Debug
+                            console.log('Ruas:', ruas);
                             options += `<option value="${ruas.link_no}">${ruas.link_code} - ${ruas.link_name}</option>`;
                         });
                         $('#filterRuas').html(options).prop('disabled', false);
                         
-                        // Show success notification
                         if (typeof iziToast !== 'undefined') {
                             iziToast.success({
                                 title: 'Berhasil',
@@ -255,7 +240,6 @@
                     } else {
                         $('#filterRuas').html('<option value="">-- Tidak ada data ruas --</option>');
                         
-                        // Show warning toast
                         if (typeof iziToast !== 'undefined') {
                             iziToast.warning({
                                 title: 'Peringatan',
@@ -274,7 +258,6 @@
                     
                     $('#filterRuas').html('<option value="">-- Gagal memuat ruas --</option>');
                     
-                    // Show error toast
                     if (typeof iziToast !== 'undefined') {
                         iziToast.error({
                             title: 'Error',
@@ -319,16 +302,13 @@
 
         // Tombol Reset
         $('#btnReset').on('click', function(){
-            // Reset dropdown ruas
             $('#filterRuas').val('');
             $('#btnFilter').prop('disabled', true);
             
-            // Destroy DataTable jika ada
             if ($.fn.DataTable.isDataTable('#detailRuasTable')) {
                 $('#detailRuasTable').DataTable().destroy();
             }
             
-            // Reset tampilan
             $('#detailRuas').html(`
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle"></i> 
@@ -338,7 +318,6 @@
         });
 
         function loadRoadConditionData(linkNo, year){
-            // Show loading
             $('#detailRuas').html(`
                 <div class="text-center py-5">
                     <div class="spinner-border text-primary" role="status">
@@ -357,7 +336,6 @@
                 },
                 success: function(res){
                     if(res.success && res.data.length > 0){
-                        // Build table HTML
                         let html = `
                             <div class="alert alert-success">
                                 <i class="fas fa-check-circle"></i> 
@@ -367,26 +345,20 @@
                                 <table id="detailRuasTable" class="table table-striped table-bordered table-hover">
                                     <thead class="thead-dark">
                                         <tr>
-                                            <th rowspan="2" class="align-middle text-center">No</th>
-                                            <th rowspan="2" class="align-middle">Chainage</th>
-                                            <th rowspan="2" class="align-middle text-center">Tahun</th>
-                                            <th rowspan="2" class="align-middle text-center">Lebar Jalan (m)</th>
-                                            <th colspan="4" class="text-center bg-info text-white">Perhitungan SDI</th>
-                                            <th rowspan="2" class="align-middle text-center">Kategori</th>
-                                            <th rowspan="2" class="align-middle text-center">Aksi</th>
+                                            <th class="text-center">No</th>
+                                            <th>Chainage</th>
+                                            <th class="text-center">Tahun</th>
+                                            <th class="text-center">Lebar Jalan (m)</th>
+                                            <th class="text-center">SDI Final</th>
+                                            <th class="text-center">Kategori</th>
+                                            <th class="text-center">Aksi</th>
                                         </tr>
-                                        <tr>
-                                            <th class="text-center bg-light">SDI1<br><small>(Luas Retak)</small></th>
-                                            <th class="text-center bg-light">SDI2<br><small>(Lebar Retak)</small></th>
-                                            <th class="text-center bg-light">SDI3<br><small>(Lubang)</small></th>
-                                            <th class="text-center bg-light">SDI Final</th>
-                                        </tr>
-                                    </thead>
+                                        </thead>
+
                                     <tbody>
                         `;
 
                         res.data.forEach(function(item, index){
-                            // Tentukan warna badge berdasarkan kategori
                             let badgeClass = 'badge';
                             let badgeStyle = '';
                             let iconClass = 'fa-question';
@@ -415,20 +387,32 @@
                                     <td class="text-center">${index + 1}</td>
                                     <td><strong>${item.chainage_from}</strong> - <strong>${item.chainage_to}</strong></td>
                                     <td class="text-center">${item.year}</td>
-                                    <td class="text-center">${item.pave_width.toFixed(2)}</td>
-                                    <td class="text-center">${item.sdi1.toFixed(2)}</td>
-                                    <td class="text-center">${item.sdi2.toFixed(2)}</td>
-                                    <td class="text-center">${item.sdi3.toFixed(2)}</td>
-                                    <td class="text-center font-weight-bold text-primary">${item.sdi_final.toFixed(2)}</td>
+                                    <td class="text-center">${(item.pave_width ?? 0).toFixed(2)}</td>
+
+                                    <td class="text-center font-weight-bold text-primary">
+                                        ${(item.sdi_final ?? 0).toFixed(2)}
+                                    </td>
+
                                     <td class="text-center">
                                         <span class="${badgeClass}" style="${badgeStyle}">
                                             <i class="fas ${iconClass}"></i> ${item.sdi_category}
                                         </span>
                                     </td>
+
                                     <td class="text-center">
                                         <a href="/kondisi-jalan/show/${item.link_no}" class="btn btn-sm btn-info" title="Lihat Detail Ruas">
                                             <i class="fas fa-eye"></i>
                                         </a>
+                                        @if(auth()->user()->hasPermission('update','kondisi_jalan'))
+                                        <a href="/kondisi-jalan/${item.link_no}/${item.chainage_from}/${item.chainage_to}/${item.year}/edit" class="btn btn-sm btn-warning" title="Edit Segmen">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        @endif
+                                        @if(auth()->user()->hasPermission('delete','kondisi_jalan'))
+                                        <button onclick="deleteSegment('${item.link_no}', ${item.chainage_from}, ${item.chainage_to}, ${item.year})" class="btn btn-sm btn-danger" title="Hapus Segmen">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        @endif
                                     </td>
                                 </tr>
                             `;
@@ -442,13 +426,25 @@
 
                         $('#detailRuas').html(html);
 
-                        // Inisialisasi DataTables
                         $('#detailRuasTable').DataTable({
                             responsive: true,
                             autoWidth: false,
                             pageLength: 25,
                             lengthMenu: [10, 25, 50, 100, 200],
-                            order: [[1, 'asc']], // Sort by chainage
+                            order: [[1, 'asc']],
+                            columnDefs: [
+                                {
+                                    targets: 1,
+                                    type: 'num',
+                                    render: function(data, type, row) {
+                                        if (type === 'sort') {
+                                            var match = data.match(/[\d.]+/);
+                                            return match ? parseFloat(match[0]) : 0;
+                                        }
+                                        return data;
+                                    }
+                                }
+                            ],
                             language: {
                                 url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
                             },
@@ -459,7 +455,7 @@
                                     text: '<i class="fas fa-file-excel"></i> Export Excel',
                                     className: 'btn btn-success btn-sm',
                                     exportOptions: {
-                                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+                                        columns: [0,1,2,3,4,5]
                                     }
                                 },
                                 {
@@ -467,7 +463,7 @@
                                     text: '<i class="fas fa-file-pdf"></i> Export PDF',
                                     className: 'btn btn-danger btn-sm',
                                     exportOptions: {
-                                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+                                        columns: [0,1,2,3,4,5]
                                     },
                                     orientation: 'landscape',
                                     pageSize: 'A4'
@@ -477,7 +473,7 @@
                                     text: '<i class="fas fa-print"></i> Print',
                                     className: 'btn btn-info btn-sm',
                                     exportOptions: {
-                                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+                                        columns: [0,1,2,3,4,5]
                                     }
                                 }
                             ]
@@ -504,7 +500,58 @@
             });
         }
 
-        // Initialize on page load
+        // ✅ FUNCTION DELETE SEGMENT
+        window.deleteSegment = function(linkNo, chainageFrom, chainageTo, year) {
+            Swal.fire({
+                title: 'Hapus Segmen?',
+                html: `Yakin ingin menghapus segmen:<br><strong>${chainageFrom} - ${chainageTo}</strong>?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: `/kondisi-jalan/${linkNo}/${chainageFrom}/${chainageTo}/${year}`,
+                        type: 'DELETE',
+                        data: {
+                            _token: '{{ csrf_token() }}'
+                        },
+                        success: function(response) {
+                            if(response.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    text: response.message || 'Data berhasil dihapus',
+                                    confirmButtonColor: '#28a745'
+                                }).then(() => {
+                                    // Reload data
+                                    $('#btnFilter').click();
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Gagal!',
+                                    text: response.message || 'Gagal menghapus data',
+                                    confirmButtonColor: '#d33'
+                                });
+                            }
+                        },
+                        error: function(xhr) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: 'Terjadi kesalahan saat menghapus data',
+                                confirmButtonColor: '#d33'
+                            });
+                        }
+                    });
+                }
+            });
+        };
+
         initializeRuas();
     });
 </script>

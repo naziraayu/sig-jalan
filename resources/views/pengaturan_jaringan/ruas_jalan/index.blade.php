@@ -42,13 +42,13 @@
                         <div class="d-flex gap-2 flex-wrap align-items-center">
                             @if(auth()->user()->hasPermission('add','ruas_jalan'))
                                 <a href="{{ route('ruas-jalan.create') }}" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-plus"></i> Tambah
+                                    <i class="fas fa-plus"></i> Tambah Ruas Jalan
                                 </a>
                             @endif
 
                             @if(auth()->user()->hasPermission('delete','ruas_jalan'))
                                 <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#modalDeleteAll">
-                                    <i class="fas fa-trash"></i> Hapus Semua
+                                    <i class="fas fa-trash"></i> Hapus Semua Data
                                 </button>
                             @endif
                         </div>
@@ -96,12 +96,12 @@
                             <thead class="thead-light">
                                 <tr>
                                     <th style="width: 5%;">No</th>
-                                    <th style="width: 12%;">Link Code</th>
+                                    <th style="width: 12%;">Kode SK</th>
                                     <th style="width: 30%;">Nama Ruas</th>
                                     <th style="width: 15%;">Provinsi</th>
                                     <th style="width: 15%;">Kabupaten</th>
                                     <th style="width: 10%;">Status</th>
-                                    <th style="width: 10%;">Function</th>
+                                    <th style="width: 10%;">Fungsi Ruas</th>
                                     <th style="width: 8%;">Aksi</th>
                                 </tr>
                             </thead>
@@ -219,7 +219,9 @@ $(document).ready(function () {
             { 
                 data: 'link_code', 
                 name: 'link.link_code',
-                className: 'text-center'
+                render: function(data, type, row) {
+                    return data || '<span class="text-muted">-</span>';
+                }
             },
             { 
                 data: 'link_name', 
@@ -293,25 +295,6 @@ $(document).ready(function () {
         autoWidth: false,
         dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rtip',
     });
-
-    // ✅ HAPUS: Filter change handler (karena filter di-disable)
-    // $('#filterProvinsi, #filterKabupaten').on('change', function() {
-    //     table.ajax.reload(null, false);
-    // });
-
-    // ✅ HAPUS: Reset filter button handler (karena filter di-disable)
-    // $('#btnResetFilter').on('click', function() {
-    //     $('#filterProvinsi').val('{{ $defaultProvinsi }}');
-    //     $('#filterKabupaten').val('{{ $defaultKabupaten }}');
-    //     table.ajax.reload();
-    //     
-    //     iziToast.info({
-    //         title: 'Info',
-    //         message: 'Filter telah direset',
-    //         position: 'topRight',
-    //         timeout: 2000
-    //     });
-    // });
 
     // ✅ Auto-adjust DataTable on sidebar toggle
     function adjustDataTable() {

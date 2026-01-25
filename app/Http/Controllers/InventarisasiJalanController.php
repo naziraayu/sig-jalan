@@ -412,50 +412,7 @@ class InventarisasiJalanController extends Controller
             ], 500);
         }
     }
-
-    /**
-     * Import data from Excel
-     */
-    // public function import(Request $request)
-    // {
-    //     $request->validate([
-    //         'file' => 'required|mimes:xlsx,xls,csv|max:10240',
-    //         'year' => 'nullable|integer|min:2000|max:' . (date('Y') + 1),
-    //     ]);
-
-    //     try {
-    //         // ✅ Ambil year dari input atau session
-    //         $year = $request->input('year') ?? session('selected_year') ?? date('Y');
-            
-    //         Excel::import(new RoadInventoryImport($year), $request->file('file'));
-            
-    //         return redirect()->back()->with('success', 'Data berhasil diimport untuk tahun ' . $year);
-    //     } catch (\Exception $e) {
-    //         return redirect()->back()->with('error', 'Gagal import data: ' . $e->getMessage());
-    //     }
-    // }
-
-    /**
-     * Export data to Excel (commented - uncomment when ready)
-     */
-    // public function export()
-    // {
-    //     try {
-    //         $selectedYear = session('selected_year');
-            
-    //         if (!$selectedYear) {
-    //             return redirect()->back()->with('error', 'Silakan pilih tahun terlebih dahulu');
-    //         }
-            
-    //         return Excel::download(
-    //             new RoadInventoryExport($selectedYear), 
-    //             'inventarisasi_jalan_' . $selectedYear . '_' . date('Y-m-d_H-i-s') . '.xlsx'
-    //         );
-    //     } catch (\Exception $e) {
-    //         return redirect()->back()->with('error', 'Gagal export data: ' . $e->getMessage());
-    //     }
-    // }
-
+    
     /**
      * Delete all inventories for selected year
      */

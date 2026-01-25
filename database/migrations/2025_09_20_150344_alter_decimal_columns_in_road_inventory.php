@@ -12,8 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('road_inventory', function (Blueprint $table) {
-            $table->decimal('chainage_from', 10, 2)->change();
-            $table->decimal('chainage_to', 10, 2)->change();
             $table->decimal('drp_from', 10, 2)->nullable()->change();
             $table->decimal('offset_from', 10, 2)->nullable()->change();
             $table->decimal('drp_to', 10, 2)->nullable()->change();

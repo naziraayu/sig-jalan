@@ -73,21 +73,4 @@ class KecamatanController extends Controller
         Kecamatan::truncate();
         return redirect()->route('kecamatan.index')->with('success', 'Semua data kecamatan berhasil dihapus.');
     }
-
-    // Import
-    public function import(Request $request)
-    {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,csv,xls'
-        ]);
-
-        Excel::import(new KecamatanImport, $request->file('file'));
-        return redirect()->route('kecamatan.index')->with('success', 'Import data kecamatan berhasil.');
-    }
-
-    // Export
-    public function export()
-    {
-        return Excel::download(new KecamatanExport, 'kecamatan.xlsx');
-    }
 }

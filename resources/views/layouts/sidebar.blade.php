@@ -51,18 +51,18 @@
                         @if($user->hasPermission('detail', 'ruas_jalan'))
                             <li><a class="nav-link" href="{{ route(name: 'ruas-jalan.index') }}">Ruas Jalan</a></li>
                         @endif
-                        @if($user->hasPermission('detail', 'drp'))
+                        {{-- @if($user->hasPermission('detail', 'drp'))
                             <li><a class="nav-link" href="{{ route(name: 'drp.index') }}">DRP</a></li>
                         @endif
                         @if($user->hasPermission('detail', 'kelas_jalan'))
                             <li><a class="nav-link" href="{{ route(name: 'kelas-jalan.index') }}">Kelas Jalan</a></li>
-                        @endif
-                        @if($user->hasPermission('detail', 'ruas_jalan_kabupaten'))
+                        @endif --}}
+                        {{-- @if($user->hasPermission('detail', 'ruas_jalan_kabupaten'))
                             <li><a class="nav-link" href="#">Ruas Jalan/Kabupaten</a></li>
                         @endif
                         @if($user->hasPermission('detail', 'ruas_jalan_kecamatan'))
                             <li><a class="nav-link" href="{{ route(name: 'ruas-jalan-kecamatan.index') }}">Ruas Jalan/Kecamatan</a></li>
-                        @endif
+                        @endif --}}
                     </ul>
                 </li>
             @endif
@@ -78,9 +78,9 @@
                         @if($user->hasPermission('detail', 'kondisi_jalan'))
                             <li><a class="nav-link" href="{{ route(name: 'kondisi-jalan.index') }}">Kondisi Jalan</a></li>
                         @endif
-                        @if($user->hasPermission('detail', 'koordinat_gps'))
+                        {{-- @if($user->hasPermission('detail', 'koordinat_gps'))
                             <li><a class="nav-link" href="#">Impor Koordinat GPS</a></li>
-                        @endif
+                        @endif --}}
                         {{-- @if($user->hasPermission('detail', 'nilai_mca_ruas'))
                             <li><a class="nav-link" href="#">Nilai MCA Ruas</a></li>
                         @endif --}}
@@ -96,15 +96,15 @@
                         @if($user->hasPermission('detail', 'kabupaten'))
                             <li><a class="nav-link" href="{{ url('/peta/alignment') }}">Kabupaten</a></li>
                         @endif
-                        @if($user->hasPermission('detail', 'kecamatan'))
+                        {{-- @if($user->hasPermission('detail', 'kecamatan'))
                             <li><a class="nav-link" href="#">Kecamatan</a></li>
-                        @endif
+                        @endif --}}
                     </ul>
                 </li>
             @endif
 
             {{-- Pengaturan --}}
-            @if($user->features()->intersect(['hak_akses','user','profile'])->isNotEmpty())
+            @if($user->features()->intersect(['hak_akses','user','profile','import_export'])->isNotEmpty())
                 <li class="dropdown">
                     <a href="#" class="nav-link has-dropdown"><i class="fas fa-cog"></i> <span>Pengaturan</span></a>
                     <ul class="dropdown-menu">
@@ -116,6 +116,9 @@
                         @endif
                         @if($user->hasPermission('detail', 'profile'))
                             <li><a class="nav-link" href="{{ route('profile.edit') }}">Profil</a></li>
+                        @endif
+                         @if($user->hasPermission('detail', 'import_export'))
+                            <li><a class="nav-link" href="{{ route('import_export.index') }}">Export/Import</a></li>
                         @endif
                     </ul>
                 </li>
