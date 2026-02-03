@@ -382,7 +382,7 @@
                                 iconClass = 'fa-ban';
                             }
 
-                            html += `
+                            html += ` 
                                 <tr>
                                     <td class="text-center">${index + 1}</td>
                                     <td><strong>${item.chainage_from}</strong> - <strong>${item.chainage_to}</strong></td>

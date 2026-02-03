@@ -18,14 +18,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\CodeShoulderCondition;
 use App\Models\CodeFoothpathCondition;
-use App\Services\SDICalculator; // ✅ Import Service
+use App\Services\SDICalculator;
 
 class RoadConditionController extends Controller
 {
-    // ========================================
-    // EXISTING METHODS (tidak berubah)
-    // ========================================
-    
     public function index()
     { 
         $statusRuas = CodeLinkStatus::orderBy('order')->get();
@@ -174,14 +170,16 @@ class RoadConditionController extends Controller
 
             $existingConditions = RoadCondition::where('link_no', $linkNo)
                 ->where('year', $surveyYear)
-                ->orderByRaw('CAST(chainage_from AS DECIMAL(10,3)) ASC')
+                ->orderByRaw('CAST(chainage_from AS SIGNED) ASC')
                 ->get();
 
             if ($existingConditions->isNotEmpty()) {
                 $chainageList = $existingConditions->map(function($cond) {
                     return [
-                        'chainage_from' => floatval($cond->chainage_from),
-                        'chainage_to' => floatval($cond->chainage_to),
+                        'chainage_from' => intval($cond->chainage_from),
+                        'chainage_to' => intval($cond->chainage_to),
+                        'chainage_from_km' => round(intval($cond->chainage_from) / 1000, 3),
+                        'chainage_to_km' => round(intval($cond->chainage_to) / 1000, 3),
                         'pave_width' => floatval($cond->inventory->pave_width ?? 0),
                         'pave_type' => $cond->inventory->pave_type ?? null,
                         'has_condition_data' => true,
@@ -200,12 +198,12 @@ class RoadConditionController extends Controller
                 ->when($surveyYear, function($query) use ($surveyYear) {
                     return $query->where('year', $surveyYear);
                 })
-                ->orderByRaw('CAST(chainage_from AS DECIMAL(10,3)) ASC')
+                ->orderByRaw('CAST(chainage_from AS SIGNED) ASC')
                 ->get();
 
             if ($inventories->isEmpty() && $surveyYear) {
                 $inventories = RoadInventory::where('link_no', $linkNo)
-                    ->orderByRaw('CAST(chainage_from AS DECIMAL(10,3)) ASC')
+                    ->orderByRaw('CAST(chainage_from AS SIGNED) ASC')
                     ->get();
             }
 
@@ -219,8 +217,10 @@ class RoadConditionController extends Controller
 
             $chainageList = $inventories->map(function($inv) {
                 return [
-                    'chainage_from' => floatval($inv->chainage_from),
-                    'chainage_to' => floatval($inv->chainage_to),
+                    'chainage_from' => intval($inv->chainage_from),
+                    'chainage_to' => intval($inv->chainage_to),
+                    'chainage_from_km' => round(intval($inv->chainage_from) / 1000, 3),
+                    'chainage_to_km' => round(intval($inv->chainage_to) / 1000, 3),
                     'pave_width' => floatval($inv->pave_width ?? 0),
                     'pave_type' => $inv->pave_type,
                     'has_condition_data' => false,
@@ -264,13 +264,19 @@ class RoadConditionController extends Controller
             $linkNo = $surveySetup['link_no'];
             $linkId = $surveySetup['link_id'];
 
+            Log::info('Store Road Condition Started', [
+                'survey_year' => $surveyYear,
+                'link_no' => $linkNo,
+                'segments_count' => count($conditionData)
+            ]);
+
             $hasInventory = RoadInventory::where('link_no', $linkNo)->exists();
 
             if (!$hasInventory) {
                 DB::rollBack();
                 return response()->json([
                     'success' => false,
-                    'message' => 'Ruas ini belum memiliki data inventarisasi.'
+                    'message' => 'Ruas ini belum memiliki data inventarisasi. Silakan lengkapi data inventarisasi terlebih dahulu.'
                 ], 400);
             }
 
@@ -288,7 +294,7 @@ class RoadConditionController extends Controller
                 DB::rollBack();
                 return response()->json([
                     'success' => false,
-                    'message' => 'Data ruas tidak ditemukan'
+                    'message' => 'Data ruas tidak ditemukan untuk link_no: ' . $linkNo
                 ], 400);
             }
 
@@ -296,19 +302,75 @@ class RoadConditionController extends Controller
             $skippedCount = 0;
             $errors = [];
 
-            foreach ($conditionData as $data) {
+            foreach ($conditionData as $index => $data) {
                 try {
-                    $exists = RoadCondition::where('link_no', $linkNo)
-                        ->where('year', $surveyYear)
-                        ->where('chainage_from', $data['chainage_from'])
-                        ->where('chainage_to', $data['chainage_to'])
-                        ->exists();
-
-                    if ($exists) {
+                    if (!isset($data['chainage_from']) || !isset($data['chainage_to'])) {
+                        $errors[] = [
+                            'index' => $index,
+                            'error' => 'Chainage from/to tidak lengkap'
+                        ];
                         $skippedCount++;
                         continue;
                     }
 
+                    $chainageFromMeter = intval($data['chainage_from'] * 1000);
+                    $chainageToMeter = intval($data['chainage_to'] * 1000);
+
+                    $exists = RoadCondition::where('link_no', $linkNo)
+                        ->where('year', $surveyYear)
+                        ->where('chainage_from', $chainageFromMeter)
+                        ->where('chainage_to', $chainageToMeter)
+                        ->exists();
+
+                    if ($exists) {
+                        Log::warning('Duplicate segment skipped', [
+                            'link_no' => $linkNo,
+                            'chainage' => "{$chainageFromMeter} - {$chainageToMeter} meter"
+                        ]);
+                        
+                        $errors[] = [
+                            'index' => $index,
+                            'chainage' => "{$data['chainage_from']} - {$data['chainage_to']} km",
+                            'error' => 'Chainage ini sudah ada di database'
+                        ];
+                        
+                        $skippedCount++;
+                        continue;
+                    }
+
+                    $overlaps = RoadCondition::where('link_no', $linkNo)
+                        ->where('year', $surveyYear)
+                        ->where(function($query) use ($chainageFromMeter, $chainageToMeter) {
+                            $query->where(function($q) use ($chainageFromMeter, $chainageToMeter) {
+                                $q->where('chainage_from', '<=', $chainageFromMeter)
+                                ->where('chainage_to', '>', $chainageFromMeter);
+                            })->orWhere(function($q) use ($chainageFromMeter, $chainageToMeter) {
+                                $q->where('chainage_from', '<', $chainageToMeter)
+                                ->where('chainage_to', '>=', $chainageToMeter);
+                            })->orWhere(function($q) use ($chainageFromMeter, $chainageToMeter) {
+                                $q->where('chainage_from', '>=', $chainageFromMeter)
+                                ->where('chainage_to', '<=', $chainageToMeter);
+                            });
+                        })
+                        ->exists();
+
+                    if ($overlaps) {
+                        Log::warning('Overlapping segment skipped', [
+                            'link_no' => $linkNo,
+                            'chainage' => "{$chainageFromMeter} - {$chainageToMeter} meter"
+                        ]);
+                        
+                        $errors[] = [
+                            'index' => $index,
+                            'chainage' => "{$data['chainage_from']} - {$data['chainage_to']} km",
+                            'error' => 'Chainage overlap dengan data yang sudah ada'
+                        ];
+                        
+                        $skippedCount++;
+                        continue;
+                    }
+
+                    // ✅ Build condition record dengan pavement mapping yang benar
                     $conditionRecord = [
                         'year' => $surveyYear,
                         'reference_year' => $referenceYear,
@@ -316,71 +378,83 @@ class RoadConditionController extends Controller
                         'link_no' => $linkNo,
                         'province_code' => $link->province_code,
                         'kabupaten_code' => $link->kabupaten_code,
-                        'chainage_from' => $data['chainage_from'],
-                        'chainage_to' => $data['chainage_to'],
+                        'chainage_from' => $chainageFromMeter,
+                        'chainage_to' => $chainageToMeter,
+                        
+                        // ✅ PAVEMENT: Convert dari data_type ke pavement code
+                        'pavement' => $this->getDataTypeToPavementCode($data['data_type'] ?? 'Aspal'),
+                        
                         'survey_by' => $surveySetup['surveyor_name'] ?? null,
                         'survey_by2' => $surveySetup['surveyor_name_2'] ?? null,
                         'survey_date' => $surveySetup['survey_date'] ?? null,
                         
-                        // Data kerusakan
                         'roughness' => $data['roughness'] ?? null,
                         'bleeding_area' => $data['bleeding_area'] ?? null,
                         'ravelling_area' => $data['ravelling_area'] ?? null,
                         'desintegration_area' => $data['desintegration_area'] ?? null,
-                        'crack_dep_area' => $data['crack_dep_area'] ?? null,
                         'patching_area' => $data['patching_area'] ?? null,
+                        'crack_type' => $data['crack_type'] ?? null,
+                        'crack_width' => $data['crack_width'] ?? null,
                         'oth_crack_area' => $data['oth_crack_area'] ?? null,
-                        'pothole_area' => $data['pothole_area'] ?? null,
+                        'crack_dep_area' => $data['crack_dep_area'] ?? null,
+                        'edge_damage_area' => $data['edge_damage_area'] ?? null,
+                        'edge_damage_area_r' => $data['edge_damage_area_r'] ?? null,
                         'pothole_count' => $data['pothole_count'] ?? null,
+                        'pothole_size' => $data['pothole_size'] ?? null,
+                        'pothole_area' => $data['pothole_area'] ?? null,
                         'rutting_area' => $data['rutting_area'] ?? null,
                         'rutting_depth' => $data['rutting_depth'] ?? null,
-                        'edge_damage_area' => $data['edge_damage_area'] ?? null,
-                        'crack_width' => $data['crack_width'] ?? null,
-                        'crossfall_area' => $data['crossfall_area'] ?? null,
-                        'depressions_area' => $data['depressions_area'] ?? null,
-                        'erosion_area' => $data['erosion_area'] ?? null,
-                        'waviness_area' => $data['waviness_area'] ?? null,
-                        'gravel_thickness_area' => $data['gravel_thickness_area'] ?? null,
                         'concrete_cracking_area' => $data['concrete_cracking_area'] ?? null,
                         'concrete_spalling_area' => $data['concrete_spalling_area'] ?? null,
                         'concrete_structural_cracking_area' => $data['concrete_structural_cracking_area'] ?? null,
                         'concrete_corner_break_no' => $data['concrete_corner_break_no'] ?? null,
                         'concrete_pumping_no' => $data['concrete_pumping_no'] ?? null,
                         'concrete_blowouts_area' => $data['concrete_blowouts_area'] ?? null,
-                        
-                        // Kondisi bahu, drainase, dll
-                        'shoulder_l' => $data['shoulder_l'] ?? null,
-                        'shoulder_r' => $data['shoulder_r'] ?? null,
-                        'drain_l' => $data['drain_l'] ?? null,
-                        'drain_r' => $data['drain_r'] ?? null,
-                        'slope_l' => $data['slope_l'] ?? null,
-                        'slope_r' => $data['slope_r'] ?? null,
-                        'footpath_l' => $data['footpath_l'] ?? null,
-                        'footpath_r' => $data['footpath_r'] ?? null,
-                        
+                        'should_cond_l' => $data['should_cond_l'] ?? null,
+                        'crossfall_shape' => $data['crossfall_shape'] ?? null,
+                        'crossfall_area' => $data['crossfall_area'] ?? null,
+                        'depressions_area' => $data['depressions_area'] ?? null,
+                        'erosion_area' => $data['erosion_area'] ?? null,
+                        'waviness_area' => $data['waviness_area'] ?? null,
+                        'gravel_size' => $data['gravel_size'] ?? null,
+                        'gravel_thickness' => $data['gravel_thickness'] ?? null,
+                        'gravel_thickness_area' => $data['gravel_thickness_area'] ?? null,
+                        'distribution' => $data['distribution'] ?? null,
                         'iri' => $data['iri'] ?? null,
                         'rci' => $data['rci'] ?? null,
-                        
-                        // ✅ SDI akan di-calculate otomatis oleh Observer
                         'sdi_value' => null,
                         'sdi_category' => null,
                     ];
 
-                    RoadCondition::create($conditionRecord);
-                    // ☝️ Observer akan auto-calculate SDI dan save ke DB
+                    $newCondition = RoadCondition::create($conditionRecord);
                     
+                    Log::info('Segment saved', [
+                        'id' => $newCondition->id,
+                        'link_no' => $linkNo,
+                        'chainage' => "{$data['chainage_from']} - {$data['chainage_to']}",
+                        'pavement' => $conditionRecord['pavement'],
+                        'sdi_value' => $newCondition->sdi_value,
+                        'sdi_category' => $newCondition->sdi_category,
+                    ]);
+
                     $savedCount++;
 
                 } catch (\Exception $e) {
                     Log::error('Error saving individual condition record', [
+                        'index' => $index,
                         'link_no' => $linkNo,
                         'chainage_from' => $data['chainage_from'] ?? 'unknown',
-                        'error' => $e->getMessage()
+                        'chainage_to' => $data['chainage_to'] ?? 'unknown',
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
                     ]);
+                    
                     $errors[] = [
+                        'index' => $index,
                         'chainage' => ($data['chainage_from'] ?? '?') . ' - ' . ($data['chainage_to'] ?? '?'),
                         'error' => $e->getMessage()
                     ];
+                    
                     $skippedCount++;
                 }
             }
@@ -388,25 +462,93 @@ class RoadConditionController extends Controller
             DB::commit();
 
             $message = "Berhasil menyimpan {$savedCount} data kondisi jalan untuk tahun {$surveyYear}";
+            
             if ($skippedCount > 0) {
                 $message .= ". {$skippedCount} data dilewati (duplikat atau error).";
             }
+
+            Log::info('Store Road Condition Completed', [
+                'saved' => $savedCount,
+                'skipped' => $skippedCount,
+                'errors' => count($errors)
+            ]);
 
             return response()->json([
                 'success' => true,
                 'message' => $message,
                 'saved_count' => $savedCount,
                 'skipped_count' => $skippedCount,
-                'errors' => $errors
+                'errors' => $errors,
+                'data' => [
+                    'link_no' => $linkNo,
+                    'year' => $surveyYear,
+                    'segments_saved' => $savedCount
+                ]
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error storing road condition: ' . $e->getMessage());
+            
+            Log::error('Error storing road condition (main catch)', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
 
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getLastChainage(Request $request)
+    {
+        $linkNo = $request->get('link_no');
+        $year = $request->get('year');
+        
+        if (!$linkNo || !$year) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Parameter tidak lengkap'
+            ]);
+        }
+
+        try {
+            $lastCondition = RoadCondition::where('link_no', $linkNo)
+                ->where('year', $year)
+                ->orderBy('chainage_to', 'desc')
+                ->first();
+
+            if ($lastCondition) {
+                $lastChainageToMeter = intval($lastCondition->chainage_to);
+                $lastChainageToKm = $lastChainageToMeter / 1000;
+                
+                return response()->json([
+                    'success' => true,
+                    'has_data' => true,
+                    'last_chainage_to_meter' => $lastChainageToMeter,
+                    'last_chainage_to_km' => round($lastChainageToKm, 3),
+                    'last_pavement' => $lastCondition->pavement,
+                    'message' => 'Data terakhir ditemukan'
+                ]);
+            } else {
+                return response()->json([
+                    'success' => true,
+                    'has_data' => false,
+                    'last_chainage_to_meter' => 0,
+                    'last_chainage_to_km' => 0,
+                    'message' => 'Belum ada data untuk ruas ini'
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Error getLastChainage: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -440,35 +582,8 @@ class RoadConditionController extends Controller
 
             $condition->inventory = $inventory;
 
-            // Auto-detect data type berdasarkan field yang terisi
-            $dataType = 'Aspal'; // Default
-            
-            if (!empty($condition->pavement)) {
-                $pavementMap = [
-                    'AS' => 'Aspal',
-                    'BL' => 'Blok',
-                    'BT' => 'Beton',
-                    'NA' => 'Non Aspal',
-                ];
-                
-                $dataType = $pavementMap[$condition->pavement] ?? 'Aspal';
-            } else {
-                // Auto-detect logic (existing)
-                if ($condition->concrete_cracking_area > 0 || 
-                    $condition->concrete_spalling_area > 0 || 
-                    $condition->concrete_structural_cracking_area > 0) {
-                    $dataType = 'Beton';
-                }
-                elseif ($condition->crossfall_area > 0 || 
-                        $condition->gravel_thickness_area > 0) {
-                    $dataType = 'Non Aspal';
-                }
-                elseif ($condition->desintegration_area > 0 && 
-                        !$condition->bleeding_area && 
-                        !$condition->ravelling_area) {
-                    $dataType = 'Blok';
-                }
-            }
+            // ✅ Convert pavement code ke data type untuk display
+            $dataType = $this->getPavementCodeToDataType($condition->pavement ?? 'Asphalt');
 
             return view('jalan.kondisi-jalan.edit', compact(
                 'condition',
@@ -497,6 +612,7 @@ class RoadConditionController extends Controller
                 ->firstOrFail();
 
             $updateData = [
+                // ✅ Convert data_type ke pavement code
                 'pavement' => $this->getDataTypeToPavementCode($request->input('data_type')),
                 'survey_by' => $request->input('survey_by'),
                 'survey_by2' => $request->input('survey_by2'),
@@ -542,7 +658,6 @@ class RoadConditionController extends Controller
             });
 
             $condition->update($updateData);
-            // ☝️ Observer akan auto-recalculate SDI
 
             DB::commit();
 
@@ -563,14 +678,27 @@ class RoadConditionController extends Controller
     private function getDataTypeToPavementCode($dataType)
     {
         $mapping = [
-            'Aspal' => 'AS',
-            'Blok' => 'BL',
-            'Beton' => 'BT',
-            'Non Aspal' => 'NA',
-            'Tak Dapat Dilalui' => 'TD',
+            'Aspal' => 'Asphalt',
+            'Blok' => 'Block',
+            'Beton' => 'Concrete',
+            'Non Aspal' => 'Unpaved',
+            'Tak Dapat Dilalui' => 'Impassable',
         ];
         
-        return $mapping[$dataType] ?? 'AS';
+        return $mapping[$dataType] ?? 'Asphalt';
+    }
+
+    private function getPavementCodeToDataType($pavementCode)
+    {
+        $mapping = [
+            'Asphalt' => 'Aspal',
+            'Block' => 'Blok',
+            'Concrete' => 'Beton',
+            'Unpaved' => 'Non Aspal',
+            'Impassable' => 'Tak Dapat Dilalui',
+        ];
+        
+        return $mapping[$pavementCode] ?? 'Aspal';
     }
 
     public function destroy($linkNo, $chainageFrom, $chainageTo, $year)
@@ -604,10 +732,6 @@ class RoadConditionController extends Controller
             ], 500);
         }
     }
-
-    // ========================================
-    // ✅ UPDATED: BACA SDI DARI DATABASE
-    // ========================================
 
     public function getYears(Request $request)
     {
@@ -661,7 +785,6 @@ class RoadConditionController extends Controller
                 ]);
             }
 
-            // ✅ LANGSUNG BACA DARI DATABASE (tidak calculate ulang)
             $dataWithSDI = $conditions->map(function($item) {
                 return [
                     'chainage_from' => $item->chainage_from,
@@ -669,8 +792,8 @@ class RoadConditionController extends Controller
                     'year' => intval($item->year),
                     'iri' => $item->iri ? floatval($item->iri) : null,
                     'rci' => $item->rci ? floatval($item->rci) : null,
-                    'sdi_final' => floatval($item->sdi_value ?? 0), // ✅ Dari DB
-                    'sdi_category' => $item->sdi_category ?? 'Data Tidak Lengkap', // ✅ Dari DB
+                    'sdi_final' => floatval($item->sdi_value ?? 0),
+                    'sdi_category' => $item->sdi_category ?? 'Data Tidak Lengkap',
                     'link_no' => $item->link_no,
                 ];
             });
@@ -691,139 +814,173 @@ class RoadConditionController extends Controller
         }
     }
 
-    /**
-     * ✅ PERBAIKAN: Langsung baca SDI dari database
-     */
-public function show($link_no)
-{
-    $selectedYear = session('selected_year');
-    $referenceYear = $selectedYear ? $selectedYear - 1 : null;
+    public function show($link_no)
+    {
+        $selectedYear = session('selected_year');
+        $referenceYear = $selectedYear ? $selectedYear - 1 : null;
 
-    $ruas = Link::with(['province', 'kabupaten'])
-        ->where('link_no', $link_no)
-        ->when($referenceYear, function($query) use ($referenceYear) {
-            return $query->where('year', $referenceYear);
-        })
-        ->orderBy('year', 'desc')
-        ->first();
-
-    if (!$ruas) {
         $ruas = Link::with(['province', 'kabupaten'])
             ->where('link_no', $link_no)
+            ->when($referenceYear, function($query) use ($referenceYear) {
+                return $query->where('year', $referenceYear);
+            })
             ->orderBy('year', 'desc')
-            ->firstOrFail();
-    }
+            ->first();
 
-    $availableYears = RoadCondition::where('link_no', $link_no)
-        ->select('year')
-        ->distinct()
-        ->orderBy('year', 'desc')
-        ->pluck('year');
-
-    // ✅ PERBAIKAN 1: Tambah eager load 'inventory'
-    $conditions = RoadCondition::where('link_no', $link_no)
-        ->with('inventory')  // ✅ Tambahkan ini
-        ->when($selectedYear, function($query) use ($selectedYear) {
-            return $query->where('year', $selectedYear);
-        })
-        ->orderByRaw('CAST(chainage_from AS DECIMAL(10,3)) ASC')
-        ->get();
-
-    // ✅ PERBAIKAN 2: Calculate SDI1-SDI4 on-the-fly untuk tabel overview
-    $conditionsWithSDI = $conditions->map(function($condition) {
-        // Panggil SDICalculator dengan detailed = true
-        $sdiDetail = SDICalculator::calculate($condition, true);
-        
-        $condition->sdi_data = [
-            'sdi1' => $sdiDetail['sdi1'] ?? 0,
-            'sdi2' => $sdiDetail['sdi2'] ?? 0,
-            'sdi3' => $sdiDetail['sdi3'] ?? 0,
-            'sdi_final' => $sdiDetail['sdi_final'] ?? 0,
-            'category' => $sdiDetail['category'] ?? 'Data Tidak Lengkap',
-        ];
-        
-        return $condition;
-    });
-
-    $statistics = [
-        'total_segments' => $conditions->count(),
-        'total_length' => $conditions->sum(function($item) {
-            return $item->chainage_to - $item->chainage_from;
-        }),
-        'avg_iri' => $conditions->where('iri', '>', 0)->avg('iri'),
-        'avg_rci' => $conditions->where('rci', '>', 0)->avg('rci'),
-        'avg_sdi' => $conditions->avg('sdi_value'),
-        'good_condition' => $conditions->where('sdi_category', 'Baik')->count(),
-        'fair_condition' => $conditions->where('sdi_category', 'Sedang')->count(),
-        'poor_condition' => $conditions->where('sdi_category', 'Rusak Ringan')->count(),
-        'very_poor_condition' => $conditions->where('sdi_category', 'Rusak Berat')->count(),
-    ];
-
-    $damage_analysis = [
-        'total_crack_area' => $conditions->sum('crack_dep_area') + $conditions->sum('oth_crack_area'),
-        'total_bleeding_area' => $conditions->sum('bleeding_area'),
-        'total_ravelling_area' => $conditions->sum('ravelling_area'),
-        'total_desintegration_area' => $conditions->sum('desintegration_area'),
-        'total_patching_area' => $conditions->sum('patching_area'),
-        'total_pothole_area' => $conditions->sum('pothole_area'),
-        'total_pothole_count' => $conditions->sum('pothole_count'),
-        'total_potholes' => $conditions->sum('pothole_count'),
-        'total_rutting_area' => $conditions->sum('rutting_area'),
-        'avg_rutting_depth' => $conditions->avg('rutting_depth'),
-        'total_edge_damage' => $conditions->sum('edge_damage_area'),
-        'avg_crack_width' => $conditions->avg('crack_width'),
-        'segments_with_bleeding' => $conditions->where('bleeding_area', '>', 0)->count(),
-    ];
-
-    $sdi_by_year = $conditions->groupBy('year')->map(function($items, $year) {
-        return [
-            'avg_sdi' => $items->avg('sdi_value'),
-            'min_sdi' => $items->min('sdi_value'),
-            'max_sdi' => $items->max('sdi_value'),
-            'count' => $items->count(),
-        ];
-    })->sortKeysDesc();
-
-    return view('jalan.kondisi-jalan.show', compact(
-        'ruas',
-        'conditions',
-        'conditionsWithSDI',
-        'statistics',
-        'availableYears',
-        'damage_analysis',
-        'sdi_by_year'
-    ));
-}
-
-    /**
-     * ✅ PERBAIKAN: Pakai Service untuk detail calculation
-     */
-    public function getSegmentDetail(Request $request)
-    {
-        $linkNo = $request->get('link_no');
-        $chainageFrom = $request->get('chainage_from');
-        $chainageTo = $request->get('chainage_to');
-        $year = $request->get('year');
-
-        if (!$linkNo || !$chainageFrom || !$chainageTo || !$year) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Parameter tidak lengkap'
-            ]);
+        if (!$ruas) {
+            $ruas = Link::with(['province', 'kabupaten'])
+                ->where('link_no', $link_no)
+                ->orderBy('year', 'desc')
+                ->firstOrFail();
         }
 
+        $availableYears = RoadCondition::where('link_no', $link_no)
+            ->select('year')
+            ->distinct()
+            ->orderBy('year', 'desc')
+            ->pluck('year');
+
+        $conditions = RoadCondition::where('link_no', $link_no)
+            ->with('inventory')
+            ->when($selectedYear, function($query) use ($selectedYear) {
+                return $query->where('year', $selectedYear);
+            })
+            ->orderByRaw('CAST(chainage_from AS DECIMAL(10,3)) ASC')
+            ->get();
+
+        $conditionsWithSDI = $conditions->map(
+            function (RoadCondition $condition): RoadCondition {
+                $sdiDetail = SDICalculator::calculate(
+                    condition: $condition,
+                    detailed: true
+                );
+
+                $condition->sdi_data = [
+                    'sdi1' => $sdiDetail['sdi1'] ?? 0,
+                    'sdi2' => $sdiDetail['sdi2'] ?? 0,
+                    'sdi3' => $sdiDetail['sdi3'] ?? 0,
+                    'sdi_final' => $sdiDetail['sdi_final'] ?? 0,
+                    'category' => $sdiDetail['category'] ?? 'Data Tidak Lengkap',
+                ];
+
+                return $condition;
+            }
+        );
+
+        $statistics = [
+            'total_segments' => $conditions->count(),
+            'total_length' => $conditions->sum(function($item) {
+                return $item->chainage_to - $item->chainage_from;
+            }),
+            'avg_iri' => $conditions->where('iri', '>', 0)->avg('iri'),
+            'avg_rci' => $conditions->where('rci', '>', 0)->avg('rci'),
+            'avg_sdi' => $conditions->avg('sdi_value'),
+            'good_condition' => $conditions->where('sdi_category', 'Baik')->count(),
+            'fair_condition' => $conditions->where('sdi_category', 'Sedang')->count(),
+            'poor_condition' => $conditions->where('sdi_category', 'Rusak Ringan')->count(),
+            'very_poor_condition' => $conditions->where('sdi_category', 'Rusak Berat')->count(),
+        ];
+
+        $damage_analysis = [
+            'total_crack_area' => $conditions->sum('crack_dep_area') + $conditions->sum('oth_crack_area'),
+            'total_bleeding_area' => $conditions->sum('bleeding_area'),
+            'total_ravelling_area' => $conditions->sum('ravelling_area'),
+            'total_desintegration_area' => $conditions->sum('desintegration_area'),
+            'total_patching_area' => $conditions->sum('patching_area'),
+            'total_pothole_area' => $conditions->sum('pothole_area'),
+            'total_pothole_count' => $conditions->sum('pothole_count'),
+            'total_potholes' => $conditions->sum('pothole_count'),
+            'total_rutting_area' => $conditions->sum('rutting_area'),
+            'avg_rutting_depth' => $conditions->avg('rutting_depth'),
+            'total_edge_damage' => $conditions->sum('edge_damage_area'),
+            'avg_crack_width' => $conditions->avg('crack_width'),
+            'segments_with_bleeding' => $conditions->where('bleeding_area', '>', 0)->count(),
+        ];
+
+        $sdi_by_year = $conditions->groupBy('year')->map(function($items, $year) {
+            return [
+                'avg_sdi' => $items->avg('sdi_value'),
+                'min_sdi' => $items->min('sdi_value'),
+                'max_sdi' => $items->max('sdi_value'),
+                'count' => $items->count(),
+            ];
+        })->sortKeysDesc();
+
+        return view('jalan.kondisi-jalan.show', compact(
+            'ruas',
+            'conditions',
+            'conditionsWithSDI',
+            'statistics',
+            'availableYears',
+            'damage_analysis',
+            'sdi_by_year'
+        ));
+    }
+
+    public function getSegmentDetail(Request $request)
+    {
         try {
-            $condition = RoadCondition::where('link_no', $linkNo)
+            $linkNo = $request->get('link_no');
+            $chainageFrom = $request->get('chainage_from');
+            $chainageTo = $request->get('chainage_to');
+            $year = $request->get('year');
+
+            Log::info('getSegmentDetail called', compact('linkNo', 'chainageFrom', 'chainageTo', 'year'));
+
+            if (!$linkNo || !$chainageFrom || !$chainageTo || !$year) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Parameter tidak lengkap'
+                ], 400);
+            }
+
+            $condition = RoadCondition::with('inventory')
+                ->where('link_no', $linkNo)
                 ->where('chainage_from', $chainageFrom)
                 ->where('chainage_to', $chainageTo)
                 ->where('year', $year)
                 ->first();
 
             if (!$condition) {
+                Log::warning('Condition not found', compact('linkNo', 'chainageFrom', 'chainageTo', 'year'));
                 return response()->json([
                     'success' => false,
                     'message' => 'Data tidak ditemukan'
+                ], 404);
+            }
+
+            Log::info('Condition data', [
+                'pavement' => $condition->pavement,
+                'crack_dep_area' => $condition->crack_dep_area,
+                'oth_crack_area' => $condition->oth_crack_area,
+                'crack_width' => $condition->crack_width,
+                'pothole_count' => $condition->pothole_count,
+                'rutting_depth' => $condition->rutting_depth,
+                'has_inventory' => $condition->inventory ? 'yes' : 'no',
+                'pave_width' => $condition->inventory?->pave_width ?? 'null',
+            ]);
+
+            if (!$condition->inventory) {
+                Log::error('Missing inventory', [
+                    'link_no' => $linkNo,
+                    'chainage' => "$chainageFrom-$chainageTo"
                 ]);
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data inventaris tidak ditemukan untuk segmen ini. Harap lengkapi data inventaris terlebih dahulu.'
+                ], 404);
+            }
+
+            if (!$condition->inventory->pave_width || $condition->inventory->pave_width <= 0) {
+                Log::error('Invalid pave_width', [
+                    'pave_width' => $condition->inventory->pave_width
+                ]);
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Lebar jalan tidak valid di data inventaris'
+                ], 400);
             }
 
             $referenceYear = $year - 1;
@@ -837,10 +994,30 @@ public function show($link_no)
                     ->first();
             }
 
-            // ✅ PERBAIKAN: Panggil SDICalculator dengan detailed = true
-            $sdiDetail = SDICalculator::calculate($condition, true);
+            try {
+                $sdiDetail = SDICalculator::calculate($condition, true);
+                
+                Log::info('SDI Calculation result', [
+                    'sdi_final' => $sdiDetail['sdi_final'],
+                    'category' => $sdiDetail['category'],
+                    'has_raw_data' => isset($sdiDetail['raw_data']),
+                    'has_explanations' => isset($sdiDetail['explanations']),
+                ]);
+                
+            } catch (\Exception $e) {
+                Log::error('SDI Calculation failed', [
+                    'link_no' => $linkNo,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menghitung SDI: ' . $e->getMessage()
+                ], 500);
+            }
 
-            return response()->json([
+            $response = [
                 'success' => true,
                 'data' => [
                     'condition' => [
@@ -852,36 +1029,19 @@ public function show($link_no)
                         'chainage_to' => $condition->chainage_to,
                         'year' => $condition->year,
                     ],
-                    'sdi_detail' => [
-                        'raw_data' => array_merge(
-                            $sdiDetail['raw_data'] ?? [],
-                            [
-                                'pavement_type' => $condition->pavement ?? 'AS',
-                                'crack_width' => $sdiDetail['raw_data']['crack_width_bobot'] ?? 0,
-                                'pothole_count' => $condition->pothole_count ?? 0,
-                                'rutting_depth' => $sdiDetail['raw_data']['rutting_depth_bobot'] ?? 0,
-                            ]
-                        ),
-                        'calculations' => [
-                            'step1' => $sdiDetail['explanations']['step1'] ?? [],
-                            'step2' => $sdiDetail['explanations']['step2'] ?? [],
-                            'step3' => $sdiDetail['explanations']['step3'] ?? [],
-                            'step4' => $sdiDetail['explanations']['step4'] ?? [],
-                        ],
-                        'final' => [
-                            'sdi_final' => $sdiDetail['sdi_final'],
-                            'category' => $sdiDetail['category'],
-                            'note' => ($sdiDetail['category'] === 'Rusak Berat' && $sdiDetail['sdi_final'] == 999) 
-                                ? 'Non-Aspal - SDI tidak applicable' 
-                                : null
-                        ]
-                    ]
+                    'sdi_detail' => $sdiDetail
                 ]
-            ]);
+            ];
+
+            Log::info('Response built successfully');
+
+            return response()->json($response);
             
         } catch (\Exception $e) {
             Log::error('Error in getSegmentDetail', [
                 'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
             

@@ -379,12 +379,14 @@ Route::middleware(['auth'])->group(function () {
             ->name('getChainageByRuas'); // ✅ ROUTE BARU
         Route::get('/segment-detail', [RoadConditionController::class, 'getSegmentDetail'])
             ->name('getSegmentDetail');
+            // Di dalam group kondisi-jalan
+        Route::get('/get-last-chainage', [RoadConditionController::class, 'getLastChainage'])
+            ->name('getLastChainage');
         
         // Show dengan parameter year optional
         Route::get('/show/{link_no}/{year?}', [RoadConditionController::class, 'show'])
             ->middleware('permission:read,kondisi_jalan')->name('show');
         
-        // Edit, Update, Delete dengan composite key
         // Format: /kondisi-jalan/{link_no}/{chainage_from}/{chainage_to}/{year}/edit
         Route::get('/{link_no}/{chainage_from}/{chainage_to}/{year}/edit', [RoadConditionController::class, 'edit'])
             ->middleware('permission:update,kondisi_jalan')->name('edit');

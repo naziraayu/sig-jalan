@@ -802,57 +802,109 @@
 
 @push('scripts')
 <script>
+// ==================== GLOBAL CONSTANTS ====================
+const CSRF_TOKEN = '{{ csrf_token() }}';
+const SELECTED_YEAR = {{ $selectedYear ?? 'null' }};
+const REFERENCE_YEAR = {{ $referenceYear ?? 'null' }};
+
+// Routes
+const ROUTE_GET_CHAINAGE = '{{ route("kondisi-jalan.getChainageByRuas") }}';
+const ROUTE_GET_LAST_CHAINAGE = '{{ route("kondisi-jalan.getLastChainage") }}'; // ✅ NEW
+const ROUTE_STORE = '{{ route("kondisi-jalan.store") }}';
+const ROUTE_INDEX = '{{ route("kondisi-jalan.index") }}';
+
+// ==================== MAIN SCRIPT ====================
+
 $(document).ready(function() {
     
     // ==================== VARIABLES ====================
     let surveySetup = {};
     let conditionData = [];
     let panjangRuasKm = 0;
-    let interval = 100;
+    let interval = 100; // dalam METER
     let dataType = 'Aspal';
-    let availableChainages = [];
+    let availableChainages = []; // Array inventory segments
+    let lastChainageToMeter = 0; // ✅ Track dalam METER
     
-    // ==================== STEP 1: SETUP ====================
+    // ==================== HELPER FUNCTIONS ====================
     
-    // Ketika ruas dipilih
-    $('#linkNo').on('change', function() {
-        const selectedOption = $(this).find('option:selected');
-        const linkId = selectedOption.data('link-id');
-        const linkName = selectedOption.data('link-name');
-        const linkLength = selectedOption.data('link-length');
-        
-        if (linkId) {
-            surveySetup.link_id = linkId;
-            surveySetup.link_no = $(this).val();
-            surveySetup.link_code = selectedOption.data('link-code');
-            surveySetup.link_name = linkName;
-            surveySetup.link_length = linkLength;
-            surveySetup.province_code = selectedOption.data('province');
-            surveySetup.kabupaten_code = selectedOption.data('kabupaten');
-            
-            $('#namaRuas').val(linkName);
-            $('#panjangRuas').val(parseFloat(linkLength).toFixed(2));
-            panjangRuasKm = parseFloat(linkLength);
-            
-            // Load chainage dari inventory
-            loadChainages($(this).val());
-        } else {
-            surveySetup = {};
-            $('#namaRuas').val('');
-            $('#panjangRuas').val('');
-            panjangRuasKm = 0;
-            availableChainages = [];
-        }
-    });
+    /**
+     * Convert Data Type name ke Pavement Code
+     */
+    function getPavementCode(dataType) {
+        const mapping = {
+            'Aspal': 'Asphalt',
+            'Blok': 'Block',
+            'Beton': 'Concrete',
+            'Non Aspal': 'Unpaved',
+            'Tak Dapat Dilalui': 'Impassable',
+        };
+        return mapping[dataType] || 'Asphalt';
+    }
     
-    // Load chainage dari inventory
-    function loadChainages(linkNo) {
+    /**
+     * ✅ NEW: Load last chainage untuk auto-increment
+     */
+    function loadLastChainage(linkNo) {
         $.ajax({
-            url: '{{ route("kondisi-jalan.getChainageByRuas") }}',
+            url: ROUTE_GET_LAST_CHAINAGE,
             type: 'GET',
             data: {
                 link_no: linkNo,
-                year: {{ $selectedYear }}
+                year: SELECTED_YEAR
+            },
+            success: function(response) {
+                if (response.success && response.has_data) {
+                    lastChainageToMeter = response.last_chainage_to_meter; // ✅ Dalam METER
+                    
+                    console.log('Last chainage loaded:', lastChainageToMeter, 'meter');
+                    
+                    // Set nilai awal (convert METER ke KM untuk display)
+                    const nextFromKm = lastChainageToMeter / 1000;
+                    const nextToKm = (lastChainageToMeter + interval) / 1000;
+                    
+                    $('#inputDari').val(nextFromKm.toFixed(3));
+                    $('#inputKe').val(nextToKm.toFixed(3));
+                    
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Data Ditemukan',
+                        html: `
+                            <p>Chainage terakhir: <strong>${nextFromKm.toFixed(3)} km</strong></p>
+                            <p class="text-muted">Form akan melanjutkan dari segmen berikutnya</p>
+                        `,
+                        timer: 2500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    // Belum ada data, mulai dari 0
+                    lastChainageToMeter = 0;
+                    $('#inputDari').val('0.000');
+                    $('#inputKe').val((interval / 1000).toFixed(3));
+                    
+                    console.log('No previous data, starting from 0');
+                }
+            },
+            error: function(xhr) {
+                console.error('Error loading last chainage:', xhr);
+                // Fallback ke 0
+                lastChainageToMeter = 0;
+                $('#inputDari').val('0.000');
+                $('#inputKe').val((interval / 1000).toFixed(3));
+            }
+        });
+    }
+    
+    /**
+     * Load chainage dari inventory
+     */
+    function loadChainages(linkNo) {
+        $.ajax({
+            url: ROUTE_GET_CHAINAGE,
+            type: 'GET',
+            data: {
+                link_no: linkNo,
+                year: SELECTED_YEAR
             },
             success: function(response) {
                 if (response.success) {
@@ -870,93 +922,23 @@ $(document).ready(function() {
             }
         });
     }
-    
-    // Pilih tipe data
-    $('input[name="data_type"]').on('change', function() {
-        dataType = $(this).val();
-    });
-    
-    // Tombol Next
-    $('#btnNext, #btnNextFooter').on('click', function() {
-        // Validasi
-        if (!$('#linkNo').val()) {
-            Swal.fire('Error', 'Pilih Nomor Ruas terlebih dahulu!', 'error');
-            return;
-        }
-        if (!$('#surveyorName').val()) {
-            Swal.fire('Error', 'Nama Surveyor wajib diisi!', 'error');
-            return;
-        }
-        if (!$('#surveyDate').val()) {
-            Swal.fire('Error', 'Tanggal Survei wajib diisi!', 'error');
-            return;
-        }
-        
+
+    function findNextSegment(lastChainageMeter) {
         if (availableChainages.length === 0) {
-            Swal.fire('Error', 'Ruas ini belum memiliki data inventarisasi. Silakan buat inventarisasi terlebih dahulu.', 'error');
-            return;
+            return null;
         }
         
-        // Simpan data setup
-        surveySetup.surveyor_name = $('#surveyorName').val();
-        surveySetup.surveyor_name_2 = $('#surveyorName2').val();
-        surveySetup.survey_date = $('#surveyDate').val();
-        surveySetup.direction = $('#direction').val();
-        surveySetup.interval = parseInt($('#interval').val());
-        surveySetup.data_collection_type = dataType;
-        surveySetup.year = {{ $selectedYear }};
-        surveySetup.reference_year = {{ $referenceYear }};
+        // Cari segmen pertama yang chainage_from >= lastChainageMeter
+        const nextSegment = availableChainages.find(seg => 
+            seg.chainage_from >= lastChainageMeter
+        );
         
-        interval = surveySetup.interval;
-        
-        // Tampilkan step 2
-        $('#step1').hide();
-        $('#step2').show();
-        
-        // Update info ruas
-        $('#infoRuas').html(`<strong>${surveySetup.link_code}</strong><br><small>${surveySetup.link_name}</small>`);
-        $('#infoPanjang').html(`<strong>${parseFloat(surveySetup.link_length).toFixed(2)} km</strong>`);
-        $('#infoArah').text(surveySetup.direction);
-        $('#infoInterval').text(surveySetup.interval);
-        $('#infoTipeData').html(`<span class="badge badge-info">${dataType}</span>`);
-        $('#headerTipeData').text(dataType);
-        
-        // Show form sesuai tipe data
-        showFormByType(dataType);
-        
-        // Set nilai awal Ke
-        if (availableChainages.length > 0) {
-            const firstChainage = availableChainages[0];
-            $('#inputDari').val(firstChainage.chainage_from);
-            $('#inputKe').val(firstChainage.chainage_to);
-        }
-    });
+        return nextSegment;
+    }
     
-    // Tombol Back
-    $('#btnBack').on('click', function() {
-        $('#step2').hide();
-        $('#step1').show();
-    });
-    
-    // ==================== STEP 2: TABS & FORMS ====================
-    
-    // Tab click handlers
-    $('#tabAspal').on('click', function() {
-        showFormByType('Aspal');
-    });
-    
-    $('#tabBlok').on('click', function() {
-        showFormByType('Blok');
-    });
-    
-    $('#tabBeton').on('click', function() {
-        showFormByType('Beton');
-    });
-    
-    $('#tabNonAspal').on('click', function() {
-        showFormByType('Non Aspal');
-    });
-    
+    /**
+     * Show form sesuai tipe data
+     */
     function showFormByType(type) {
         // Hide all forms
         $('.form-kondisi').hide();
@@ -988,78 +970,31 @@ $(document).ready(function() {
                 break;
         }
         
-        dataType = type;
+        dataType = type; // ✅ Update global dataType
         $('#headerTipeData').text(type);
         $('#infoTipeData').html(`<span class="badge badge-info">${type}</span>`);
+        
+        console.log('Form switched to:', type); // Debug
     }
     
-    // ==================== INPUT & VALIDATION ====================
-    
-    // Tombol Tambah
-    $('#btnTambah').on('click', function() {
-        const dari = parseFloat($('#inputDari').val());
-        const ke = parseFloat($('#inputKe').val());
+    /**
+     * Get data info untuk display di tabel
+     */
+    function getDataInfo(item) {
+        const fields = [];
+        const excludeKeys = ['chainage_from', 'chainage_to', 'data_type', 'pavement'];
         
-        // Validasi
-        if (isNaN(dari) || isNaN(ke)) {
-            Swal.fire('Error', 'Nilai Dari dan Ke harus diisi!', 'error');
-            return;
-        }
-        if (ke <= dari) {
-            Swal.fire('Error', 'Nilai Ke harus lebih besar dari Dari!', 'error');
-            return;
-        }
-        
-        // Validasi: chainage harus ada di inventory
-        const validChainage = availableChainages.find(ch => 
-            ch.chainage_from <= dari && ch.chainage_to >= ke
-        );
-        
-        if (!validChainage) {
-            Swal.fire('Error', 'Chainage tidak valid! Pastikan dari-ke sesuai dengan data inventarisasi.', 'error');
-            return;
-        }
-        
-        // Collect data dari form yang aktif
-        const dataItem = {
-            chainage_from: dari,
-            chainage_to: ke,
-            data_type: dataType
-        };
-        
-        // Collect field values from inputs and selects
-        $('.form-kondisi:visible input[data-field]').each(function() {
-            const field = $(this).data('field');
-            const value = $(this).val();
-            if (value !== '' && value !== null) {
-                dataItem[field] = value;
+        for (const [key, value] of Object.entries(item)) {
+            if (!excludeKeys.includes(key) && value) {
+                fields.push(`${key}: ${value}`);
             }
-        });
-        
-        conditionData.push(dataItem);
-        
-        // Tambah ke tabel
-        renderTable();
-        
-        // Auto increment chainage ke segmen berikutnya
-        const nextSegment = availableChainages.find(ch => ch.chainage_from >= ke);
-        if (nextSegment) {
-            $('#inputDari').val(nextSegment.chainage_from);
-            $('#inputKe').val(nextSegment.chainage_to);
-        } else {
-            Swal.fire({
-                icon: 'info',
-                title: 'Segmen Terakhir',
-                text: 'Anda telah mencapai akhir segmen inventarisasi.',
-                confirmButtonColor: '#28a745'
-            });
         }
-        
-        // Clear form inputs
-        $('.form-kondisi:visible input[data-field]').val('');
-    });
+        return fields.length > 0 ? fields.join(', ') : '-';
+    }
     
-    // Render tabel
+    /**
+     * Render tabel preview
+     */
     function renderTable() {
         $('#emptyRow').hide();
         $('#tbodyPreview').empty();
@@ -1067,12 +1002,21 @@ $(document).ready(function() {
         conditionData.forEach((item, index) => {
             const dataInfo = getDataInfo(item);
             
+            // ✅ Badge color berdasarkan pavement code (dari database format)
+            const pavementBadge = item.pavement === 'Asphalt' ? 'success' : 
+                                item.pavement === 'Concrete' ? 'primary' :
+                                item.pavement === 'Block' ? 'info' :
+                                item.pavement === 'Unpaved' ? 'warning' : 'danger';
+            
             const row = `
                 <tr>
                     <td class="text-center">${index + 1}</td>
                     <td class="text-center">${item.chainage_from.toFixed(3)}</td>
                     <td class="text-center">${item.chainage_to.toFixed(3)}</td>
-                    <td class="text-center"><span class="badge badge-info">${item.data_type}</span></td>
+                    <td class="text-center">
+                        <span class="badge badge-${pavementBadge}">${item.data_type}</span>
+                        <small class="text-muted d-block">(${item.pavement})</small>
+                    </td>
                     <td><small>${dataInfo}</small></td>
                     <td class="text-center">
                         <button type="button" class="btn btn-sm btn-danger" onclick="hapusData(${index})">
@@ -1089,93 +1033,12 @@ $(document).ready(function() {
         }
     }
     
-    function getDataInfo(item) {
-        const fields = [];
-        for (const [key, value] of Object.entries(item)) {
-            if (key !== 'chainage_from' && key !== 'chainage_to' && key !== 'data_type' && value) {
-                fields.push(`${key}: ${value}`);
-            }
-        }
-        return fields.length > 0 ? fields.join(', ') : '-';
-    }
-    
-    // Hapus satu data
-    window.hapusData = function(index) {
-        Swal.fire({
-            title: 'Hapus Data?',
-            text: 'Data ini akan dihapus dari daftar',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Ya, Hapus',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                conditionData.splice(index, 1);
-                renderTable();
-            }
-        });
-    };
-    
-    // Hapus semua
-    $('#btnHapusSemua').on('click', function() {
-        if (conditionData.length === 0) {
-            Swal.fire('Info', 'Belum ada data yang diinput', 'info');
-            return;
-        }
-        
-        Swal.fire({
-            title: 'Hapus Semua Data?',
-            text: `${conditionData.length} data akan dihapus dari daftar`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Ya, Hapus Semua',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                conditionData = [];
-                renderTable();
-                
-                // Reset ke chainage pertama
-                if (availableChainages.length > 0) {
-                    const firstChainage = availableChainages[0];
-                    $('#inputDari').val(firstChainage.chainage_from);
-                    $('#inputKe').val(firstChainage.chainage_to);
-                }
-            }
-        });
-    });
-    
-    // Simpan semua
-    $('#btnSimpanSemua').on('click', function() {
-        if (conditionData.length === 0) {
-            Swal.fire('Error', 'Belum ada data yang diinput!', 'error');
-            return;
-        }
-        
-        Swal.fire({
-            title: 'Simpan Data?',
-            text: `${conditionData.length} segmen kondisi jalan akan disimpan`,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#28a745',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Ya, Simpan',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                saveToDatabase();
-            }
-        });
-    });
-    
-    // Save to database via AJAX
+    /**
+     * Save to database via AJAX
+     */
     function saveToDatabase() {
         const payload = {
-            _token: '{{ csrf_token() }}',
+            _token: CSRF_TOKEN,
             survey_setup: surveySetup,
             condition_data: conditionData
         };
@@ -1183,7 +1046,7 @@ $(document).ready(function() {
         console.log('Payload yang dikirim:', payload);
         
         $.ajax({
-            url: '{{ route("kondisi-jalan.store") }}',
+            url: ROUTE_STORE,
             type: 'POST',
             data: JSON.stringify(payload),
             contentType: 'application/json',
@@ -1203,13 +1066,23 @@ $(document).ready(function() {
             success: function(response) {
                 console.log('Response sukses:', response);
                 
+                let message = response.message;
+                
+                // ✅ Tampilkan detail error jika ada
+                if (response.errors && response.errors.length > 0) {
+                    message += '\n\nError detail:\n';
+                    response.errors.forEach(err => {
+                        message += `- ${err.chainage || err.index}: ${err.error}\n`;
+                    });
+                }
+                
                 Swal.fire({
                     icon: 'success',
                     title: 'Berhasil!',
-                    text: response.message || 'Data kondisi jalan berhasil disimpan!',
+                    text: message,
                     confirmButtonColor: '#28a745'
                 }).then(() => {
-                    window.location.href = '{{ route("kondisi-jalan.index") }}';
+                    window.location.href = ROUTE_INDEX;
                 });
             },
             error: function(xhr, status, error) {
@@ -1241,6 +1114,396 @@ $(document).ready(function() {
             }
         });
     }
+    
+    // ==================== STEP 1: SETUP SURVEY ====================
+    
+    /**
+     * Event: Ketika ruas dipilih
+     */
+    $('#linkNo').on('change', function() {
+        const selectedOption = $(this).find('option:selected');
+        const linkId = selectedOption.data('link-id');
+        const linkName = selectedOption.data('link-name');
+        const linkLength = selectedOption.data('link-length');
+        
+        if (linkId) {
+            surveySetup.link_id = linkId;
+            surveySetup.link_no = $(this).val();
+            surveySetup.link_code = selectedOption.data('link-code');
+            surveySetup.link_name = linkName;
+            surveySetup.link_length = linkLength;
+            surveySetup.province_code = selectedOption.data('province');
+            surveySetup.kabupaten_code = selectedOption.data('kabupaten');
+            
+            $('#namaRuas').val(linkName);
+            $('#panjangRuas').val(parseFloat(linkLength).toFixed(2));
+            panjangRuasKm = parseFloat(linkLength);
+            
+            // Load chainage dari inventory
+            loadChainages($(this).val());
+            
+            // ✅ NEW: Load last chainage untuk auto-increment
+            loadLastChainage($(this).val());
+        } else {
+            surveySetup = {};
+            $('#namaRuas').val('');
+            $('#panjangRuas').val('');
+            panjangRuasKm = 0;
+            availableChainages = [];
+            lastChainageTo = 0;
+        }
+    });
+    
+    /**
+     * ✅ UPDATE: Event interval change
+     */
+    $('#interval').on('change', function() {
+        interval = parseInt($(this).val()); // dalam METER
+        
+        // Update inputKe berdasarkan interval baru
+        const dariKm = parseFloat($('#inputDari').val()) || 0;
+        const dariMeter = dariKm * 1000;
+        const toMeter = dariMeter + interval;
+        const toKm = toMeter / 1000;
+        
+        $('#inputKe').val(toKm.toFixed(3));
+        
+        console.log('Interval changed to:', interval, 'meter');
+    });
+    
+    /**
+     * Event: Pilih tipe data (Aspal/Blok/Beton/Non Aspal/Tak Dapat Dilalui)
+     */
+    $('input[name="data_type"]').on('change', function() {
+        dataType = $(this).val();
+        console.log('Data type changed to:', dataType);
+    });
+    
+    /**
+     * Event: Tombol Next (ke Step 2)
+     */
+    $('#btnNext, #btnNextFooter').on('click', function() {
+        // Validasi
+        if (!$('#linkNo').val()) {
+            Swal.fire('Error', 'Pilih Nomor Ruas terlebih dahulu!', 'error');
+            return;
+        }
+        if (!$('#surveyorName').val()) {
+            Swal.fire('Error', 'Nama Surveyor wajib diisi!', 'error');
+            return;
+        }
+        if (!$('#surveyDate').val()) {
+            Swal.fire('Error', 'Tanggal Survei wajib diisi!', 'error');
+            return;
+        }
+        
+        if (availableChainages.length === 0) {
+            Swal.fire('Error', 'Ruas ini belum memiliki data inventarisasi. Silakan buat inventarisasi terlebih dahulu.', 'error');
+            return;
+        }
+        
+        // Simpan data setup
+        surveySetup.surveyor_name = $('#surveyorName').val();
+        surveySetup.surveyor_name_2 = $('#surveyorName2').val();
+        surveySetup.survey_date = $('#surveyDate').val();
+        surveySetup.direction = $('#direction').val();
+        surveySetup.interval = parseInt($('#interval').val());
+        surveySetup.data_collection_type = dataType;
+        surveySetup.year = SELECTED_YEAR;
+        surveySetup.reference_year = REFERENCE_YEAR;
+        
+        interval = surveySetup.interval;
+        
+        console.log('Survey Setup:', surveySetup);
+        
+        // Tampilkan step 2
+        $('#step1').hide();
+        $('#step2').show();
+        
+        // Update info ruas
+        $('#infoRuas').html(`<strong>${surveySetup.link_code}</strong><br><small>${surveySetup.link_name}</small>`);
+        $('#infoPanjang').html(`<strong>${parseFloat(surveySetup.link_length).toFixed(2)} km</strong>`);
+        $('#infoArah').text(surveySetup.direction);
+        $('#infoInterval').text(surveySetup.interval);
+        $('#infoTipeData').html(`<span class="badge badge-info">${dataType}</span>`);
+        $('#headerTipeData').text(dataType);
+        
+        // Show form sesuai tipe data dari Step 1
+        showFormByType(dataType);
+        
+        // ✅ Set nilai awal Dari dan Ke (sudah di-set oleh loadLastChainage)
+        // Tidak perlu set lagi di sini
+    });
+    
+    /**
+     * Event: Tombol Back (ke Step 1)
+     */
+    $('#btnBack').on('click', function() {
+        $('#step2').hide();
+        $('#step1').show();
+    });
+    
+    // ==================== STEP 2: TABS & FORMS ====================
+    
+    /**
+     * ✅ UPDATE: Tab click handlers - UPDATE dataType
+     */
+    $('#tabAspal').on('click', function() {
+        showFormByType('Aspal');
+    });
+    
+    $('#tabBlok').on('click', function() {
+        showFormByType('Blok');
+    });
+    
+    $('#tabBeton').on('click', function() {
+        showFormByType('Beton');
+    });
+    
+    $('#tabNonAspal').on('click', function() {
+        showFormByType('Non Aspal');
+    });
+    
+    // ==================== INPUT & VALIDATION ====================
+    
+    /**
+     * ✅ UPDATE: Tombol Tambah - pakai dataType dari tab aktif
+     */
+    $('#btnTambah').on('click', function() {
+        const dariKm = parseFloat($('#inputDari').val());
+        const keKm = parseFloat($('#inputKe').val());
+        
+        // Validasi
+        if (isNaN(dariKm) || isNaN(keKm)) {
+            Swal.fire('Error', 'Nilai Dari dan Ke harus diisi!', 'error');
+            return;
+        }
+        if (keKm <= dariKm) {
+            Swal.fire('Error', 'Nilai Ke harus lebih besar dari Dari!', 'error');
+            return;
+        }
+        
+        // ✅ Convert KM ke METER untuk validasi
+        const dariMeter = Math.round(dariKm * 1000);
+        const keMeter = Math.round(keKm * 1000);
+        
+        // Validasi overlap dengan data yang sudah diinput
+        const hasOverlap = conditionData.some(item => {
+            const itemFromMeter = Math.round(item.chainage_from * 1000);
+            const itemToMeter = Math.round(item.chainage_to * 1000);
+            
+            return (dariMeter >= itemFromMeter && dariMeter < itemToMeter) ||
+                   (keMeter > itemFromMeter && keMeter <= itemToMeter) ||
+                   (dariMeter <= itemFromMeter && keMeter >= itemToMeter);
+        });
+        
+        if (hasOverlap) {
+            Swal.fire('Error', 'Chainage overlap dengan data yang sudah diinput! Silakan periksa kembali.', 'error');
+            return;
+        }
+        
+        // ✅ Collect data - SIMPAN DALAM KM (akan diconvert di backend)
+        const dataItem = {
+            chainage_from: dariKm,
+            chainage_to: keKm,
+            pavement: getPavementCode(dataType),  // ✅ CONVERT KE DATABASE FORMAT
+            data_type: dataType                    // ✅ TETAP SIMPAN UNTUK DISPLAY
+        };
+        
+        console.log('Adding data:', {
+            from_km: dariKm,
+            to_km: keKm,
+            from_meter: dariMeter,
+            to_meter: keMeter,
+            pavement_code: dataItem.pavement,  // ✅ "Asphalt", "Block", dll
+            data_type: dataType                 // ✅ "Aspal", "Blok", dll
+        });
+        
+        // Collect field values
+        $('.form-kondisi:visible input[data-field], .form-kondisi:visible select[data-field]').each(function() {
+            const field = $(this).data('field');
+            const value = $(this).val();
+            
+            if (value !== '' && value !== null && value !== undefined) {
+                dataItem[field] = value;
+            }
+        });
+        
+        conditionData.push(dataItem);
+        renderTable();
+        
+        // ✅ Auto increment ke segmen berikutnya
+        const nextFromMeter = keMeter;
+        const nextToMeter = nextFromMeter + interval;
+        
+        $('#inputDari').val((nextFromMeter / 1000).toFixed(3));
+        $('#inputKe').val((nextToMeter / 1000).toFixed(3));
+        
+        // Clear form inputs (kecuali chainage)
+        $('.form-kondisi:visible input[data-field]').val('');
+        
+        Swal.fire({
+            icon: 'success',
+            title: 'Data Ditambahkan',
+            html: `
+                <p>Segmen <strong>${dariKm.toFixed(3)} - ${keKm.toFixed(3)} km</strong></p>
+                <p class="text-muted">(${dariMeter} - ${keMeter} meter)</p>
+                <p>Tipe: <span class="badge badge-info">${dataType}</span></p>
+            `,
+            timer: 1500,
+            showConfirmButton: false
+        });
+    });
+    
+    /**
+     * Global function: Hapus satu data
+     */
+    window.hapusData = function(index) {
+        Swal.fire({
+            title: 'Hapus Data?',
+            text: 'Data ini akan dihapus dari daftar',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                conditionData.splice(index, 1);
+                renderTable();
+                
+                // Reset chainage ke segmen terakhir
+                if (conditionData.length > 0) {
+                    const lastItem = conditionData[conditionData.length - 1];
+                    const nextFromKm = lastItem.chainage_to;
+                    const nextFromMeter = Math.round(nextFromKm * 1000);
+                    const nextToMeter = nextFromMeter + interval;
+                    
+                    $('#inputDari').val(nextFromKm.toFixed(3));
+                    $('#inputKe').val((nextToMeter / 1000).toFixed(3));
+                } else {
+                    // Kembali ke chainage awal dari database
+                    const nextFromKm = lastChainageToMeter / 1000;
+                    const nextToKm = (lastChainageToMeter + interval) / 1000;
+                    
+                    $('#inputDari').val(nextFromKm.toFixed(3));
+                    $('#inputKe').val(nextToKm.toFixed(3));
+                }
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Dihapus!',
+                    text: 'Data berhasil dihapus dari daftar',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }
+        });
+    };  
+    
+    /**
+     * Event: Hapus semua data
+     */
+    $('#btnHapusSemua').on('click', function() {
+        if (conditionData.length === 0) {
+            Swal.fire('Info', 'Belum ada data yang diinput', 'info');
+            return;
+        }
+        
+        Swal.fire({
+            title: 'Hapus Semua Data?',
+            text: `${conditionData.length} data akan dihapus dari daftar`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, Hapus Semua',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                conditionData = [];
+                renderTable();
+                
+                // Reset ke chainage awal dari database
+                const nextFromKm = lastChainageToMeter / 1000;
+                const nextToKm = (lastChainageToMeter + interval) / 1000;
+                
+                $('#inputDari').val(nextFromKm.toFixed(3));
+                $('#inputKe').val(nextToKm.toFixed(3));
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Semua Data Dihapus!',
+                    text: 'Daftar telah dikosongkan',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }
+        });
+    });
+    
+    /**
+     * Event: Simpan semua data ke database
+     */
+    $('#btnSimpanSemua').on('click', function() {
+        if (conditionData.length === 0) {
+            Swal.fire('Error', 'Belum ada data yang diinput!', 'error');
+            return;
+        }
+        
+        // ✅ Hitung breakdown per pavement type (gunakan data_type untuk display)
+        const pavementBreakdown = conditionData.reduce((acc, item) => {
+            acc[item.data_type] = (acc[item.data_type] || 0) + 1;
+            return acc;
+        }, {});
+        
+        let breakdownText = '<ul class="text-left">';
+        for (const [type, count] of Object.entries(pavementBreakdown)) {
+            breakdownText += `<li>${type}: <strong>${count}</strong> segmen</li>`;
+        }
+        breakdownText += '</ul>';
+        
+        Swal.fire({
+            title: 'Simpan Data?',
+            html: `
+                <p><strong>${conditionData.length}</strong> segmen kondisi jalan akan disimpan</p>
+                <div class="alert alert-info">
+                    <strong>Rincian per Tipe:</strong>
+                    ${breakdownText}
+                </div>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, Simpan',
+            cancelButtonText: 'Batal',
+            width: '600px'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                saveToDatabase();
+            }
+        });
+    });
+
+    /**
+     * Tambahkan log untuk debugging
+     */
+    console.log('✅ Pavement Type Mapping Loaded');
+    console.log('Mapping:', {
+        'Aspal': getPavementCode('Aspal'),
+        'Blok': getPavementCode('Blok'),
+        'Beton': getPavementCode('Beton'),
+        'Non Aspal': getPavementCode('Non Aspal'),
+        'Tak Dapat Dilalui': getPavementCode('Tak Dapat Dilalui')
+    });
+    
+    // ==================== INITIALIZATION ====================
+    
+    console.log('Road Condition Create script loaded');
+    console.log('Selected Year:', SELECTED_YEAR);
+    console.log('Reference Year:', REFERENCE_YEAR);
     
 });
 </script>

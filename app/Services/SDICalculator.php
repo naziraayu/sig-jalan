@@ -6,11 +6,19 @@ use App\Models\RoadCondition;
 use App\Models\RoadInventory;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * ✅ SDI Calculator - FIXED VERSION
+ * Sesuai dengan logika PKRMS yang sebenarnya
+ * 
+ * PERBEDAAN UTAMA DENGAN VERSI LAMA:
+ * 1. STEP 3 menggunakan LUAS LUBANG (pothole_area) bukan JUMLAH LUBANG
+ * 2. Perhitungan berdasarkan % LUAS, bukan jumlah per 100m
+ * 3. Mapping bobot sesuai dengan data Excel PKRMS
+ */
 class SDICalculator
 {
     /**
      * ✅ SATU-SATUNYA tempat logic SDI calculation
-     * Dipakai oleh Observer dan Controller (jika perlu detail)
      * 
      * @param RoadCondition $condition
      * @param bool $detailed - Set true untuk return detail perhitungan
@@ -21,10 +29,9 @@ class SDICalculator
         // ========================================
         // CEK TIPE PERKERASAN
         // ========================================
-        $pavementType = $condition->pavement ?? 'AS';
-        
-        // Jika BUKAN ASPAL → Auto RUSAK BERAT
-        if (in_array($pavementType, ['BT', 'BL', 'NA', 'TD'])) {
+        $pavementType = $condition->pavement ?? 'Asphalt';
+
+        if (in_array($pavementType, ['Block', 'Concrete', 'Unpaved', 'Impassable'])) {
             Log::info('Non-Aspal pavement detected', [
                 'link_no' => $condition->link_no,
                 'pavement' => $pavementType,
@@ -87,13 +94,11 @@ class SDICalculator
         }
 
         // ========================================
-        // SEGMENT LENGTH (dalam METER)
+        // SEGMENT LENGTH & AREA
         // ========================================
         $chainageFrom = floatval($condition->chainage_from);
         $chainageTo = floatval($condition->chainage_to);
         
-        // ✅ Chainage dalam database = METER
-        // Contoh: chainage 0-100 = 100 meter
         $segmentLengthMeter = $chainageTo - $chainageFrom;
         
         if ($segmentLengthMeter <= 0) {
@@ -109,20 +114,22 @@ class SDICalculator
             ];
         }
 
+        // Total luas segmen dalam m²
+        $totalSegmentArea = $segmentLengthMeter * $paveWidth;
+
         // ========================================
-        // STEP 1: PERSENTASE RETAK
+        // STEP 1: PERSENTASE RETAK (SDI1)
         // ========================================
         $crackDepArea = floatval($condition->crack_dep_area ?? 0);
         $othCrackArea = floatval($condition->oth_crack_area ?? 0);
         $totalCrackArea = $crackDepArea + $othCrackArea;
 
-        // ✅ Luas segmen = panjang (meter) × lebar (meter) = m²
-        // Contoh: 100 m × 4 m = 400 m²
-        $totalSegmentArea = $segmentLengthMeter * $paveWidth;
+        // Hitung persentase retak
         $crackPercentage = ($totalSegmentArea > 0) 
             ? ($totalCrackArea / $totalSegmentArea) * 100 
             : 0;
 
+        // Mapping persentase ke SDI1
         $sdi1 = 0;
         $sdi1_explanation = '';
         
@@ -141,75 +148,71 @@ class SDICalculator
         }
 
         // ========================================
-        // STEP 2: LEBAR RETAK
+        // STEP 2: LEBAR RETAK (SDI2)
         // ========================================
-        // ✅ crack_width di database adalah BOBOT/KATEGORI, bukan nilai mm!
-        // Bobot 1 = Tidak ada
-        // Bobot 2 = Halus < 1mm
-        // Bobot 3 = Sedang 1-3mm
-        // Bobot 4 = Lebar > 3mm
-        $crackWidthBobot = intval($condition->crack_width ?? 0);
+        // crack_width adalah BOBOT (1-4), bukan nilai mm
+        $crackWidthBobot = intval($condition->crack_width ?? 1);
         $sdi2 = $sdi1;
         $sdi2_explanation = '';
 
-        if ($crackWidthBobot == 0 || $crackWidthBobot == 1) {
-            $sdi2_explanation = 'Tidak ada retak → SDI2 = SDI1';
-        } elseif ($crackWidthBobot == 2 || $crackWidthBobot == 3) {
-            // Halus atau Sedang (≤ 3mm)
+        if ($crackWidthBobot <= 3) {
+            // Bobot 1,2,3 = halus/sedang (≤ 3mm)
             $sdi2 = $sdi1;
-            $kategori = $crackWidthBobot == 2 ? 'Halus < 1mm' : 'Sedang 1-3mm';
-            $sdi2_explanation = sprintf('Lebar retak %s (bobot %d) → SDI2 = SDI1 = %.2f', $kategori, $crackWidthBobot, $sdi2);
+            $sdi2_explanation = sprintf('Lebar retak ≤ 3mm (bobot %d) → SDI2 = SDI1 = %.2f', $crackWidthBobot, $sdi2);
         } else {
-            // Lebar > 3mm (bobot 4)
+            // Bobot 4 = lebar (> 3mm)
             $sdi2 = $sdi1 * 2;
             $sdi2_explanation = sprintf('Lebar retak > 3mm (bobot 4) → SDI2 = SDI1 × 2 = %.2f', $sdi2);
         }
 
         // ========================================
-        // STEP 3: JUMLAH LUBANG (per 100m)
+        // STEP 3: LUAS LUBANG (SDI3)
+        // ✅ PERBAIKAN: Berdasarkan % LUAS LUBANG, bukan jumlah
         // ========================================
-        $potholeCount = intval($condition->pothole_count ?? 0);
+        $potholeArea = floatval($condition->pothole_area ?? 0);
         
-        // ✅ PERBAIKAN: Normalized per 100 meter
-        // Gunakan segment length dalam METER, bukan km
-        $normalizedPotholes = ($segmentLengthMeter > 0) 
-            ? ($potholeCount / $segmentLengthMeter) * 100 
+        // Hitung persentase luas lubang
+        $potholePercentage = ($totalSegmentArea > 0) 
+            ? ($potholeArea / $totalSegmentArea) * 100 
             : 0;
 
         $sdi3 = $sdi2;
         $sdi3_addition = 0;
         $sdi3_explanation = '';
 
-        if ($normalizedPotholes == 0) {
+        // Mapping persentase ke penambahan SDI
+        // Berdasarkan analisis Excel PKRMS:
+        // - Bobot 1: Tidak ada → 0
+        // - Bobot 2: < 5% → +15
+        // - Bobot 3: 5-10% → +75
+        // - Bobot 4: > 10% → +225
+        
+        if ($potholePercentage == 0) {
+            $sdi3_addition = 0;
             $sdi3_explanation = 'Tidak ada lubang → SDI3 = SDI2';
-        } elseif ($normalizedPotholes < 10) {
+        } elseif ($potholePercentage < 5) {
             $sdi3_addition = 15;
-            $sdi3 = $sdi2 + $sdi3_addition;
-            $sdi3_explanation = sprintf('Lubang < 10/100m (%.2f) → SDI3 = SDI2 + 15 = %.2f', $normalizedPotholes, $sdi3);
-        } elseif ($normalizedPotholes >= 10 && $normalizedPotholes <= 50) {
+            $sdi3_explanation = sprintf('Luas lubang < 5%% (%.2f%%) → SDI3 = SDI2 + 15', $potholePercentage);
+        } elseif ($potholePercentage >= 5 && $potholePercentage < 10) {
             $sdi3_addition = 75;
-            $sdi3 = $sdi2 + $sdi3_addition;
-            $sdi3_explanation = sprintf('Lubang 10-50/100m (%.2f) → SDI3 = SDI2 + 75 = %.2f', $normalizedPotholes, $sdi3);
+            $sdi3_explanation = sprintf('Luas lubang 5-10%% (%.2f%%) → SDI3 = SDI2 + 75', $potholePercentage);
         } else {
             $sdi3_addition = 225;
-            $sdi3 = $sdi2 + $sdi3_addition;
-            $sdi3_explanation = sprintf('Lubang > 50/100m (%.2f) → SDI3 = SDI2 + 225 = %.2f', $normalizedPotholes, $sdi3);
+            $sdi3_explanation = sprintf('Luas lubang > 10%% (%.2f%%) → SDI3 = SDI2 + 225', $potholePercentage);
         }
+        
+        $sdi3 = $sdi2 + $sdi3_addition;
 
         // ========================================
-        // STEP 4: KEDALAMAN ALUR RODA
+        // STEP 4: KEDALAMAN ALUR RODA (SDI4)
         // ========================================
-        // ✅ rutting_depth di database adalah BOBOT/KATEGORI, bukan nilai cm!
-        // Bobot 1 = Tidak ada
-        // Bobot 2 = Kedalaman < 1cm (X=0.5)
-        // Bobot 3 = Kedalaman 1-3cm (X=2)
-        // Bobot 4 = Kedalaman > 3cm (X=5)
-        $ruttingDepthBobot = intval($condition->rutting_depth ?? 0);
+        // rutting_depth adalah BOBOT (1-4)
+        $ruttingDepthBobot = intval($condition->rutting_depth ?? 1);
         $sdi4 = $sdi3;
         $sdi4_addition = 0;
         $sdi4_explanation = '';
 
-        if ($ruttingDepthBobot == 0 || $ruttingDepthBobot == 1) {
+        if ($ruttingDepthBobot <= 1) {
             $sdi4_explanation = 'Tidak ada alur roda → SDI4 = SDI3';
         } elseif ($ruttingDepthBobot == 2) {
             // Kedalaman < 1cm (X=0.5)
@@ -225,7 +228,6 @@ class SDICalculator
             $sdi4_explanation = sprintf('Alur 1-3cm (bobot 3, X=2) → SDI4 = SDI3 + (5 × 2) = %.2f', $sdi4);
         } else {
             // Kedalaman > 3cm (X=5)
-            // ✅ PERBAIKAN: SDI4 = SDI3 + 20 * 5 (bukan 5 * 4)
             $X = 5;
             $sdi4_addition = 20 * $X;
             $sdi4 = $sdi3 + $sdi4_addition;
@@ -246,9 +248,10 @@ class SDICalculator
             'sdi4' => round($sdi4, 2),
             'total_crack_area' => round($totalCrackArea, 2),
             'crack_percentage' => round($crackPercentage, 2),
+            'pothole_area' => round($potholeArea, 2),
+            'pothole_percentage' => round($potholePercentage, 2),
         ];
 
-        // Jika detailed = true, return semua detail perhitungan
         if ($detailed) {
             $result['raw_data'] = [
                 'pave_width' => $paveWidth,
@@ -256,10 +259,13 @@ class SDICalculator
                 'total_segment_area' => round($totalSegmentArea, 2),
                 'crack_dep_area' => $crackDepArea,
                 'oth_crack_area' => $othCrackArea,
+                'total_crack_area' => $totalCrackArea,
+                'crack_percentage' => round($crackPercentage, 2),
                 'crack_width_bobot' => $crackWidthBobot,
-                'pothole_count' => $potholeCount,
-                'normalized_potholes' => round($normalizedPotholes, 2),
+                'pothole_area' => $potholeArea,
+                'pothole_percentage' => round($potholePercentage, 2),
                 'rutting_depth_bobot' => $ruttingDepthBobot,
+                'pavement_type' => $pavementType,
             ];
 
             $result['explanations'] = [
@@ -277,7 +283,7 @@ class SDICalculator
                     'value' => round($sdi3, 2),
                     'explanation' => $sdi3_explanation,
                     'addition' => $sdi3_addition,
-                    'formula' => 'SDI3 = SDI2 + (nilai sesuai jumlah lubang per 100m)'
+                    'formula' => '% Lubang = (Luas Lubang / Luas Segmen) × 100, lalu mapping ke bobot'
                 ],
                 'step4' => [
                     'value' => round($sdi4, 2),
@@ -286,7 +292,19 @@ class SDICalculator
                     'formula' => 'SDI4 = SDI3 + (nilai sesuai kedalaman alur)'
                 ]
             ];
+            
+            $result['final'] = [
+                'sdi_final' => round($sdi4, 2),
+                'category' => $category,
+            ];
         }
+
+        Log::info('SDI Calculation completed', [
+            'sdi_final' => $result['sdi_final'],
+            'category' => $result['category'],
+            'crack_%' => round($crackPercentage, 2),
+            'pothole_%' => round($potholePercentage, 2),
+        ]);
 
         return $result;
     }
@@ -298,7 +316,6 @@ class SDICalculator
     {
         return RoadInventory::where('link_no', $condition->link_no)
             ->where(function($query) use ($condition) {
-                // Cari inventory yang overlap dengan segmen condition
                 $query->whereBetween('chainage_from', [$condition->chainage_from, $condition->chainage_to])
                       ->orWhereBetween('chainage_to', [$condition->chainage_from, $condition->chainage_to])
                       ->orWhere(function($q) use ($condition) {
@@ -327,7 +344,6 @@ class SDICalculator
 
     /**
      * Recalculate SDI for specific conditions
-     * Useful for manual recalculation or artisan commands
      */
     public static function recalculateForConditions(array $conditions): array
     {
@@ -371,4 +387,4 @@ class SDICalculator
 
         return $results;
     }
-}
+}  

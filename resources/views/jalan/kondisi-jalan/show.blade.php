@@ -87,7 +87,7 @@
                                 <h4>Total Panjang</h4>
                             </div>
                             <div class="card-body">
-                                {{ number_format($statistics['total_length'], 2) }} km
+                                {{ number_format($statistics['total_length']) }} km
                             </div>
                         </div>
                     </div>
@@ -128,24 +128,6 @@
             <div class="row">
                 <div class="col-lg-3 col-md-6">
                     <div class="card card-statistic-2">
-                        <div class="card-stats">
-                            <div class="card-stats-title">Kondisi Jalan
-                            </div>
-                            <div class="card-stats-items">
-                                <div class="card-stats-item">
-                                    <div class="card-stats-item-count">{{ $statistics['good_condition'] }}</div>
-                                    <div class="card-stats-item-label">Baik</div>
-                                </div>
-                                <div class="card-stats-item">
-                                    <div class="card-stats-item-count">{{ $statistics['fair_condition'] }}</div>
-                                    <div class="card-stats-item-label">Sedang</div>
-                                </div>
-                                <div class="card-stats-item">
-                                    <div class="card-stats-item-count">{{ $statistics['poor_condition'] }}</div>
-                                    <div class="card-stats-item-label">Rusak Ringan</div>
-                                </div>
-                            </div>
-                        </div>
                         <div class="card-icon shadow-primary bg-success">
                             <i class="fas fa-check-circle"></i>
                         </div>
@@ -161,9 +143,6 @@
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <div class="card card-statistic-2">
-                        <div class="card-chart">
-                            <canvas id="balance-chart" height="80"></canvas>
-                        </div>
                         <div class="card-icon shadow-warning" style="background-color: #FFD700; color: #fff;">
                             <i class="fas fa-exclamation-circle"></i>
                         </div>
@@ -179,9 +158,6 @@
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <div class="card card-statistic-2">
-                        <div class="card-chart">
-                            <canvas id="sales-chart" height="80"></canvas>
-                        </div>
                         <div class="card-icon shadow-danger" style="background-color: #FFA500; color: #fff;">
                             <i class="fas fa-times-circle"></i>
                         </div>
@@ -197,9 +173,6 @@
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <div class="card card-statistic-2">
-                        <div class="card-chart">
-                            <canvas id="sales-chart" height="80"></canvas>
-                        </div>
                         <div class="card-icon shadow-dark bg-danger">
                             <i class="fas fa-ban"></i>
                         </div>
@@ -227,7 +200,7 @@
                                 <div class="col-6">
                                     <div class="text-center mb-3">
                                         <h6>Total Luas Retak</h6>
-                                        <h3 class="text-primary">{{ number_format($damage_analysis['total_crack_area'], 2) }} m²</h3>
+                                        <h3 class="text-primary">{{ number_format($damage_analysis['total_crack_area']) }} m²</h3>
                                     </div>
                                 </div>
                                 <div class="col-6">
@@ -322,33 +295,53 @@
                             <tbody>
                                 @foreach($conditionsWithSDI as $index => $condition)
                                 @php
-                                    // ✅ DETEKSI TIPE PERKERASAN
-                                    $pavementType = $condition->pavement ?? 'AS';
-                                    $isNonAspal = in_array($pavementType, ['BT', 'BL', 'NA', 'TD']);
+                                    // ✅ DETEKSI TIPE PERKERASAN - GUNAKAN DATABASE CODE (ENGLISH)
+                                    $pavementType = $condition->pavement ?? 'Asphalt';
                                     
+                                    // ✅ List non-aspal pavement types (Database Code)
+                                    $isNonAspal = in_array($pavementType, ['Block', 'Concrete', 'Unpaved', 'Impassable']);
+                                    
+                                    // ✅ Mapping untuk display label (Database → Indonesia)
                                     $pavementLabels = [
-                                        'AS' => 'Aspal',
-                                        'BT' => 'Beton',
-                                        'BL' => 'Blok',
-                                        'NA' => 'Non Aspal',
-                                        'TD' => 'Tak Dapat Dilalui'
+                                        'Asphalt' => 'Aspal',
+                                        'Concrete' => 'Beton',
+                                        'Block' => 'Blok',
+                                        'Unpaved' => 'Non Aspal',
+                                        'Impassable' => 'Tak Dapat Dilalui'
                                     ];
                                     $pavementLabel = $pavementLabels[$pavementType] ?? 'Aspal';
+                                    
+                                    // ✅ Badge colors
+                                    $pavementBadgeClass = [
+                                        'Asphalt' => 'badge-secondary',
+                                        'Block' => 'badge-info',
+                                        'Concrete' => 'badge-primary',
+                                        'Unpaved' => 'badge-warning',
+                                        'Impassable' => 'badge-danger',
+                                    ][$pavementType] ?? 'badge-secondary';
                                 @endphp
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
                                     <td class="text-center">{{ $condition->year }}</td>
                                     <td>{{ $condition->chainage_from }} - {{ $condition->chainage_to }}</td>
+                                    
+                                    {{-- ✅ TIPE PERKERASAN COLUMN --}}
                                     <td class="text-center">
-                                        {{-- ✅ BADGE TIPE PERKERASAN --}}
                                         @if($isNonAspal)
-                                            <span class="badge badge-warning">
+                                            <span class="badge {{ $pavementBadgeClass }}">
                                                 <i class="fas fa-exclamation-triangle"></i> {{ $pavementLabel }}
                                             </span>
+                                            <br>
+                                            <small class="text-muted">({{ $pavementType }})</small>
                                         @else
-                                            <span class="badge badge-secondary">{{ $pavementLabel }}</span>
+                                            <span class="badge {{ $pavementBadgeClass }}">
+                                                {{ $pavementLabel }}
+                                            </span>
+                                            <br>
+                                            <small class="text-muted">({{ $pavementType }})</small>
                                         @endif
                                     </td>
+                                    
                                     <td class="text-center">{{ number_format($condition->inventory->pave_width ?? 0, 2) }}</td>
                                     
                                     {{-- ✅ SDI VALUES: Tampilkan N/A jika non-aspal --}}
@@ -364,6 +357,7 @@
                                         <td class="text-center font-weight-bold">{{ number_format($condition->sdi_data['sdi_final'], 2) }}</td>
                                     @endif
                                     
+                                    {{-- ✅ KATEGORI COLUMN --}}
                                     <td class="text-center">
                                         @php
                                             $category = $condition->sdi_data['category'];
@@ -402,10 +396,12 @@
                                             </small>
                                         @endif
                                     </td>
+                                    
+                                    {{-- ✅ AKSI COLUMN --}}
                                     <td class="text-center">
-                                        {{-- ✅ TOMBOL DETAIL: Disable untuk non-aspal --}}
                                         @if($isNonAspal)
-                                            <button class="btn btn-sm btn-secondary" disabled title="Detail SDI hanya untuk perkerasan Aspal">
+                                            <button class="btn btn-sm btn-secondary" disabled 
+                                                    title="Detail SDI hanya untuk perkerasan Aspal">
                                                 <i class="fas fa-ban"></i> N/A
                                             </button>
                                         @else
@@ -414,6 +410,12 @@
                                                 <i class="fas fa-calculator"></i> Detail SDI
                                             </button>
                                         @endif
+                                        
+                                        {{-- Tombol Edit/Delete jika diperlukan --}}
+                                        <a href="{{ route('kondisi-jalan.edit', [$condition->link_no, $condition->chainage_from, $condition->chainage_to, $condition->year]) }}" 
+                                        class="btn btn-sm btn-warning" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -438,7 +440,43 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-// Inisialisasi DataTable
+// ========================================
+// ✅ SMART NUMBER FORMATTER
+// ========================================
+function smartFormat(value, type = 'auto') {
+    const num = parseFloat(value);
+    if (isNaN(num)) return '0';
+    
+    switch(type) {
+        case 'integer':
+            // Untuk jumlah lubang, segmen, tahun, bobot
+            return Math.round(num).toString();
+        
+        case 'decimal1':
+            // Untuk dimensi (lebar, panjang) - hapus .0 jika bulat
+            return num % 1 === 0 ? num.toString() : num.toFixed(1);
+        
+        case 'decimal2':
+            // Untuk luas, persentase, SDI, rata-rata
+            return num.toFixed(2);
+        
+        case 'auto':
+        default:
+            // Otomatis detect: bulat -> no decimal, decimal -> 1-2 digit
+            if (Number.isInteger(num)) {
+                return num.toString();
+            }
+            const decimalPart = num.toString().split('.')[1];
+            if (decimalPart && decimalPart.length === 1) {
+                return num.toFixed(1);
+            }
+            return num.toFixed(2);
+    }
+}
+
+// ========================================
+// INISIALISASI DATATABLE
+// ========================================
 $(document).ready(function() {
     $('#conditionTable').DataTable({
         responsive: true,
@@ -450,11 +488,13 @@ $(document).ready(function() {
     });
 });
 
-// Fungsi untuk menampilkan detail SDI LENGKAP
+// ========================================
+// ✅ FUNGSI UTAMA: SHOW DETAIL MODAL
+// ========================================
 function showDetailModal(linkNo, chainageFrom, chainageTo, year) {
-    console.log('showDetailModal called with:', {linkNo, chainageFrom, chainageTo, year});
+    console.log('🔍 showDetailModal called with:', {linkNo, chainageFrom, chainageTo, year});
     
-    // Show loading
+    // Tampilkan loading
     Swal.fire({
         title: 'Memuat Detail...',
         html: '<div class="spinner-border text-primary" role="status"></div>',
@@ -462,7 +502,7 @@ function showDetailModal(linkNo, chainageFrom, chainageTo, year) {
         allowOutsideClick: false
     });
 
-    // Ambil data detail dari server
+    // AJAX Request ke backend
     $.ajax({
         url: "{{ route('kondisi-jalan.getSegmentDetail') }}",
         type: "GET",
@@ -472,266 +512,47 @@ function showDetailModal(linkNo, chainageFrom, chainageTo, year) {
             chainage_to: chainageTo,
             year: year
         },
-        timeout: 10000,
+        timeout: 15000,
         success: function(res) {
+            console.log('✅ Full response:', res);
+            
             if (res.success) {
-                const data = res.data.sdi_detail;
-                const condition = res.data.condition;
+                // ✅ PERBAIKAN UTAMA: Akses data dengan benar
+                const sdiDetail = res.data?.sdi_detail || {};
+                const condition = res.data?.condition || {};
                 
-                // ✅ TAMBAHKAN VALIDASI NULL
-                const linkCode = condition.link_no?.link_code || linkNo;
-                const linkName = condition.link_no?.link_name || 'Ruas ' + linkNo;
+                // ✅ FIX: Ganti 'calculations' dengan 'explanations' sesuai Service
+                const rawData = sdiDetail.raw_data || {};
+                const calculations = sdiDetail.explanations || {}; // ✅ PERBAIKAN DI SINI
+                const finalData = sdiDetail.final || {};
                 
-                // ✅ CEK APAKAH NON-ASPAL
-                if (data.final && data.final.note && data.final.note.includes('Non-Aspal')) {
+                const linkInfo = condition.link_no || {};
+                const linkCode = linkInfo.link_code || linkNo;
+                const linkName = linkInfo.link_name || 'Ruas ' + linkNo;
+                
+                // Validasi data inventory
+                if (!rawData.pave_width || rawData.pave_width === undefined) {
                     Swal.fire({
-                        title: `Detail Kondisi Jalan`,
-                        html: `
-                            <div class="text-center py-4">
-                                <div class="alert alert-warning mb-3">
-                                    <h5 class="text-center mb-2">
-                                        <i class="fas fa-road"></i> 
-                                        <strong>${linkCode} - ${linkName}</strong>
-                                    </h5>
-                                    <p class="mb-0 text-center">
-                                        Chainage: <strong>${chainageFrom} - ${chainageTo}</strong> | 
-                                        Tahun: <strong>${year}</strong>
-                                    </p>
-                                </div>
-                                
-                                <div class="alert alert-danger">
-                                    <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
-                                    <h4>Perkerasan Non-Aspal</h4>
-                                    <p class="mb-0">
-                                        Metode SDI (Surface Distress Index) hanya berlaku untuk perkerasan <strong>Aspal</strong>.
-                                        <br><br>
-                                        Segmen ini menggunakan perkerasan <strong>${data.raw_data.pavement_type || 'Non-Aspal'}</strong>, 
-                                        sehingga kategori kondisi otomatis ditetapkan sebagai:
-                                    </p>
-                                </div>
-                                
-                                <h2 class="text-danger mb-3">Rusak Berat</h2>
-                                
-                                <div class="alert alert-info text-left">
-                                    <small>
-                                        <strong><i class="fas fa-info-circle"></i> Catatan:</strong><br>
-                                        Untuk perkerasan Beton, Blok, atau Non-Aspal lainnya, diperlukan metode evaluasi yang berbeda 
-                                        seperti PCI (Pavement Condition Index) atau metode visual assessment.
-                                    </small>
-                                </div>
-                            </div>
-                        `,
-                        width: 700,
-                        confirmButtonText: '<i class="fas fa-times"></i> Tutup',
-                        confirmButtonColor: '#6777ef',
+                        icon: 'error',
+                        title: 'Data Tidak Lengkap',
+                        text: 'Data inventaris tidak tersedia'
                     });
                     return;
                 }
                 
-                // ✅ JIKA ASPAL, TAMPILKAN DETAIL SDI LENGKAP
-                const category = data.final.category;
-                let badgeClass = 'badge-secondary';
-                let customStyle = '';
+                // Deteksi tipe perkerasan
+                const pavementType = rawData.pavement_type || 'Asphalt';
+                const isNonAspal = ['Concrete', 'Block', 'Unpaved', 'Impassable'].includes(pavementType);
                 
-                if (category === 'Baik') {
-                    badgeClass = 'badge-success';
-                } else if (category === 'Sedang') {
-                    customStyle = 'background-color: #FFD700; color: #000;';
-                } else if (category === 'Rusak Ringan') {
-                    customStyle = 'background-color: #FFA500; color: #fff;';
-                } else if (category === 'Rusak Berat') {
-                    badgeClass = 'badge-dark';
+                // Jika non-aspal, tampilkan modal khusus
+                if (isNonAspal || finalData.note?.includes('Non-Aspal')) {
+                    showNonAspalModal(linkCode, linkName, chainageFrom, chainageTo, year, pavementType);
+                    return;
                 }
-
-                Swal.fire({
-                    title: `Detail Perhitungan SDI`,
-                    html: `
-                        <div class="text-left" style="max-height: 600px; overflow-y: auto;">
-                            <div class="alert alert-info mb-3">
-                                <h5 class="text-center mb-2">
-                                    <i class="fas fa-road"></i> 
-                                    <strong>${linkCode} - ${linkName}</strong>
-                                </h5>
-                                <p class="mb-0 text-center">
-                                    Chainage: <strong>${chainageFrom} - ${chainageTo}</strong> | 
-                                    Tahun: <strong>${year}</strong> |
-                                    Perkerasan: <strong>Aspal</strong>
-                                </p>
-                            </div>
-                            
-                            <hr>
-                            
-                            <!-- DATA DASAR SEGMEN -->
-                            <h6 class="text-primary mb-2">
-                                <i class="fas fa-info-circle"></i> Data Dasar Segmen
-                            </h6>
-                            <table class="table table-sm table-bordered mb-3">
-                                <tr>
-                                    <td width="50%"><strong>Lebar Jalan (Pave Width)</strong></td>
-                                    <td><strong>${data.raw_data.pave_width.toFixed(2)} m</strong></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Panjang Segmen</strong></td>
-                                    <td>${data.raw_data.segment_length.toFixed(3)} m</td>
-                                </tr>
-                                <tr class="bg-light">
-                                    <td><strong>Luas Total Segmen</strong></td>
-                                    <td><strong>${data.raw_data.total_segment_area.toFixed(2)} m²</strong></td>
-                                </tr>
-                            </table>
-
-                            <!-- TAHAP 1: LUAS RETAK -->
-                            <div class="card mb-3 border-primary">
-                                <div class="card-header bg-primary text-white py-2">
-                                    <strong><i class="fas fa-layer-group"></i> TAHAP 1: Perhitungan Luas Retak (SDI1)</strong>
-                                </div>
-                                <div class="card-body p-2">
-                                    <p class="mb-2"><small><em>${data.calculations.step1.formula}</em></small></p>
-                                    
-                                    <table class="table table-sm table-bordered mb-2">
-                                        <tr>
-                                            <td>Crack Depression Area</td>
-                                            <td class="text-right">${data.raw_data.crack_dep_area.toFixed(2)} m²</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Other Crack Area</td>
-                                            <td class="text-right">${data.raw_data.oth_crack_area.toFixed(2)} m²</td>
-                                        </tr>
-                                        <tr class="table-warning">
-                                            <td><strong>Total Luas Retak (Aspal saja)</strong></td>
-                                            <td class="text-right"><strong>${data.raw_data.total_crack_area.toFixed(2)} m²</strong></td>
-                                        </tr>
-                                        <tr class="table-info">
-                                            <td><strong>% Luas Retak</strong></td>
-                                            <td class="text-right"><strong>${data.raw_data.crack_percentage.toFixed(2)}%</strong></td>
-                                        </tr>
-                                    </table>
-                                    
-                                    <div class="alert alert-success mb-0 py-2">
-                                        <strong>Hasil:</strong> ${data.calculations.step1.explanation}
-                                        <div class="text-right mt-1"><strong>SDI1 = ${data.calculations.step1.value.toFixed(2)}</strong></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- TAHAP 2: LEBAR RETAK -->
-                            <div class="card mb-3 border-info">
-                                <div class="card-header bg-info text-white py-2">
-                                    <strong><i class="fas fa-arrows-alt-h"></i> TAHAP 2: Perhitungan Lebar Retak (SDI2)</strong>
-                                </div>
-                                <div class="card-body p-2">
-                                    <p class="mb-2"><small><em>${data.calculations.step2.formula}</em></small></p>
-                                    
-                                    <table class="table table-sm table-bordered mb-2">
-                                        <tr>
-                                            <td><strong>Lebar Retak (Crack Width)</strong></td>
-                                            <td class="text-right"><strong>${data.raw_data.crack_width.toFixed(2)} mm</strong></td>
-                                        </tr>
-                                    </table>
-                                    
-                                    <div class="alert alert-success mb-0 py-2">
-                                        <strong>Hasil:</strong> ${data.calculations.step2.explanation}
-                                        <div class="text-right mt-1"><strong>SDI2 = ${data.calculations.step2.value.toFixed(2)}</strong></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- TAHAP 3: JUMLAH LUBANG -->
-                            <div class="card mb-3 border-warning">
-                                <div class="card-header bg-warning text-dark py-2">
-                                    <strong><i class="fas fa-circle-notch"></i> TAHAP 3: Perhitungan Jumlah Lubang (SDI3)</strong>
-                                </div>
-                                <div class="card-body p-2">
-                                    <p class="mb-2"><small><em>${data.calculations.step3.formula}</em></small></p>
-                                    
-                                    <table class="table table-sm table-bordered mb-2">
-                                        <tr>
-                                            <td><strong>Jumlah Lubang (Pothole)</strong></td>
-                                            <td class="text-right"><strong>${data.raw_data.pothole_count}</strong></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Normalisasi per 100m</strong></td>
-                                            <td class="text-right"><strong>${data.raw_data.normalized_potholes.toFixed(2)}</strong></td>
-                                        </tr>
-                                        <tr class="table-info">
-                                            <td><strong>Penambahan Nilai</strong></td>
-                                            <td class="text-right"><strong>+ ${data.calculations.step3.addition.toFixed(2)}</strong></td>
-                                        </tr>
-                                    </table>
-                                    
-                                    <div class="alert alert-success mb-0 py-2">
-                                        <strong>Hasil:</strong> ${data.calculations.step3.explanation}
-                                        <div class="text-right mt-1"><strong>SDI3 = ${data.calculations.step3.value.toFixed(2)}</strong></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- TAHAP 4: KEDALAMAN ALUR -->
-                            <div class="card mb-3 border-danger">
-                                <div class="card-header bg-danger text-white py-2">
-                                    <strong><i class="fas fa-water"></i> TAHAP 4: Perhitungan Kedalaman Alur Roda (SDI4 - Final)</strong>
-                                </div>
-                                <div class="card-body p-2">
-                                    <p class="mb-2"><small><em>${data.calculations.step4.formula}</em></small></p>
-                                    
-                                    <table class="table table-sm table-bordered mb-2">
-                                        <tr>
-                                            <td><strong>Kedalaman Alur (Rutting Depth)</strong></td>
-                                            <td class="text-right"><strong>${data.raw_data.rutting_depth.toFixed(2)} cm</strong></td>
-                                        </tr>
-                                        <tr class="table-info">
-                                            <td><strong>Penambahan Nilai</strong></td>
-                                            <td class="text-right"><strong>+ ${data.calculations.step4.addition.toFixed(2)}</strong></td>
-                                        </tr>
-                                    </table>
-                                    
-                                    <div class="alert alert-success mb-0 py-2">
-                                        <strong>Hasil:</strong> ${data.calculations.step4.explanation}
-                                        <div class="text-right mt-1"><strong>SDI4 = ${data.calculations.step4.value.toFixed(2)}</strong></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- HASIL AKHIR -->
-                            <div class="card border-dark">
-                                <div class="card-header bg-dark text-white text-center py-2">
-                                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> HASIL AKHIR PERHITUNGAN SDI</h5>
-                                </div>
-                                <div class="card-body text-center p-3">
-                                    <h2 class="text-primary mb-2">${data.final.sdi_final.toFixed(2)}</h2>
-                                    <span class="badge ${badgeClass}" style="font-size: 18px; padding: 10px 20px; ${customStyle}">
-                                        <i class="fas fa-flag"></i> ${data.final.category}
-                                    </span>
-                                    
-                                    <div class="mt-3 text-left">
-                                        <small class="text-muted">
-                                            <strong>Referensi Kategori:</strong><br>
-                                            • Baik: SDI < 50<br>
-                                            • Sedang: 50 ≤ SDI < 100<br>
-                                            • Rusak Ringan: 100 ≤ SDI < 150<br>
-                                            • Rusak Berat: SDI ≥ 150
-                                        </small>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- INFO TAMBAHAN -->
-                            <div class="alert alert-light mt-3 mb-0">
-                                <small>
-                                    <i class="fas fa-info-circle"></i> 
-                                    <strong>Catatan:</strong> Perhitungan SDI mengikuti Panduan Bina Marga untuk evaluasi kondisi permukaan jalan <strong>Aspal</strong>.
-                                </small>
-                            </div>
-                        </div>
-                    `,
-                    width: 900,
-                    confirmButtonText: '<i class="fas fa-times"></i> Tutup',
-                    confirmButtonColor: '#6777ef',
-                    customClass: {
-                        container: 'sdi-detail-modal',
-                        popup: 'sdi-detail-popup'
-                    }
-                });
+                
+                // Tampilkan modal detail untuk aspal
+                showAspalDetailModal(linkCode, linkName, chainageFrom, chainageTo, year, rawData, calculations, finalData);
+                
             } else {
                 Swal.fire({
                     icon: 'error',
@@ -741,17 +562,447 @@ function showDetailModal(linkNo, chainageFrom, chainageTo, year) {
             }
         },
         error: function(xhr, status, error) {
-            console.error('Error:', error);
+            console.error('❌ AJAX Error:', {status, error, response: xhr.responseText});
+            
+            let errorMessage = 'Terjadi kesalahan saat memuat data';
+            if (status === 'timeout') errorMessage = 'Request timeout - Server membutuhkan waktu terlalu lama';
+            else if (xhr.status === 404) errorMessage = 'Route tidak ditemukan (404)';
+            else if (xhr.status === 500) errorMessage = 'Server error (500) - Periksa log backend';
+            
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'Terjadi kesalahan saat memuat data'
+                html: `<p>${errorMessage}</p><small>Status: ${xhr.status}</small>`,
             });
         }
     });
 }
 
-// Fungsi export ke Excel
+// ========================================
+// MODAL UNTUK PERKERASAN NON-ASPAL
+// ========================================
+function showNonAspalModal(linkCode, linkName, chainageFrom, chainageTo, year, pavementType) {
+    // ✅ Mapping Database Code → Display Name
+    const pavementNames = {
+        'Concrete': 'Beton',
+        'Block': 'Blok',
+        'Unpaved': 'Non Aspal',
+        'Impassable': 'Tak Dapat Dilalui'
+    };
+    
+    const pavementLabel = pavementNames[pavementType] || 'Non-Aspal';
+    
+    // ✅ Icon per tipe
+    const pavementIcons = {
+        'Concrete': 'fa-th-large',
+        'Block': 'fa-th',
+        'Unpaved': 'fa-mountain',
+        'Impassable': 'fa-ban'
+    };
+    
+    const icon = pavementIcons[pavementType] || 'fa-exclamation-triangle';
+    
+    Swal.fire({
+        title: 'Detail Kondisi Jalan',
+        html: `
+            <div class="text-center py-4">
+                <div class="alert alert-info mb-3">
+                    <h5 class="mb-2">
+                        <i class="fas fa-road"></i> 
+                        <strong>${linkCode} - ${linkName}</strong>
+                    </h5>
+                    <p class="mb-0">
+                        Chainage: <strong>${chainageFrom} - ${chainageTo}</strong> | 
+                        Tahun: <strong>${year}</strong>
+                    </p>
+                </div>
+                
+                <div class="alert alert-danger">
+                    <i class="fas ${icon} fa-3x mb-3"></i>
+                    <h4>Perkerasan Non-Aspal</h4>
+                    <p class="mb-0">
+                        Metode SDI hanya berlaku untuk perkerasan <strong>Aspal</strong>.<br><br>
+                        Segmen ini menggunakan perkerasan: <strong>${pavementLabel}</strong><br>
+                        <small class="text-muted">(Database Code: ${pavementType})</small>
+                    </p>
+                </div>
+                
+                <h2 class="text-danger mb-3">Rusak Berat</h2>
+                
+                <div class="alert alert-light">
+                    <p class="mb-0">
+                        <i class="fas fa-info-circle"></i> 
+                        Untuk perkerasan non-aspal, kondisi jalan secara default 
+                        dikategorikan sebagai <strong>"Rusak Berat"</strong> 
+                        karena tidak dapat dinilai menggunakan metode SDI.
+                    </p>
+                </div>
+            </div>
+        `,
+        width: 700,
+        confirmButtonText: '<i class="fas fa-times"></i> Tutup',
+        confirmButtonColor: '#6777ef',
+    });
+}
+
+// ========================================
+// MODAL DETAIL UNTUK PERKERASAN ASPAL
+// ========================================
+function showAspalDetailModal(linkCode, linkName, chainageFrom, chainageTo, year, rawData, calculations, finalData) {
+    console.log('🎯 Building Aspal Detail Modal with:', {
+        linkCode, linkName, chainageFrom, chainageTo, year,
+        hasRawData: !!rawData,
+        hasCalculations: !!calculations,
+        hasFinalData: !!finalData,
+        calculationsKeys: Object.keys(calculations)
+    });
+
+    const category = finalData.category || 'Data Tidak Lengkap';
+    const sdiFinal = parseFloat(finalData.sdi_final) || 0;
+    
+    let badgeClass = 'badge-secondary';
+    let customStyle = '';
+    let badgeIcon = 'fa-question-circle';
+    
+    if (category === 'Baik') {
+        badgeClass = 'badge-success';
+        badgeIcon = 'fa-check-circle';
+    } else if (category === 'Sedang') {
+        customStyle = 'background-color: #FFD700; color: #000;';
+        badgeIcon = 'fa-exclamation-circle';
+    } else if (category === 'Rusak Ringan') {
+        customStyle = 'background-color: #FFA500; color: #fff;';
+        badgeIcon = 'fa-times-circle';
+    } else if (category === 'Rusak Berat') {
+        badgeClass = 'badge-danger';
+        badgeIcon = 'fa-ban';
+    }
+
+    const html = `
+        <div class="text-left" style="max-height: 650px; overflow-y: auto; padding: 15px;">
+            <div class="alert alert-info mb-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white;">
+                <h5 class="text-center mb-2" style="color: white;">
+                    <i class="fas fa-road"></i> 
+                    <strong>${linkCode} - ${linkName}</strong>
+                </h5>
+                <p class="mb-0 text-center" style="color: white;">
+                    Chainage: <strong>${chainageFrom} - ${chainageTo}</strong> | 
+                    Tahun: <strong>${year}</strong> | 
+                    Perkerasan: <strong>Aspal</strong>
+                </p>
+            </div>
+            
+            <hr style="border-top: 2px solid #ddd;">
+            
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <h6 class="mb-3" style="color: #667eea; font-weight: bold;">
+                    <i class="fas fa-info-circle"></i> DATA DASAR SEGMEN
+                </h6>
+                <table class="table table-sm table-bordered mb-0" style="background: white;">
+                    <tr>
+                        <td width="50%"><strong>Lebar Jalan</strong></td>
+                        <td><strong style="color: #667eea;">${smartFormat(rawData.pave_width, 'decimal1')} m</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Panjang Segmen</strong></td>
+                        <td>${smartFormat(rawData.segment_length_meter, 'decimal1')} m</td>
+                    </tr>
+                    <tr style="background: #e3f2fd;">
+                        <td><strong>Luas Total Segmen</strong></td>
+                        <td><strong style="color: #1976d2;">${smartFormat(rawData.total_segment_area, 'decimal2')} m²</strong></td>
+                    </tr>
+                </table>
+            </div>
+
+            ${buildStep1HTML(rawData, calculations.step1)}
+            ${buildStep2HTML(rawData, calculations.step2)}
+            ${buildStep3HTML(rawData, calculations.step3)}
+            ${buildStep4HTML(rawData, calculations.step4)}
+            ${buildFinalResultHTML(sdiFinal, category, badgeClass, customStyle, badgeIcon)}
+        </div>
+    `;
+
+    Swal.fire({
+        title: '<i class="fas fa-calculator"></i> Detail Perhitungan SDI',
+        html: html,
+        width: 950,
+        confirmButtonText: '<i class="fas fa-times"></i> Tutup',
+        confirmButtonColor: '#6777ef',
+    });
+}
+
+// ========================================
+// HELPER: BUILD STEP 1 HTML (LUAS RETAK)
+// ========================================
+function buildStep1HTML(rawData, step1) {
+    console.log('📊 Building Step 1 with:', {hasStep1: !!step1, step1Data: step1});
+
+    if (!step1) {
+        console.warn('⚠️ Step1 data is missing');
+        return '<div class="alert alert-warning">Data Step 1 tidak tersedia</div>';
+    }
+
+    return `
+        <div class="card mb-3" style="border-left: 5px solid #4CAF50;">
+            <div class="card-header" style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); color: white; padding: 12px 15px;">
+                <strong><i class="fas fa-layer-group"></i> TAHAP 1: LUAS RETAK (SDI1)</strong>
+            </div>
+            <div class="card-body p-3">
+                <div class="alert alert-light mb-3" style="background: #f5f5f5; border-left: 3px solid #4CAF50;">
+                    <strong><i class="fas fa-calculator"></i> Formula:</strong><br>
+                    <code>${step1.formula || '% Retak = (Total Luas Retak / Luas Segmen) × 100'}</code>
+                </div>
+
+                <h6 class="mb-2" style="color: #4CAF50;"><i class="fas fa-database"></i> Data:</h6>
+                <table class="table table-sm table-bordered mb-3">
+                    <tr>
+                        <td>Crack Depression Area</td>
+                        <td class="text-right"><strong>${smartFormat(rawData.crack_dep_area, 'decimal2')} m²</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Other Crack Area</td>
+                        <td class="text-right"><strong>${smartFormat(rawData.oth_crack_area, 'decimal2')} m²</strong></td>
+                    </tr>
+                    <tr style="background: #fff3cd;">
+                        <td><strong>Total Luas Retak</strong></td>
+                        <td class="text-right"><strong>${smartFormat(rawData.total_crack_area, 'decimal2')} m²</strong></td>
+                    </tr>
+                </table>
+
+                <h6 class="mb-2" style="color: #4CAF50;"><i class="fas fa-cogs"></i> Perhitungan:</h6>
+                <div class="alert alert-light mb-3" style="background: #e8f5e9;">
+                    <code>
+                        % Retak = (${smartFormat(rawData.total_crack_area, 'decimal2')} / ${smartFormat(rawData.total_segment_area, 'decimal2')}) × 100<br>
+                        % Retak = <strong>${smartFormat(rawData.crack_percentage, 'decimal2')}%</strong>
+                    </code>
+                </div>
+
+                <div class="alert alert-success mb-3">
+                    <i class="fas fa-check-circle"></i> ${step1.explanation || '-'}
+                </div>
+
+                <div class="text-center p-3" style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); border-radius: 8px;">
+                    <h4 class="mb-0" style="color: white;">
+                        <i class="fas fa-flag-checkered"></i> HASIL SDI1 = <strong>${smartFormat(step1.value, 'decimal2')}</strong>
+                    </h4>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ========================================
+// HELPER: BUILD STEP 2 HTML (LEBAR RETAK)
+// ========================================
+function buildStep2HTML(rawData, step2) {
+    console.log('📊 Building Step 2 with:', {hasStep2: !!step2, step2Data: step2});
+
+    if (!step2) {
+        console.warn('⚠️ Step2 data is missing');
+        return '<div class="alert alert-warning">Data Step 2 tidak tersedia</div>';
+    }
+
+    const crackWidthBobot = parseInt(rawData.crack_width_bobot) || 0;
+    const crackWidthLabels = {
+        0: 'Tidak ada data', 
+        1: 'Tidak ada retak',
+        2: 'Halus < 1mm', 
+        3: 'Sedang 1-3mm', 
+        4: 'Lebar > 3mm'
+    };
+
+    return `
+        <div class="card mb-3" style="border-left: 5px solid #2196F3;">
+            <div class="card-header" style="background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); color: white; padding: 12px 15px;">
+                <strong><i class="fas fa-arrows-alt-h"></i> TAHAP 2: LEBAR RETAK (SDI2)</strong>
+            </div>
+            <div class="card-body p-3">
+                <div class="alert alert-light mb-3" style="background: #f5f5f5; border-left: 3px solid #2196F3;">
+                    <strong><i class="fas fa-calculator"></i> Formula:</strong><br>
+                    <code>${step2.formula || '• Lebar ≤ 3mm → SDI2 = SDI1<br>• Lebar > 3mm → SDI2 = SDI1 × 2'}</code>
+                </div>
+
+                <table class="table table-sm table-bordered mb-3">
+                    <tr>
+                        <td><strong>Lebar Retak</strong></td>
+                        <td class="text-right">
+                            <span class="badge badge-info">${crackWidthLabels[crackWidthBobot]}</span>
+                            <small class="text-muted ml-2">(bobot ${crackWidthBobot})</small>
+                        </td>
+                    </tr>
+                </table>
+
+                <div class="alert alert-info mb-3">
+                    <i class="fas fa-info-circle"></i> ${step2.explanation || '-'}
+                </div>
+
+                <div class="text-center p-3" style="background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); border-radius: 8px;">
+                    <h4 class="mb-0" style="color: white;">
+                        <i class="fas fa-flag-checkered"></i> HASIL SDI2 = <strong>${smartFormat(step2.value, 'decimal2')}</strong>
+                    </h4>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ========================================
+// HELPER: BUILD STEP 3 HTML (JUMLAH LUBANG)
+// ========================================
+function buildStep3HTML(rawData, step3) {
+    console.log('📊 Building Step 3 with:', {hasStep3: !!step3, step3Data: step3});
+
+    if (!step3) {
+        console.warn('⚠️ Step3 data is missing');
+        return '<div class="alert alert-warning">Data Step 3 tidak tersedia</div>';
+    }
+
+    return `
+        <div class="card mb-3" style="border-left: 5px solid #FF9800;">
+            <div class="card-header" style="background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); color: white; padding: 12px 15px;">
+                <strong><i class="fas fa-circle-notch"></i> TAHAP 3: JUMLAH LUBANG (SDI3)</strong>
+            </div>
+            <div class="card-body p-3">
+                <div class="alert alert-light mb-3" style="background: #f5f5f5; border-left: 3px solid #FF9800;">
+                    <strong><i class="fas fa-calculator"></i> Formula:</strong><br>
+                    <code>${step3.formula || 'Normalisasi = (Jumlah Lubang / Panjang Segmen) × 100'}</code>
+                </div>
+
+                <table class="table table-sm table-bordered mb-3">
+                    <tr>
+                        <td>Jumlah Lubang</td>
+                        <td class="text-right"><strong>${smartFormat(rawData.pothole_count, 'integer')} buah</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Panjang Segmen</td>
+                        <td class="text-right">${smartFormat(rawData.segment_length_meter, 'decimal1')} m</td>
+                    </tr>
+                </table>
+
+                <div class="alert alert-light mb-3" style="background: #fff3e0;">
+                    <code>
+                        Normalized = (${smartFormat(rawData.pothole_count, 'integer')} / ${smartFormat(rawData.segment_length_meter, 'decimal1')}) × 100<br>
+                        Normalized = <strong>${smartFormat(rawData.normalized_potholes, 'decimal1')} per 100m</strong>
+                    </code>
+                </div>
+
+                <div class="alert alert-warning mb-3">
+                    <i class="fas fa-exclamation-triangle"></i> ${step3.explanation || '-'}
+                    ${step3.addition ? `<br><strong>Penambahan: +${smartFormat(step3.addition, 'decimal2')}</strong>` : ''}
+                </div>
+
+                <div class="text-center p-3" style="background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); border-radius: 8px;">
+                    <h4 class="mb-0" style="color: white;">
+                        <i class="fas fa-flag-checkered"></i> HASIL SDI3 = <strong>${smartFormat(step3.value, 'decimal2')}</strong>
+                    </h4>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ========================================
+// HELPER: BUILD STEP 4 HTML (KEDALAMAN ALUR)
+// ========================================
+function buildStep4HTML(rawData, step4) {
+    console.log('📊 Building Step 4 with:', {hasStep4: !!step4, step4Data: step4});
+
+    if (!step4) {
+        console.warn('⚠️ Step4 data is missing');
+        return '<div class="alert alert-warning">Data Step 4 tidak tersedia</div>';
+    }
+
+    const ruttingDepthBobot = parseInt(rawData.rutting_depth_bobot) || 0;
+    const ruttingLabels = {
+        0: 'Tidak ada data', 
+        1: 'Tidak ada alur',
+        2: 'Kedalaman < 1cm', 
+        3: 'Kedalaman 1-3cm', 
+        4: 'Kedalaman > 3cm'
+    };
+
+    return `
+        <div class="card mb-3" style="border-left: 5px solid #f44336;">
+            <div class="card-header" style="background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); color: white; padding: 12px 15px;">
+                <strong><i class="fas fa-water"></i> TAHAP 4: KEDALAMAN ALUR (SDI4)</strong>
+            </div>
+            <div class="card-body p-3">
+                <div class="alert alert-light mb-3" style="background: #f5f5f5; border-left: 3px solid #f44336;">
+                    <strong><i class="fas fa-calculator"></i> Formula:</strong><br>
+                    <code>${step4.formula || '• < 1cm → Tambah 2.5<br>• 1-3cm → Tambah 10<br>• > 3cm → Tambah 100'}</code>
+                </div>
+
+                <table class="table table-sm table-bordered mb-3">
+                    <tr>
+                        <td><strong>Kedalaman Alur</strong></td>
+                        <td class="text-right">
+                            <span class="badge badge-danger">${ruttingLabels[ruttingDepthBobot]}</span>
+                            <small class="text-muted ml-2">(bobot ${ruttingDepthBobot})</small>
+                        </td>
+                    </tr>
+                </table>
+
+                <div class="alert alert-danger mb-3" style="background: #ffebee;">
+                    <i class="fas fa-calculator"></i> ${step4.explanation || '-'}
+                    ${step4.addition ? `<br><strong>Penambahan: +${smartFormat(step4.addition, 'decimal2')}</strong>` : ''}
+                </div>
+
+                <div class="text-center p-3" style="background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); border-radius: 8px;">
+                    <h4 class="mb-0" style="color: white;">
+                        <i class="fas fa-flag-checkered"></i> HASIL SDI4 = <strong>${smartFormat(step4.value, 'decimal2')}</strong>
+                    </h4>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ========================================
+// HELPER: BUILD FINAL RESULT HTML
+// ========================================
+function buildFinalResultHTML(sdiFinal, category, badgeClass, customStyle, badgeIcon) {
+    return `
+        <div class="card border-0 mb-0" style="box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+            <div class="card-header text-center py-3" style="background: linear-gradient(135deg, #333 0%, #555 100%); color: white;">
+                <h5 class="mb-0"><i class="fas fa-chart-line"></i> HASIL AKHIR</h5>
+            </div>
+            <div class="card-body text-center p-4" style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+                <h1 class="display-3 mb-3" style="color: #667eea; font-weight: bold;">${smartFormat(sdiFinal, 'decimal2')}</h1>
+                <span class="badge ${badgeClass}" style="font-size: 20px; padding: 12px 30px; ${customStyle}">
+                    <i class="fas ${badgeIcon}"></i> ${category}
+                </span>
+                
+                <hr style="margin: 25px 0;">
+                
+                <div class="text-left" style="background: white; padding: 20px; border-radius: 8px;">
+                    <h6 class="mb-3"><i class="fas fa-info-circle"></i> <strong>Referensi:</strong></h6>
+                    <table class="table table-sm table-bordered mb-0">
+                        <tr style="background: #c8e6c9;">
+                            <td width="50%"><i class="fas fa-check-circle text-success"></i> <strong>Baik</strong></td>
+                            <td>SDI < 50</td>
+                        </tr>
+                        <tr style="background: #fff9c4;">
+                            <td><i class="fas fa-exclamation-circle" style="color: #FFD700;"></i> <strong>Sedang</strong></td>
+                            <td>50 ≤ SDI < 100</td>
+                        </tr>
+                        <tr style="background: #ffe0b2;">
+                            <td><i class="fas fa-times-circle" style="color: #FFA500;"></i> <strong>Rusak Ringan</strong></td>
+                            <td>100 ≤ SDI < 150</td>
+                        </tr>
+                        <tr style="background: #ffcdd2;">
+                            <td><i class="fas fa-ban text-danger"></i> <strong>Rusak Berat</strong></td>
+                            <td>SDI ≥ 150</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ========================================
+// EXPORT TABLE TO EXCEL
+// ========================================
 function exportTableToExcel(tableID, filename = '') {
     var downloadLink;
     var dataType = 'application/vnd.ms-excel';
@@ -773,24 +1024,56 @@ function exportTableToExcel(tableID, filename = '') {
         downloadLink.click();
     }
 }
+
+console.log('✅ Pavement Type Display Mapping Loaded');
+console.log('Available types:', {
+    'Asphalt': 'Aspal (SDI applicable)',
+    'Block': 'Blok (No SDI)',
+    'Concrete': 'Beton (No SDI)',
+    'Unpaved': 'Non Aspal (No SDI)',
+    'Impassable': 'Tak Dapat Dilalui (No SDI)'
+});
 </script>
 
 <style>
+    /* Badge pavement type dengan hover effect */
+.badge-pavement {
+    transition: all 0.3s ease;
+}
+
+.badge-pavement:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* Icon warning untuk non-aspal */
+.badge .fa-exclamation-triangle {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* Table cell untuk pavement type */
+td.pavement-cell {
+    min-width: 120px;
+}
+
+/* Disabled button style */
+.btn-secondary:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
 .sdi-detail-modal .swal2-popup {
     font-size: 14px;
 }
 .sdi-detail-modal .table {
     font-size: 13px;
-    margin-bottom: 0;
 }
 .sdi-detail-modal .table td {
-    padding: 0.4rem;
-}
-.sdi-detail-modal .card {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-.sdi-detail-modal .card-header {
-    font-size: 14px;
+    padding: 0.5rem;
 }
 .badge-lg {
     padding: 0.5rem 1rem;

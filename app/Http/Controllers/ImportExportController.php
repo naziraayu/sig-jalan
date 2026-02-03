@@ -67,6 +67,11 @@ class ImportExportController extends Controller
                 'permission' => 'kondisi_jalan',
                 'use_custom_export' => true
             ],
+            'koordinat_gps' => [
+                'model' => \App\Models\Alignment::class,
+                'label' => 'Import Koordinat GPS',
+                'permission' => 'koordinat_gps'
+            ],
         ];
     }
 

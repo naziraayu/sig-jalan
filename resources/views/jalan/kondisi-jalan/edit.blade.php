@@ -51,12 +51,12 @@
                 @csrf
                 @method('PUT')
                 
-                {{-- ✅ Hidden input untuk simpan tipe data yang dipilih --}}
+                {{-- ✅ Hidden input untuk simpan tipe data yang dipilih (FORMAT INDONESIA) --}}
                 <input type="hidden" name="data_type" id="selectedDataType" value="{{ $dataType }}">
 
                 <div class="card">
                     <div class="card-header bg-warning text-white">
-                        <h4 class="mb-0"><i class="fas fa-edit"></i> Edit Kondisi Jalan - {{ ucfirst($dataType) }}</h4>
+                        <h4 class="mb-0" id="headerTitle"><i class="fas fa-edit"></i> Edit Kondisi Jalan - {{ ucfirst($dataType) }}</h4>
                     </div>
                     <div class="card-body">
                         
@@ -431,17 +431,6 @@
                                     </div>
                                 </div>
                             </div>
-
-                            <datalist id="datalist-percentage-beton">
-                                <option value="0">0</option>
-                                <option value="18">0 - 5%</option>
-                                <option value="52">5 - 10%</option>
-                                <option value="105">10 - 20%</option>
-                                <option value="175">20 - 30%</option>
-                                <option value="245">30 - 40%</option>
-                                <option value="315">40 - 50%</option>
-                                <option value="525">50% ></option>
-                            </datalist>
                         </div>
 
                         {{-- ========== FORM NON ASPAL ========== --}}
@@ -624,17 +613,6 @@
                                 </div>
                             </div>
 
-                            <datalist id="datalist-percentage-beton">
-                                <option value="0">0</option>
-                                <option value="18">0 - 5%</option>
-                                <option value="52">5 - 10%</option>
-                                <option value="105">10 - 20%</option>
-                                <option value="175">20 - 30%</option>
-                                <option value="245">30 - 40%</option>
-                                <option value="315">40 - 50%</option>
-                                <option value="525">50% ></option>
-                            </datalist>
-
                         </div>
 
                     </div>
@@ -684,11 +662,13 @@ $(document).ready(function() {
             $('#tabNonAspal').removeClass('btn-outline-secondary').addClass('btn-warning');
         }
         
-        // Update hidden input
+        // ✅ Update hidden input dengan NAMA INDONESIA (bukan database code)
         $('#selectedDataType').val(type);
         
         // Update header text
-        $('.card-header h4').html('<i class="fas fa-edit"></i> Edit Kondisi Jalan - ' + type);
+        $('#headerTitle').html('<i class="fas fa-edit"></i> Edit Kondisi Jalan - ' + type);
+        
+        console.log('✅ Switched to:', type);
     }
     
     // ✅ TAB CLICK HANDLERS
@@ -708,15 +688,33 @@ $(document).ready(function() {
         switchDataType('Non Aspal');
     });
     
-    // Form submission dengan konfirmasi
+    // ✅ Form submission dengan konfirmasi
     $('#formEditCondition').on('submit', function(e) {
         e.preventDefault();
         
         var selectedType = $('#selectedDataType').val();
         
+        // ✅ Mapping untuk display nama yang user-friendly
+        var pavementNames = {
+            'Aspal': 'Aspal (Asphalt)',
+            'Blok': 'Blok (Block)',
+            'Beton': 'Beton (Concrete)',
+            'Non Aspal': 'Non Aspal (Unpaved)',
+            'Tak Dapat Dilalui': 'Tak Dapat Dilalui (Impassable)'
+        };
+        
+        var displayName = pavementNames[selectedType] || selectedType;
+        
+        console.log('Submitting with data_type:', selectedType); // Debug
+        
         Swal.fire({
             title: 'Simpan Perubahan?',
-            html: `Data kondisi jalan tipe <strong>${selectedType}</strong> akan diupdate dan SDI akan dihitung ulang`,
+            html: `
+                <p>Data kondisi jalan tipe <strong>${displayName}</strong> akan diupdate.</p>
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle"></i> SDI akan dihitung ulang otomatis oleh sistem.
+                </div>
+            `,
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#28a745',
@@ -725,10 +723,15 @@ $(document).ready(function() {
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
+                // ✅ Submit form - data_type akan diconvert di controller
                 this.submit();
             }
         });
     });
+    
+    // ✅ Log initial state
+    console.log('✅ Edit Form Initialized');
+    console.log('Current data_type:', $('#selectedDataType').val());
 });
 </script>
 @endpush
