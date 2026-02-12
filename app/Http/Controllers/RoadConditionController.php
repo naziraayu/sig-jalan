@@ -370,7 +370,6 @@ class RoadConditionController extends Controller
                         continue;
                     }
 
-                    // ✅ Build condition record dengan pavement mapping yang benar
                     $conditionRecord = [
                         'year' => $surveyYear,
                         'reference_year' => $referenceYear,
@@ -380,14 +379,10 @@ class RoadConditionController extends Controller
                         'kabupaten_code' => $link->kabupaten_code,
                         'chainage_from' => $chainageFromMeter,
                         'chainage_to' => $chainageToMeter,
-                        
-                        // ✅ PAVEMENT: Convert dari data_type ke pavement code
                         'pavement' => $this->getDataTypeToPavementCode($data['data_type'] ?? 'Aspal'),
-                        
                         'survey_by' => $surveySetup['surveyor_name'] ?? null,
                         'survey_by2' => $surveySetup['surveyor_name_2'] ?? null,
                         'survey_date' => $surveySetup['survey_date'] ?? null,
-                        
                         'roughness' => $data['roughness'] ?? null,
                         'bleeding_area' => $data['bleeding_area'] ?? null,
                         'ravelling_area' => $data['ravelling_area'] ?? null,
@@ -582,7 +577,6 @@ class RoadConditionController extends Controller
 
             $condition->inventory = $inventory;
 
-            // ✅ Convert pavement code ke data type untuk display
             $dataType = $this->getPavementCodeToDataType($condition->pavement ?? 'Asphalt');
 
             return view('jalan.kondisi-jalan.edit', compact(
@@ -612,7 +606,6 @@ class RoadConditionController extends Controller
                 ->firstOrFail();
 
             $updateData = [
-                // ✅ Convert data_type ke pavement code
                 'pavement' => $this->getDataTypeToPavementCode($request->input('data_type')),
                 'survey_by' => $request->input('survey_by'),
                 'survey_by2' => $request->input('survey_by2'),
@@ -756,6 +749,7 @@ class RoadConditionController extends Controller
         ]);
     }
     
+    // ✅ UPDATED: getDetail - SINKRON DENGAN SHOW
     public function getDetail(Request $request)
     {
         $linkNo = $request->get('link_no');
@@ -775,6 +769,7 @@ class RoadConditionController extends Controller
         try {
             $conditions = RoadCondition::where('link_no', $linkNo)
                 ->where('year', $year)
+                ->with('inventory')
                 ->orderByRaw('CAST(chainage_from AS DECIMAL(10,3)) ASC')
                 ->get();
 
@@ -785,15 +780,20 @@ class RoadConditionController extends Controller
                 ]);
             }
 
+            // ✅ GUNAKAN REAL-TIME CALCULATION (sama seperti show())
             $dataWithSDI = $conditions->map(function($item) {
+                // Calculate SDI real-time
+                $sdiDetail = SDICalculator::calculate($item, false);
+                
                 return [
                     'chainage_from' => $item->chainage_from,
                     'chainage_to' => $item->chainage_to,
                     'year' => intval($item->year),
-                    'iri' => $item->iri ? floatval($item->iri) : null,
-                    'rci' => $item->rci ? floatval($item->rci) : null,
-                    'sdi_final' => floatval($item->sdi_value ?? 0),
-                    'sdi_category' => $item->sdi_category ?? 'Data Tidak Lengkap',
+                    'sdi1' => floatval($sdiDetail['sdi1'] ?? 0),
+                    'sdi2' => floatval($sdiDetail['sdi2'] ?? 0),
+                    'sdi3' => floatval($sdiDetail['sdi3'] ?? 0),
+                    'sdi_final' => floatval($sdiDetail['sdi_final'] ?? 0),
+                    'sdi_category' => $sdiDetail['category'] ?? 'Data Tidak Lengkap',
                     'link_no' => $item->link_no,
                 ];
             });
@@ -814,6 +814,7 @@ class RoadConditionController extends Controller
         }
     }
 
+    // ✅ UPDATED: show - SINKRON DENGAN INDEX
     public function show($link_no)
     {
         $selectedYear = session('selected_year');
@@ -848,6 +849,7 @@ class RoadConditionController extends Controller
             ->orderByRaw('CAST(chainage_from AS DECIMAL(10,3)) ASC')
             ->get();
 
+        // ✅ GUNAKAN REAL-TIME CALCULATION (sama seperti getDetail())
         $conditionsWithSDI = $conditions->map(
             function (RoadCondition $condition): RoadCondition {
                 $sdiDetail = SDICalculator::calculate(
@@ -874,11 +876,11 @@ class RoadConditionController extends Controller
             }),
             'avg_iri' => $conditions->where('iri', '>', 0)->avg('iri'),
             'avg_rci' => $conditions->where('rci', '>', 0)->avg('rci'),
-            'avg_sdi' => $conditions->avg('sdi_value'),
-            'good_condition' => $conditions->where('sdi_category', 'Baik')->count(),
-            'fair_condition' => $conditions->where('sdi_category', 'Sedang')->count(),
-            'poor_condition' => $conditions->where('sdi_category', 'Rusak Ringan')->count(),
-            'very_poor_condition' => $conditions->where('sdi_category', 'Rusak Berat')->count(),
+            'avg_sdi' => $conditionsWithSDI->avg('sdi_data.sdi_final'),
+            'good_condition' => $conditionsWithSDI->where('sdi_data.category', 'Baik')->count(),
+            'fair_condition' => $conditionsWithSDI->where('sdi_data.category', 'Sedang')->count(),
+            'poor_condition' => $conditionsWithSDI->where('sdi_data.category', 'Rusak Ringan')->count(),
+            'very_poor_condition' => $conditionsWithSDI->where('sdi_data.category', 'Rusak Berat')->count(),
         ];
 
         $damage_analysis = [
@@ -898,10 +900,15 @@ class RoadConditionController extends Controller
         ];
 
         $sdi_by_year = $conditions->groupBy('year')->map(function($items, $year) {
+            $itemsWithSDI = $items->map(function($item) {
+                $sdi = SDICalculator::calculate($item, false);
+                return $sdi['sdi_final'];
+            });
+            
             return [
-                'avg_sdi' => $items->avg('sdi_value'),
-                'min_sdi' => $items->min('sdi_value'),
-                'max_sdi' => $items->max('sdi_value'),
+                'avg_sdi' => $itemsWithSDI->avg(),
+                'min_sdi' => $itemsWithSDI->min(),
+                'max_sdi' => $itemsWithSDI->max(),
                 'count' => $items->count(),
             ];
         })->sortKeysDesc();

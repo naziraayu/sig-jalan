@@ -20,7 +20,7 @@
             <li class="menu-header">Menu</li>
 
             {{-- Administrasi --}}
-            @if($user->features()->intersect(['provinsi','balai','pulau','kabupaten','kecamatan'])->isNotEmpty())
+            {{-- @if($user->features()->intersect(['provinsi','balai','pulau','kabupaten','kecamatan'])->isNotEmpty())
                 <li class="dropdown">
                     <a href="#" class="nav-link has-dropdown"><i class="fas fa-columns"></i> <span>Administrasi</span></a>
                     <ul class="dropdown-menu">
@@ -41,7 +41,7 @@
                         @endif
                     </ul>
                 </li>
-            @endif
+            @endif --}}
 
             {{-- Pengaturan Jaringan --}}
             @if($user->features()->intersect(['ruas_jalan','drp','kelas_jalan','koridor','ruas_jalan_kabupaten','ruas_jalan_kecamatan'])->isNotEmpty())
@@ -129,10 +129,37 @@
             <form id="logout-form" method="POST" action="{{ route('logout') }}" style="display: none;">
                 @csrf
             </form>
-            <a href="#" class="btn btn-primary btn-lg btn-block btn-icon-split"
-               onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+            <a href="#" class="btn btn-primary btn-lg btn-block btn-icon-split" id="logout-btn">
                 <i class="fas fa-sign-out-alt"></i> Logout
             </a>
         </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const logoutBtn = document.getElementById('logout-btn');
+                
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        
+                        Swal.fire({
+                            title: 'Konfirmasi Logout',
+                            text: "Apakah Anda yakin ingin keluar?",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#6777ef',
+                            cancelButtonColor: '#fc544b',
+                            confirmButtonText: 'Ya, Keluar',
+                            cancelButtonText: 'Batal',
+                            reverseButtons: true
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                document.getElementById('logout-form').submit();
+                            }
+                        });
+                    });
+                }
+            });
+        </script>
     </aside>
 </div>

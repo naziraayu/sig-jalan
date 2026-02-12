@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ProvinceExport;
+use App\Http\Controllers\Controller;
+use App\Imports\ProvinceImport;
 use App\Models\Province;
 use Illuminate\Http\Request;
-use App\Exports\ProvinceExport;
-use App\Imports\ProvinceImport;
-use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
+use Yajra\DataTables\DataTables;
 
 class ProvinceController extends Controller
 {

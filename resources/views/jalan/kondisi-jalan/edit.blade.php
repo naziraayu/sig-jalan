@@ -51,7 +51,7 @@
                 @csrf
                 @method('PUT')
                 
-                {{-- ✅ Hidden input untuk simpan tipe data yang dipilih (FORMAT INDONESIA) --}}
+                {{-- Hidden input untuk simpan tipe data yang dipilih --}}
                 <input type="hidden" name="data_type" id="selectedDataType" value="{{ $dataType }}">
 
                 <div class="card">
@@ -90,7 +90,7 @@
                         </div>
 
                         {{-- CHAINAGE READ-ONLY --}}
-                        <div class="card border mb-3">
+                        <div class="card border mb-6">
                             <div class="card-header bg-light">
                                 <strong><i class="fas fa-road"></i> Chainage (Read-Only)</strong>
                             </div>
@@ -112,7 +112,7 @@
                             </div>
                         </div>
 
-                        {{-- TABS TIPE DATA (✅ BISA DIKLIK UNTUK SWITCH) --}}
+                        {{-- TABS TIPE DATA --}}
                         <div class="btn-group mb-3 d-flex" role="group">
                             <button type="button" class="btn btn-outline-secondary flex-fill disabled">Kiri</button>
                             <button type="button" id="tabBeton" class="btn {{ $dataType == 'Beton' ? 'btn-primary' : 'btn-outline-primary' }} flex-fill">Beton</button>
@@ -125,45 +125,7 @@
                         {{-- ========== FORM ASPAL ========== --}}
                         <div id="formAspal" style="display: {{ $dataType == 'Aspal' ? 'block' : 'none' }};">
                             
-                            {{-- CARD 1: KERUSAKAN PERMUKAAN --}}
-                            <div class="card border mb-3">
-                                <div class="card-header bg-light">
-                                    <strong>Kerusakan Permukaan</strong>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Susunan</label>
-                                                <input type="text" name="roughness" class="form-control" list="datalist-susunan" value="{{ old('roughness', $condition->roughness) }}" placeholder="Ketik atau pilih...">
-                                                <datalist id="datalist-susunan">
-                                                    <option value="1">1 - Baik/rapat</option>
-                                                    <option value="2">2 - Kasar</option>
-                                                </datalist>
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Kegemukan (m²)</label>
-                                                <input type="text" name="bleeding_area" class="form-control" list="datalist-percentage-aspal" value="{{ old('bleeding_area', $condition->bleeding_area) }}" placeholder="Ketik atau pilih...">
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Agregat Lepas (m²)</label>
-                                                <input type="text" name="ravelling_area" class="form-control" list="datalist-percentage-aspal" value="{{ old('ravelling_area', $condition->ravelling_area) }}" placeholder="Ketik atau pilih...">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Disintegrasi (m²)</label>
-                                                <input type="text" name="desintegration_area" class="form-control" list="datalist-percentage-aspal" value="{{ old('desintegration_area', $condition->desintegration_area) }}" placeholder="Ketik atau pilih...">
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Tambalan (m²)</label>
-                                                <input type="text" name="patching_area" class="form-control" list="datalist-percentage-aspal" value="{{ old('patching_area', $condition->patching_area) }}" placeholder="Ketik atau pilih...">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
+                            {{-- DATALIST PERCENTAGE ASPAL --}}
                             <datalist id="datalist-percentage-aspal">
                                 <option value="0">0</option>
                                 <option value="18">0 - 5%</option>
@@ -175,211 +137,237 @@
                                 <option value="525">50% ></option>
                             </datalist>
 
-                            {{-- CARD 2: RETAK-RETAK --}}
-                            <div class="card border mb-3">
-                                <div class="card-header bg-light">
-                                    <strong>Retak-Retak</strong>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label>Jenis Retak</label>
-                                                <input type="text" name="crack_type" class="form-control" list="datalist-jenis-retak" value="{{ old('crack_type', $condition->crack_type) }}" placeholder="Ketik atau pilih...">
-                                                <datalist id="datalist-jenis-retak">
-                                                    <option value="1">1 - Tidak Ada</option>
-                                                    <option value="2">2 - Tidak berhubungan</option>
-                                                    <option value="3">3 - Saling berhubungan (berbidang luas)</option>
-                                                    <option value="4">4 - Saling berhubungan (berbidang sempit)</option>
-                                                </datalist>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label>Rata² Lebar Retak</label>
-                                                <input type="text" name="crack_width" class="form-control" list="datalist-lebar-retak" value="{{ old('crack_width', $condition->crack_width) }}" placeholder="Ketik atau pilih...">
-                                                <datalist id="datalist-lebar-retak">
-                                                    <option value="1">1 - Tidak Ada</option>
-                                                    <option value="2">2 - < 1 mm</option>
-                                                    <option value="3">3 - 1 - 5 mm</option>
-                                                    <option value="4">4 - > 5 mm</option>
-                                                </datalist>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label>Luas Retak Lain (m²)</label>
-                                                <input type="text" name="oth_crack_area" class="form-control" list="datalist-percentage-aspal" value="{{ old('oth_crack_area', $condition->oth_crack_area) }}" placeholder="Ketik atau pilih...">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label>Retak Turun (m²)</label>
-                                                <input type="text" name="crack_dep_area" class="form-control" list="datalist-percentage-aspal" value="{{ old('crack_dep_area', $condition->crack_dep_area) }}" placeholder="Ketik atau pilih...">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- CARD 3: RUSAK TEPI --}}
-                            <div class="card border mb-3">
-                                <div class="card-header bg-light">
-                                    <strong>Rusak Tepi</strong>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Rusak Tepi Kiri (m²)</label>
-                                                <input type="text" name="edge_damage_area" class="form-control" list="datalist-rusak-tepi" value="{{ old('edge_damage_area', $condition->edge_damage_area) }}" placeholder="Ketik atau pilih...">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Rusak Tepi Kanan (m²)</label>
-                                                <input type="text" name="edge_damage_area_r" class="form-control" list="datalist-rusak-tepi" value="{{ old('edge_damage_area_r', $condition->edge_damage_area_r) }}" placeholder="Ketik atau pilih...">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
                             <datalist id="datalist-rusak-tepi">
                                 <option value="0">Tidak Ada (0%)</option>
                                 <option value="8">Ringan (0-30%)</option>
                                 <option value="18">Berat (>30%)</option>
                             </datalist>
 
-                            {{-- CARD 4: LUBANG --}}
-                            <div class="card border mb-3">
-                                <div class="card-header bg-light">
-                                    <strong>Lubang</strong>
+                            {{-- ROW 1: KERUSAKAN PERMUKAAN & RETAK-RETAK --}}
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="card border h-100">
+                                        <div class="card-header bg-light">
+                                            <strong>Kerusakan Permukaan</strong>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <div class="form-group">
+                                                        <label>Susunan</label>
+                                                        <input type="text" name="roughness" class="form-control form-control-sm" list="datalist-susunan" value="{{ old('roughness', $condition->roughness) }}" placeholder="Pilih...">
+                                                        <datalist id="datalist-susunan">
+                                                            <option value="1">1 - Baik/rapat</option>
+                                                            <option value="2">2 - Kasar</option>
+                                                        </datalist>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="form-group">
+                                                        <label>Kegemukan (m²)</label>
+                                                        <input type="text" name="bleeding_area" class="form-control form-control-sm" list="datalist-percentage-aspal" value="{{ old('bleeding_area', $condition->bleeding_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <div class="form-group">
+                                                        <label>Agregat Lepas (m²)</label>
+                                                        <input type="text" name="ravelling_area" class="form-control form-control-sm" list="datalist-percentage-aspal" value="{{ old('ravelling_area', $condition->ravelling_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="form-group">
+                                                        <label>Disintegrasi (m²)</label>
+                                                        <input type="text" name="desintegration_area" class="form-control form-control-sm" list="datalist-percentage-aspal" value="{{ old('desintegration_area', $condition->desintegration_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <div class="form-group">
+                                                        <label>Tambalan (m²)</label>
+                                                        <input type="text" name="patching_area" class="form-control form-control-sm" list="datalist-percentage-aspal" value="{{ old('patching_area', $condition->patching_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Jumlah Lubang</label>
-                                                <input type="text" name="pothole_count" class="form-control" list="datalist-jumlah-lubang" value="{{ old('pothole_count', $condition->pothole_count) }}" placeholder="Ketik atau pilih...">
-                                                <datalist id="datalist-jumlah-lubang">
-                                                    <option value="0">0</option>
-                                                    <option value="1">1</option>
-                                                    <option value="2">2</option>
-                                                    <option value="3">3</option>
-                                                    <option value="4">4</option>
-                                                    <option value="5">5</option>
-                                                    <option value="6">6</option>
-                                                    <option value="7">7</option>
-                                                    <option value="8">>7</option>
-                                                </datalist>
-                                            </div>
+
+                                <div class="col-md-6">
+                                    <div class="card border h-100">
+                                        <div class="card-header bg-light">
+                                            <strong>Retak-Retak</strong>
                                         </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Ukuran Lubang</label>
-                                                <input type="text" name="pothole_size" class="form-control" list="datalist-ukuran-lubang" value="{{ old('pothole_size', $condition->pothole_size) }}" placeholder="Ketik atau pilih...">
-                                                <datalist id="datalist-ukuran-lubang">
-                                                    <option value="1">1 - Tidak Ada</option>
-                                                    <option value="2">2 - Kecil-dangkal</option>
-                                                    <option value="3">3 - Kecil-dalam</option>
-                                                    <option value="4">4 - Besar-dangkal</option>
-                                                    <option value="5">5 - Besar-dalam</option>
-                                                </datalist>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <div class="form-group">
+                                                        <label>Jenis Retak</label>
+                                                        <input type="text" name="crack_type" class="form-control form-control-sm" list="datalist-jenis-retak" value="{{ old('crack_type', $condition->crack_type) }}" placeholder="Pilih...">
+                                                        <datalist id="datalist-jenis-retak">
+                                                            <option value="1">1 - Tidak Ada</option>
+                                                            <option value="2">2 - Tidak berhubungan</option>
+                                                            <option value="3">3 - Saling berhubungan (luas)</option>
+                                                            <option value="4">4 - Saling berhubungan (sempit)</option>
+                                                        </datalist>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="form-group">
+                                                        <label>Rata² Lebar Retak</label>
+                                                        <input type="text" name="crack_width" class="form-control form-control-sm" list="datalist-lebar-retak" value="{{ old('crack_width', $condition->crack_width) }}" placeholder="Pilih...">
+                                                        <datalist id="datalist-lebar-retak">
+                                                            <option value="1">1 - Tidak Ada</option>
+                                                            <option value="2">2 - < 1 mm</option>
+                                                            <option value="3">3 - 1 - 5 mm</option>
+                                                            <option value="4">4 - > 5 mm</option>
+                                                        </datalist>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Luas Lubang (m²)</label>
-                                                <input type="text" name="pothole_area" class="form-control" list="datalist-luas-lubang" value="{{ old('pothole_area', $condition->pothole_area) }}" placeholder="Ketik atau pilih...">
-                                                <datalist id="datalist-luas-lubang">
-                                                    <option value="0">0</option>
-                                                    <option value="10">0 - 3%</option>
-                                                    <option value="28">3 - 5%</option>
-                                                    <option value="52">5 - 10%</option>
-                                                    <option value="105">10 - 20%</option>
-                                                    <option value="175">20 - 30%</option>
-                                                    <option value="245">30 - 40%</option>
-                                                    <option value="315">40 - 50%</option>
-                                                    <option value="525">50% ></option>
-                                                </datalist>
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <div class="form-group">
+                                                        <label>Luas Retak Lain (m²)</label>
+                                                        <input type="text" name="oth_crack_area" class="form-control form-control-sm" list="datalist-percentage-aspal" value="{{ old('oth_crack_area', $condition->oth_crack_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="form-group">
+                                                        <label>Retak Turun (m²)</label>
+                                                        <input type="text" name="crack_dep_area" class="form-control form-control-sm" list="datalist-percentage-aspal" value="{{ old('crack_dep_area', $condition->crack_dep_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {{-- CARD 5: ALUR --}}
-                            <div class="card border mb-3">
-                                <div class="card-header bg-light">
-                                    <strong>Alur</strong>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Alur (m²)</label>
-                                                <input type="text" name="rutting_area" class="form-control" list="datalist-percentage-aspal" value="{{ old('rutting_area', $condition->rutting_area) }}" placeholder="Ketik atau pilih...">
+                            {{-- ROW 2: RUSAK TEPI & LUBANG --}}
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="card border h-100">
+                                        <div class="card-header bg-light">
+                                            <strong>Rusak Tepi</strong>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <div class="form-group">
+                                                        <label>Rusak Tepi Kiri (m²)</label>
+                                                        <input type="text" name="edge_damage_area" class="form-control form-control-sm" list="datalist-rusak-tepi" value="{{ old('edge_damage_area', $condition->edge_damage_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="form-group">
+                                                        <label>Rusak Tepi Kanan (m²)</label>
+                                                        <input type="text" name="edge_damage_area_r" class="form-control form-control-sm" list="datalist-rusak-tepi" value="{{ old('edge_damage_area_r', $condition->edge_damage_area_r) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Rata² Dlm Alur</label>
-                                                <input type="text" name="rutting_depth" class="form-control" list="datalist-dalam-alur" value="{{ old('rutting_depth', $condition->rutting_depth) }}" placeholder="Ketik atau pilih...">
-                                                <datalist id="datalist-dalam-alur">
-                                                    <option value="1">1 - Tidak Ada</option>
-                                                    <option value="2">2 - < 1 cm</option>
-                                                    <option value="3">3 - 1 - 3 cm</option>
-                                                    <option value="4">4 - > 3 cm</option>
-                                                </datalist>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="card border h-100">
+                                        <div class="card-header bg-light">
+                                            <strong>Lubang</strong>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-4">
+                                                    <div class="form-group">
+                                                        <label>Jumlah</label>
+                                                        <input type="text" name="pothole_count" class="form-control form-control-sm" list="datalist-jumlah-lubang" value="{{ old('pothole_count', $condition->pothole_count) }}" placeholder="Pilih...">
+                                                        <datalist id="datalist-jumlah-lubang">
+                                                            <option value="0">0</option>
+                                                            <option value="1">1</option>
+                                                            <option value="2">2</option>
+                                                            <option value="3">3</option>
+                                                            <option value="4">4</option>
+                                                            <option value="5">5</option>
+                                                            <option value="6">6</option>
+                                                            <option value="7">7</option>
+                                                            <option value="8">>7</option>
+                                                        </datalist>
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="form-group">
+                                                        <label>Ukuran</label>
+                                                        <input type="text" name="pothole_size" class="form-control form-control-sm" list="datalist-ukuran-lubang" value="{{ old('pothole_size', $condition->pothole_size) }}" placeholder="Pilih...">
+                                                        <datalist id="datalist-ukuran-lubang">
+                                                            <option value="1">1 - Tidak Ada</option>
+                                                            <option value="2">2 - Kecil-dangkal</option>
+                                                            <option value="3">3 - Kecil-dalam</option>
+                                                            <option value="4">4 - Besar-dangkal</option>
+                                                            <option value="5">5 - Besar-dalam</option>
+                                                        </datalist>
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="form-group">
+                                                        <label>Luas (m²)</label>
+                                                        <input type="text" name="pothole_area" class="form-control form-control-sm" list="datalist-luas-lubang" value="{{ old('pothole_area', $condition->pothole_area) }}" placeholder="Pilih...">
+                                                        <datalist id="datalist-luas-lubang">
+                                                            <option value="0">0</option>
+                                                            <option value="10">0 - 3%</option>
+                                                            <option value="28">3 - 5%</option>
+                                                            <option value="52">5 - 10%</option>
+                                                            <option value="105">10 - 20%</option>
+                                                            <option value="175">20 - 30%</option>
+                                                            <option value="245">30 - 40%</option>
+                                                            <option value="315">40 - 50%</option>
+                                                            <option value="525">50% ></option>
+                                                        </datalist>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
+                            {{-- ROW 3: ALUR --}}
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="card border">
+                                        <div class="card-header bg-light">
+                                            <strong>Alur</strong>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <div class="form-group">
+                                                        <label>Alur (m²)</label>
+                                                        <input type="text" name="rutting_area" class="form-control form-control-sm" list="datalist-percentage-aspal" value="{{ old('rutting_area', $condition->rutting_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="form-group">
+                                                        <label>Rata² Dlm Alur</label>
+                                                        <input type="text" name="rutting_depth" class="form-control form-control-sm" list="datalist-dalam-alur" value="{{ old('rutting_depth', $condition->rutting_depth) }}" placeholder="Pilih...">
+                                                        <datalist id="datalist-dalam-alur">
+                                                            <option value="1">1 - Tidak Ada</option>
+                                                            <option value="2">2 - < 1 cm</option>
+                                                            <option value="3">3 - 1 - 3 cm</option>
+                                                            <option value="4">4 - > 3 cm</option>
+                                                        </datalist>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         {{-- ========== FORM BLOK ========== --}}
                         <div id="formBlok" style="display: {{ $dataType == 'Blok' ? 'block' : 'none' }};">
-                            <div class="card border mb-3">
-                                <div class="card-header bg-light">
-                                    <strong>Kerusakan Blok</strong>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Disintegrasi (m²)</label>
-                                                <input type="text" name="desintegration_area" class="form-control" list="datalist-percentage-beton" value="{{ old('desintegration_area', $condition->desintegration_area) }}" placeholder="Ketik atau pilih...">
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Retak Turun (m²)</label>
-                                                <input type="text" name="crack_dep_area" class="form-control" list="datalist-percentage-beton" value="{{ old('crack_dep_area', $condition->crack_dep_area) }}" placeholder="Ketik atau pilih...">
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Rusak Tepi Kiri (m²)</label>
-                                                <input type="text" name="edge_damage_area" class="form-control" list="datalist-rusak-tepi" value="{{ old('edge_damage_area', $condition->edge_damage_area) }}" placeholder="Ketik atau pilih...">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Luas Lubang (m²)</label>
-                                                <input type="text" name="pothole_area" class="form-control" list="datalist-luas-lubang" value="{{ old('pothole_area', $condition->pothole_area) }}" placeholder="Ketik atau pilih...">
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Alur (m²)</label>
-                                                <input type="text" name="rutting_area" class="form-control" list="datalist-percentage-beton" value="{{ old('rutting_area', $condition->rutting_area) }}" placeholder="Ketik atau pilih...">
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Rusak Tepi Kanan (m²)</label>
-                                                <input type="text" name="edge_damage_area_r" class="form-control" list="datalist-rusak-tepi" value="{{ old('edge_damage_area_r', $condition->edge_damage_area_r) }}" placeholder="Ketik atau pilih...">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
                             <datalist id="datalist-percentage-beton">
                                 <option value="0">0</option>
                                 <option value="18">0 - 5%</option>
@@ -390,42 +378,120 @@
                                 <option value="315">40 - 50%</option>
                                 <option value="525">50% ></option>
                             </datalist>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="card border h-100">
+                                        <div class="card-header bg-light">
+                                            <strong>Kerusakan Utama</strong>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <div class="form-group">
+                                                        <label>Disintegrasi (m²)</label>
+                                                        <input type="text" name="desintegration_area" class="form-control form-control-sm" list="datalist-percentage-beton" value="{{ old('desintegration_area', $condition->desintegration_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="form-group">
+                                                        <label>Retak Turun (m²)</label>
+                                                        <input type="text" name="crack_dep_area" class="form-control form-control-sm" list="datalist-percentage-beton" value="{{ old('crack_dep_area', $condition->crack_dep_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <div class="form-group">
+                                                        <label>Luas Lubang (m²)</label>
+                                                        <input type="text" name="pothole_area" class="form-control form-control-sm" list="datalist-luas-lubang" value="{{ old('pothole_area', $condition->pothole_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="form-group">
+                                                        <label>Alur (m²)</label>
+                                                        <input type="text" name="rutting_area" class="form-control form-control-sm" list="datalist-percentage-beton" value="{{ old('rutting_area', $condition->rutting_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="card border h-100">
+                                        <div class="card-header bg-light">
+                                            <strong>Rusak Tepi</strong>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <div class="form-group">
+                                                        <label>Rusak Tepi Kiri (m²)</label>
+                                                        <input type="text" name="edge_damage_area" class="form-control form-control-sm" list="datalist-rusak-tepi" value="{{ old('edge_damage_area', $condition->edge_damage_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="form-group">
+                                                        <label>Rusak Tepi Kanan (m²)</label>
+                                                        <input type="text" name="edge_damage_area_r" class="form-control form-control-sm" list="datalist-rusak-tepi" value="{{ old('edge_damage_area_r', $condition->edge_damage_area_r) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         {{-- ========== FORM BETON ========== --}}
                         <div id="formBeton" style="display: {{ $dataType == 'Beton' ? 'block' : 'none' }};">
-                            <div class="card border mb-3">
-                                <div class="card-header bg-light">
-                                    <strong>Kerusakan Beton</strong>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Retak (m²)</label>
-                                                <input type="text" name="concrete_cracking_area" class="form-control" list="datalist-percentage-beton" value="{{ old('concrete_cracking_area', $condition->concrete_cracking_area) }}" placeholder="Ketik atau pilih...">
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Gompal (m²)</label>
-                                                <input type="text" name="concrete_spalling_area" class="form-control" list="datalist-percentage-beton" value="{{ old('concrete_spalling_area', $condition->concrete_spalling_area) }}" placeholder="Ketik atau pilih...">
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Retak Struktur (m²)</label>
-                                                <input type="text" name="concrete_structural_cracking_area" class="form-control" list="datalist-percentage-beton" value="{{ old('concrete_structural_cracking_area', $condition->concrete_structural_cracking_area) }}" placeholder="Ketik atau pilih...">
-                                            </div>
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <div class="card border">
+                                        <div class="card-header bg-light">
+                                            <strong>Kerusakan Beton</strong>
                                         </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Patahan/Penurunan (m²)</label>
-                                                <input type="text" name="concrete_blowouts_area" class="form-control" list="datalist-percentage-beton" value="{{ old('concrete_blowouts_area', $condition->concrete_blowouts_area) }}" placeholder="Ketik atau pilih...">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label>Retak (m²)</label>
+                                                        <input type="text" name="concrete_cracking_area" class="form-control form-control-sm" list="datalist-percentage-beton" value="{{ old('concrete_cracking_area', $condition->concrete_cracking_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label>Gompal (m²)</label>
+                                                        <input type="text" name="concrete_spalling_area" class="form-control form-control-sm" list="datalist-percentage-beton" value="{{ old('concrete_spalling_area', $condition->concrete_spalling_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label>Retak Struktur (m²)</label>
+                                                        <input type="text" name="concrete_structural_cracking_area" class="form-control form-control-sm" list="datalist-percentage-beton" value="{{ old('concrete_structural_cracking_area', $condition->concrete_structural_cracking_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label>Patahan/Penurunan (m²)</label>
+                                                        <input type="text" name="concrete_blowouts_area" class="form-control form-control-sm" list="datalist-percentage-beton" value="{{ old('concrete_blowouts_area', $condition->concrete_blowouts_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div class="form-group">
-                                                <label>Pumping (No)</label>
-                                                <input type="number" name="concrete_pumping_no" class="form-control" value="{{ old('concrete_pumping_no', $condition->concrete_pumping_no) }}" placeholder="Masukkan jumlah...">
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Pecah Sudut (No)</label>
-                                                <input type="number" name="concrete_corner_break_no" class="form-control" value="{{ old('concrete_corner_break_no', $condition->concrete_corner_break_no) }}" placeholder="Masukkan jumlah...">
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label>Pumping (No)</label>
+                                                        <input type="number" name="concrete_pumping_no" class="form-control form-control-sm" value="{{ old('concrete_pumping_no', $condition->concrete_pumping_no) }}" placeholder="0">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label>Pecah Sudut (No)</label>
+                                                        <input type="number" name="concrete_corner_break_no" class="form-control form-control-sm" value="{{ old('concrete_corner_break_no', $condition->concrete_corner_break_no) }}" placeholder="0">
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -436,177 +502,191 @@
                         {{-- ========== FORM NON ASPAL ========== --}}
                         <div id="formNonAspal" style="display: {{ $dataType == 'Non Aspal' ? 'block' : 'none' }};">
                             
-                            {{-- CARD 1: KEMIRINGAN MELINTANG --}}
-                            <div class="card border mb-3">
-                                <div class="card-header bg-light">
-                                    <strong>Kemiringan Melintang</strong>
+                            {{-- ROW 1: KEMIRINGAN MELINTANG & KERUSAKAN PERMUKAAN --}}
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="card border h-100">
+                                        <div class="card-header bg-light">
+                                            <strong>Kemiringan Melintang</strong>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-4">
+                                                    <div class="form-group">
+                                                        <label>Kondisi</label>
+                                                        <input type="text" name="should_cond_l" class="form-control form-control-sm" list="datalist-kondisi" value="{{ old('should_cond_l', $condition->should_cond_l) }}" placeholder="Pilih...">
+                                                        <datalist id="datalist-kondisi">
+                                                            <option value="4">4 - Cekung</option>
+                                                            <option value="1">1 - > 5%</option>
+                                                            <option value="2">2 - 3 - 5%</option>
+                                                            <option value="3">3 - Rata</option>
+                                                        </datalist>
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="form-group">
+                                                        <label>Kemiringan</label>
+                                                        <input type="text" name="crossfall_shape" class="form-control form-control-sm" list="datalist-crossfall-shape" value="{{ old('crossfall_shape', $condition->crossfall_shape) }}" placeholder="Pilih...">
+                                                        <datalist id="datalist-crossfall-shape">
+                                                            <option value="1">1 - Tidak ada</option>
+                                                            <option value="2">2 - Rata</option>
+                                                            <option value="3">3 - Tidak Rata</option>
+                                                            <option value="4">4 - Gundukan memanjang</option>
+                                                        </datalist>
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="form-group">
+                                                        <label>Luas (m²)</label>
+                                                        <input type="text" name="crossfall_area" class="form-control form-control-sm" list="datalist-percentage-beton" value="{{ old('crossfall_area', $condition->crossfall_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Kondisi</label>
-                                                <input type="text" name="should_cond_l" class="form-control" list="datalist-kondisi" value="{{ old('should_cond_l', $condition->should_cond_l) }}" placeholder="Ketik atau pilih...">
-                                                <datalist id="datalist-kondisi">
-                                                    <option value="4">4 - Cekung</option>
-                                                    <option value="1">1 - > 5%</option>
-                                                    <option value="2">2 - 3 - 5%</option>
-                                                    <option value="3">3 - Rata</option>
-                                                </datalist>
-                                            </div>
+
+                                <div class="col-md-6">
+                                    <div class="card border h-100">
+                                        <div class="card-header bg-light">
+                                            <strong>Kerusakan Permukaan</strong>
                                         </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Kemiringan Melintang</label>
-                                                <input type="text" name="crossfall_shape" class="form-control" list="datalist-crossfall-shape" value="{{ old('crossfall_shape', $condition->crossfall_shape) }}" placeholder="Ketik atau pilih...">
-                                                <datalist id="datalist-crossfall-shape">
-                                                    <option value="1">1 - Tidak ada</option>
-                                                    <option value="2">2 - Rata</option>
-                                                    <option value="3">3 - Tidak Rata</option>
-                                                    <option value="4">4 - Gundukan memanjang</option>
-                                                </datalist>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Luas (m²)</label>
-                                                <input type="text" name="crossfall_area" class="form-control" list="datalist-percentage-beton" value="{{ old('crossfall_area', $condition->crossfall_area) }}" placeholder="Ketik atau pilih...">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-4">
+                                                    <div class="form-group">
+                                                        <label>Penurunan (m²)</label>
+                                                        <input type="text" name="depressions_area" class="form-control form-control-sm" list="datalist-percentage-beton" value="{{ old('depressions_area', $condition->depressions_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="form-group">
+                                                        <label>Erosi (m²)</label>
+                                                        <input type="text" name="erosion_area" class="form-control form-control-sm" list="datalist-percentage-beton" value="{{ old('erosion_area', $condition->erosion_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="form-group">
+                                                        <label>Bergelombang (m²)</label>
+                                                        <input type="text" name="waviness_area" class="form-control form-control-sm" list="datalist-percentage-beton" value="{{ old('waviness_area', $condition->waviness_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {{-- CARD 2: KERUSAKAN PERMUKAAN --}}
-                            <div class="card border mb-3">
-                                <div class="card-header bg-light">
-                                    <strong>Kerusakan Permukaan</strong>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Penurunan (m²)</label>
-                                                <input type="text" name="depressions_area" class="form-control" list="datalist-percentage-beton" value="{{ old('depressions_area', $condition->depressions_area) }}" placeholder="Ketik atau pilih...">
-                                            </div>
+                            {{-- ROW 2: KERIKIL --}}
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <div class="card border">
+                                        <div class="card-header bg-light">
+                                            <strong>Kerikil</strong>
                                         </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Erosi (m²)</label>
-                                                <input type="text" name="erosion_area" class="form-control" list="datalist-percentage-beton" value="{{ old('erosion_area', $condition->erosion_area) }}" placeholder="Ketik atau pilih...">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Bergelombang (m²)</label>
-                                                <input type="text" name="waviness_area" class="form-control" list="datalist-percentage-beton" value="{{ old('waviness_area', $condition->waviness_area) }}" placeholder="Ketik atau pilih...">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- CARD 3: KERIKIL --}}
-                            <div class="card border mb-3">
-                                <div class="card-header bg-light">
-                                    <strong>Kerikil</strong>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label>Ukuran Terbanyak Kerikil</label>
-                                                <input type="text" name="gravel_size" class="form-control" list="datalist-ukuran-kerikil" value="{{ old('gravel_size', $condition->gravel_size) }}" placeholder="Ketik atau pilih...">
-                                                <datalist id="datalist-ukuran-kerikil">
-                                                    <option value="1">1 - Tidak ada</option>
-                                                    <option value="2">2 - < 5 cm</option>
-                                                    <option value="3">3 - 5 - 10 cm</option>
-                                                    <option value="4">4 - 10 - 20 cm</option>
-                                                    <option value="5">5 - > 20 cm</option>
-                                                </datalist>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label>Tebal Kerikil</label>
-                                                <input type="text" name="gravel_thickness" class="form-control" list="datalist-tebal-kerikil" value="{{ old('gravel_thickness', $condition->gravel_thickness) }}" placeholder="Ketik atau pilih...">
-                                                <datalist id="datalist-tebal-kerikil">
-                                                    <option value="1">1 - Tidak ada</option>
-                                                    <option value="2">2 - < 5 cm</option>
-                                                    <option value="3">3 - 5 - 10 cm</option>
-                                                    <option value="4">4 - 10 - 20 cm</option>
-                                                    <option value="5">5 - > 20 cm</option>
-                                                </datalist>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label>Luas Kerikil (m²)</label>
-                                                <input type="text" name="gravel_thickness_area" class="form-control" list="datalist-percentage-beton" value="{{ old('gravel_thickness_area', $condition->gravel_thickness_area) }}" placeholder="Ketik atau pilih...">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label>Distribusi</label>
-                                                <input type="text" name="distribution" class="form-control" list="datalist-distribusi" value="{{ old('distribution', $condition->distribution) }}" placeholder="Ketik atau pilih...">
-                                                <datalist id="datalist-distribusi">
-                                                    <option value="1">1 - Tidak ada</option>
-                                                    <option value="2">2 - Rata</option>
-                                                    <option value="3">3 - Tidak Rata</option>
-                                                    <option value="4">4 - Gundukan memanjang</option>
-                                                </datalist>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label>Ukuran Kerikil</label>
+                                                        <input type="text" name="gravel_size" class="form-control form-control-sm" list="datalist-ukuran-kerikil" value="{{ old('gravel_size', $condition->gravel_size) }}" placeholder="Pilih...">
+                                                        <datalist id="datalist-ukuran-kerikil">
+                                                            <option value="1">1 - Tidak ada</option>
+                                                            <option value="2">2 - < 5 cm</option>
+                                                            <option value="3">3 - 5 - 10 cm</option>
+                                                            <option value="4">4 - 10 - 20 cm</option>
+                                                            <option value="5">5 - > 20 cm</option>
+                                                        </datalist>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label>Tebal Kerikil</label>
+                                                        <input type="text" name="gravel_thickness" class="form-control form-control-sm" list="datalist-tebal-kerikil" value="{{ old('gravel_thickness', $condition->gravel_thickness) }}" placeholder="Pilih...">
+                                                        <datalist id="datalist-tebal-kerikil">
+                                                            <option value="1">1 - Tidak ada</option>
+                                                            <option value="2">2 - < 5 cm</option>
+                                                            <option value="3">3 - 5 - 10 cm</option>
+                                                            <option value="4">4 - 10 - 20 cm</option>
+                                                            <option value="5">5 - > 20 cm</option>
+                                                        </datalist>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label>Luas Kerikil (m²)</label>
+                                                        <input type="text" name="gravel_thickness_area" class="form-control form-control-sm" list="datalist-percentage-beton" value="{{ old('gravel_thickness_area', $condition->gravel_thickness_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label>Distribusi</label>
+                                                        <input type="text" name="distribution" class="form-control form-control-sm" list="datalist-distribusi" value="{{ old('distribution', $condition->distribution) }}" placeholder="Pilih...">
+                                                        <datalist id="datalist-distribusi">
+                                                            <option value="1">1 - Tidak ada</option>
+                                                            <option value="2">2 - Rata</option>
+                                                            <option value="3">3 - Tidak Rata</option>
+                                                            <option value="4">4 - Gundukan memanjang</option>
+                                                        </datalist>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {{-- CARD 4: LUBANG --}}
-                            <div class="card border mb-3">
-                                <div class="card-header bg-light">
-                                    <strong>Lubang</strong>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Jumlah Lubang</label>
-                                                <input type="number" name="pothole_count" class="form-control" value="{{ old('pothole_count', $condition->pothole_count) }}" placeholder="Masukkan jumlah...">
-                                            </div>
+                            {{-- ROW 3: LUBANG & ALUR --}}
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="card border h-100">
+                                        <div class="card-header bg-light">
+                                            <strong>Lubang</strong>
                                         </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Ukuran Lubang</label>
-                                                <input type="text" name="pothole_size" class="form-control" list="datalist-ukuran-lubang" value="{{ old('pothole_size', $condition->pothole_size) }}" placeholder="Ketik atau pilih...">
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Luas Lubang (m²)</label>
-                                                <input type="text" name="pothole_area" class="form-control" list="datalist-luas-lubang" value="{{ old('pothole_area', $condition->pothole_area) }}" placeholder="Ketik atau pilih...">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-4">
+                                                    <div class="form-group">
+                                                        <label>Jumlah</label>
+                                                        <input type="number" name="pothole_count" class="form-control form-control-sm" value="{{ old('pothole_count', $condition->pothole_count) }}" placeholder="0">
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="form-group">
+                                                        <label>Ukuran</label>
+                                                        <input type="text" name="pothole_size" class="form-control form-control-sm" list="datalist-ukuran-lubang" value="{{ old('pothole_size', $condition->pothole_size) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="form-group">
+                                                        <label>Luas (m²)</label>
+                                                        <input type="text" name="pothole_area" class="form-control form-control-sm" list="datalist-luas-lubang" value="{{ old('pothole_area', $condition->pothole_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            {{-- CARD 5: ALUR --}}
-                            <div class="card border mb-3">
-                                <div class="card-header bg-light">
-                                    <strong>Alur</strong>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Alur (m²)</label>
-                                                <input type="text" name="rutting_area" class="form-control" list="datalist-percentage-beton" value="{{ old('rutting_area', $condition->rutting_area) }}" placeholder="Ketik atau pilih...">
-                                            </div>
+                                <div class="col-md-6">
+                                    <div class="card border h-100">
+                                        <div class="card-header bg-light">
+                                            <strong>Alur</strong>
                                         </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label>Rata² Dlm Alur</label>
-                                                <input type="text" name="rutting_depth" class="form-control" list="datalist-dalam-alur" value="{{ old('rutting_depth', $condition->rutting_depth) }}" placeholder="Ketik atau pilih...">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <div class="form-group">
+                                                        <label>Alur (m²)</label>
+                                                        <input type="text" name="rutting_area" class="form-control form-control-sm" list="datalist-percentage-beton" value="{{ old('rutting_area', $condition->rutting_area) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="form-group">
+                                                        <label>Rata² Dlm Alur</label>
+                                                        <input type="text" name="rutting_depth" class="form-control form-control-sm" list="datalist-dalam-alur" value="{{ old('rutting_depth', $condition->rutting_depth) }}" placeholder="Pilih...">
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -637,17 +717,13 @@
 <script>
 $(document).ready(function() {
     
-    // ✅ FUNCTION: Switch Form Tipe Data
     function switchDataType(type) {
-        // Hide all forms
         $('#formAspal, #formBlok, #formBeton, #formNonAspal').hide();
         
-        // Remove active class from all tabs
         $('#tabAspal, #tabBlok, #tabBeton, #tabNonAspal')
             .removeClass('btn-success btn-info btn-primary btn-warning')
             .addClass('btn-outline-secondary');
         
-        // Show selected form and activate tab
         if (type === 'Aspal') {
             $('#formAspal').show();
             $('#tabAspal').removeClass('btn-outline-secondary').addClass('btn-success');
@@ -662,16 +738,12 @@ $(document).ready(function() {
             $('#tabNonAspal').removeClass('btn-outline-secondary').addClass('btn-warning');
         }
         
-        // ✅ Update hidden input dengan NAMA INDONESIA (bukan database code)
         $('#selectedDataType').val(type);
-        
-        // Update header text
         $('#headerTitle').html('<i class="fas fa-edit"></i> Edit Kondisi Jalan - ' + type);
         
         console.log('✅ Switched to:', type);
     }
     
-    // ✅ TAB CLICK HANDLERS
     $('#tabAspal').on('click', function() {
         switchDataType('Aspal');
     });
@@ -688,13 +760,11 @@ $(document).ready(function() {
         switchDataType('Non Aspal');
     });
     
-    // ✅ Form submission dengan konfirmasi
     $('#formEditCondition').on('submit', function(e) {
         e.preventDefault();
         
         var selectedType = $('#selectedDataType').val();
         
-        // ✅ Mapping untuk display nama yang user-friendly
         var pavementNames = {
             'Aspal': 'Aspal (Asphalt)',
             'Blok': 'Blok (Block)',
@@ -705,7 +775,7 @@ $(document).ready(function() {
         
         var displayName = pavementNames[selectedType] || selectedType;
         
-        console.log('Submitting with data_type:', selectedType); // Debug
+        console.log('Submitting with data_type:', selectedType);
         
         Swal.fire({
             title: 'Simpan Perubahan?',
@@ -723,13 +793,11 @@ $(document).ready(function() {
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                // ✅ Submit form - data_type akan diconvert di controller
                 this.submit();
             }
         });
     });
     
-    // ✅ Log initial state
     console.log('✅ Edit Form Initialized');
     console.log('Current data_type:', $('#selectedDataType').val());
 });

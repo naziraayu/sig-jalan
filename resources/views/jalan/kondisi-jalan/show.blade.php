@@ -261,7 +261,7 @@
                 </div>
             </div>
 
-            {{-- Tabel Detail Kondisi Jalan --}}
+            {{-- ✅ TABEL BARU: RAW DATA (Luas Retak, Lebar Retak, Jumlah Lubang, Alur) --}}
             <div class="card">
                 <div class="card-header">
                     <h4><i class="fas fa-table"></i> Detail Kondisi Jalan per Segmen</h4>
@@ -277,31 +277,28 @@
                             <thead>
                                 <tr>
                                     <th rowspan="2">No</th>
-                                    <th rowspan="2">Tahun</th>
                                     <th rowspan="2">Chainage</th>
                                     <th rowspan="2">Tipe Perkerasan</th>
                                     <th rowspan="2">Lebar (m)</th>
-                                    <th colspan="4" class="text-center bg-info text-white">SDI</th>
+                                    <th colspan="4" class="text-center bg-warning text-dark">Data Survei Lapangan</th>
                                     <th rowspan="2">Kategori</th>
                                     <th rowspan="2">Aksi</th>
                                 </tr>
                                 <tr>
-                                    <th class="bg-light">SDI1</th>
-                                    <th class="bg-light">SDI2</th>
-                                    <th class="bg-light">SDI3</th>
-                                    <th class="bg-light">SDI4</th>
+                                    <th class="bg-light">Luas Retak (m²)</th>
+                                    <th class="bg-light">Lebar Retak</th>
+                                    <th class="bg-light">Jumlah Lubang</th>
+                                    <th class="bg-light">Alur Roda</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($conditionsWithSDI as $index => $condition)
                                 @php
-                                    // ✅ DETEKSI TIPE PERKERASAN - GUNAKAN DATABASE CODE (ENGLISH)
+                                    // Deteksi tipe perkerasan
                                     $pavementType = $condition->pavement ?? 'Asphalt';
-                                    
-                                    // ✅ List non-aspal pavement types (Database Code)
                                     $isNonAspal = in_array($pavementType, ['Block', 'Concrete', 'Unpaved', 'Impassable']);
                                     
-                                    // ✅ Mapping untuk display label (Database → Indonesia)
+                                    // Mapping label
                                     $pavementLabels = [
                                         'Asphalt' => 'Aspal',
                                         'Concrete' => 'Beton',
@@ -311,7 +308,6 @@
                                     ];
                                     $pavementLabel = $pavementLabels[$pavementType] ?? 'Aspal';
                                     
-                                    // ✅ Badge colors
                                     $pavementBadgeClass = [
                                         'Asphalt' => 'badge-secondary',
                                         'Block' => 'badge-info',
@@ -319,45 +315,101 @@
                                         'Unpaved' => 'badge-warning',
                                         'Impassable' => 'badge-danger',
                                     ][$pavementType] ?? 'badge-secondary';
+
+                                    // ✅ AMBIL DATA RAW DARI DATABASE
+                                    $totalCrackArea = floatval($condition->crack_dep_area ?? 0) + floatval($condition->oth_crack_area ?? 0);
+                                    $crackWidthBobot = intval($condition->crack_width ?? 1);
+                                    $potholeCount = intval($condition->pothole_count ?? 0);
+                                    $ruttingDepthBobot = intval($condition->rutting_depth ?? 1);
+
+                                    // Mapping bobot ke label
+                                    $crackWidthLabels = [
+                                        1 => 'Tidak ada',
+                                        2 => '< 1mm',
+                                        3 => '1-3mm',
+                                        4 => '> 3mm'
+                                    ];
+                                    
+                                    $ruttingDepthLabels = [
+                                        1 => 'Tidak ada',
+                                        2 => '< 1cm',
+                                        3 => '1-3cm',
+                                        4 => '> 3cm'
+                                    ];
+
+                                    $crackWidthLabel = $crackWidthLabels[$crackWidthBobot] ?? 'N/A';
+                                    $ruttingDepthLabel = $ruttingDepthLabels[$ruttingDepthBobot] ?? 'N/A';
                                 @endphp
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
-                                    <td class="text-center">{{ $condition->year }}</td>
                                     <td>{{ $condition->chainage_from }} - {{ $condition->chainage_to }}</td>
                                     
-                                    {{-- ✅ TIPE PERKERASAN COLUMN --}}
+                                    {{-- Tipe Perkerasan --}}
                                     <td class="text-center">
                                         @if($isNonAspal)
                                             <span class="badge {{ $pavementBadgeClass }}">
                                                 <i class="fas fa-exclamation-triangle"></i> {{ $pavementLabel }}
                                             </span>
-                                            <br>
-                                            <small class="text-muted">({{ $pavementType }})</small>
                                         @else
                                             <span class="badge {{ $pavementBadgeClass }}">
                                                 {{ $pavementLabel }}
                                             </span>
-                                            <br>
-                                            <small class="text-muted">({{ $pavementType }})</small>
                                         @endif
                                     </td>
                                     
                                     <td class="text-center">{{ number_format($condition->inventory->pave_width ?? 0, 2) }}</td>
                                     
-                                    {{-- ✅ SDI VALUES: Tampilkan N/A jika non-aspal --}}
+                                    {{-- ✅ DATA RAW: Luas Retak --}}
                                     @if($isNonAspal)
                                         <td class="text-center text-muted">N/A</td>
-                                        <td class="text-center text-muted">N/A</td>
-                                        <td class="text-center text-muted">N/A</td>
-                                        <td class="text-center text-muted">N/A</td>
                                     @else
-                                        <td class="text-center">{{ number_format($condition->sdi_data['sdi1'], 2) }}</td>
-                                        <td class="text-center">{{ number_format($condition->sdi_data['sdi2'], 2) }}</td>
-                                        <td class="text-center">{{ number_format($condition->sdi_data['sdi3'], 2) }}</td>
-                                        <td class="text-center font-weight-bold">{{ number_format($condition->sdi_data['sdi_final'], 2) }}</td>
+                                        <td class="text-center">
+                                            <strong>{{ number_format($totalCrackArea, 2) }}</strong>
+                                            <br>
+                                            <small class="text-muted">
+                                                ({{ number_format($condition->crack_dep_area ?? 0, 2) }} + {{ number_format($condition->oth_crack_area ?? 0, 2) }})
+                                            </small>
+                                        </td>
                                     @endif
                                     
-                                    {{-- ✅ KATEGORI COLUMN --}}
+                                    {{-- ✅ DATA RAW: Lebar Retak --}}
+                                    @if($isNonAspal)
+                                        <td class="text-center text-muted">N/A</td>
+                                    @else
+                                        <td class="text-center">
+                                            <span class="badge badge-{{ $crackWidthBobot >= 4 ? 'danger' : ($crackWidthBobot >= 3 ? 'warning' : 'success') }}">
+                                                {{ $crackWidthLabel }}
+                                            </span>
+                                            <br>
+                                            <small class="text-muted">(Bobot {{ $crackWidthBobot }})</small>
+                                        </td>
+                                    @endif
+                                    
+                                    {{-- ✅ DATA RAW: Jumlah Lubang --}}
+                                    @if($isNonAspal)
+                                        <td class="text-center text-muted">N/A</td>
+                                    @else
+                                        <td class="text-center">
+                                            <strong class="text-{{ $potholeCount > 50 ? 'danger' : ($potholeCount > 10 ? 'warning' : 'success') }}">
+                                                {{ $potholeCount }} buah
+                                            </strong>
+                                        </td>
+                                    @endif
+                                    
+                                    {{-- ✅ DATA RAW: Alur Roda --}}
+                                    @if($isNonAspal)
+                                        <td class="text-center text-muted">N/A</td>
+                                    @else
+                                        <td class="text-center">
+                                            <span class="badge badge-{{ $ruttingDepthBobot >= 4 ? 'danger' : ($ruttingDepthBobot >= 3 ? 'warning' : 'success') }}">
+                                                {{ $ruttingDepthLabel }}
+                                            </span>
+                                            <br>
+                                            <small class="text-muted">(Bobot {{ $ruttingDepthBobot }})</small>
+                                        </td>
+                                    @endif
+                                    
+                                    {{-- Kategori SDI --}}
                                     <td class="text-center">
                                         @php
                                             $category = $condition->sdi_data['category'];
@@ -388,7 +440,6 @@
                                             {{ $category }}
                                         </span>
                                         
-                                        {{-- ✅ BADGE TAMBAHAN UNTUK NON-ASPAL --}}
                                         @if($isNonAspal)
                                             <br>
                                             <small class="text-muted">
@@ -397,7 +448,7 @@
                                         @endif
                                     </td>
                                     
-                                    {{-- ✅ AKSI COLUMN --}}
+                                    {{-- Aksi --}}
                                     <td class="text-center">
                                         @if($isNonAspal)
                                             <button class="btn btn-sm btn-secondary" disabled 
@@ -411,9 +462,8 @@
                                             </button>
                                         @endif
                                         
-                                        {{-- Tombol Edit/Delete jika diperlukan --}}
                                         <a href="{{ route('kondisi-jalan.edit', [$condition->link_no, $condition->chainage_from, $condition->chainage_to, $condition->year]) }}" 
-                                        class="btn btn-sm btn-warning" title="Edit">
+                                           class="btn btn-sm btn-warning" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                     </td>
@@ -449,20 +499,16 @@ function smartFormat(value, type = 'auto') {
     
     switch(type) {
         case 'integer':
-            // Untuk jumlah lubang, segmen, tahun, bobot
             return Math.round(num).toString();
         
         case 'decimal1':
-            // Untuk dimensi (lebar, panjang) - hapus .0 jika bulat
             return num % 1 === 0 ? num.toString() : num.toFixed(1);
         
         case 'decimal2':
-            // Untuk luas, persentase, SDI, rata-rata
             return num.toFixed(2);
         
         case 'auto':
         default:
-            // Otomatis detect: bulat -> no decimal, decimal -> 1-2 digit
             if (Number.isInteger(num)) {
                 return num.toString();
             }
@@ -494,7 +540,6 @@ $(document).ready(function() {
 function showDetailModal(linkNo, chainageFrom, chainageTo, year) {
     console.log('🔍 showDetailModal called with:', {linkNo, chainageFrom, chainageTo, year});
     
-    // Tampilkan loading
     Swal.fire({
         title: 'Memuat Detail...',
         html: '<div class="spinner-border text-primary" role="status"></div>',
@@ -502,7 +547,6 @@ function showDetailModal(linkNo, chainageFrom, chainageTo, year) {
         allowOutsideClick: false
     });
 
-    // AJAX Request ke backend
     $.ajax({
         url: "{{ route('kondisi-jalan.getSegmentDetail') }}",
         type: "GET",
@@ -517,20 +561,17 @@ function showDetailModal(linkNo, chainageFrom, chainageTo, year) {
             console.log('✅ Full response:', res);
             
             if (res.success) {
-                // ✅ PERBAIKAN UTAMA: Akses data dengan benar
                 const sdiDetail = res.data?.sdi_detail || {};
                 const condition = res.data?.condition || {};
                 
-                // ✅ FIX: Ganti 'calculations' dengan 'explanations' sesuai Service
                 const rawData = sdiDetail.raw_data || {};
-                const calculations = sdiDetail.explanations || {}; // ✅ PERBAIKAN DI SINI
+                const calculations = sdiDetail.explanations || {};
                 const finalData = sdiDetail.final || {};
                 
                 const linkInfo = condition.link_no || {};
                 const linkCode = linkInfo.link_code || linkNo;
                 const linkName = linkInfo.link_name || 'Ruas ' + linkNo;
                 
-                // Validasi data inventory
                 if (!rawData.pave_width || rawData.pave_width === undefined) {
                     Swal.fire({
                         icon: 'error',
@@ -540,17 +581,14 @@ function showDetailModal(linkNo, chainageFrom, chainageTo, year) {
                     return;
                 }
                 
-                // Deteksi tipe perkerasan
                 const pavementType = rawData.pavement_type || 'Asphalt';
                 const isNonAspal = ['Concrete', 'Block', 'Unpaved', 'Impassable'].includes(pavementType);
                 
-                // Jika non-aspal, tampilkan modal khusus
                 if (isNonAspal || finalData.note?.includes('Non-Aspal')) {
                     showNonAspalModal(linkCode, linkName, chainageFrom, chainageTo, year, pavementType);
                     return;
                 }
                 
-                // Tampilkan modal detail untuk aspal
                 showAspalDetailModal(linkCode, linkName, chainageFrom, chainageTo, year, rawData, calculations, finalData);
                 
             } else {
@@ -582,7 +620,6 @@ function showDetailModal(linkNo, chainageFrom, chainageTo, year) {
 // MODAL UNTUK PERKERASAN NON-ASPAL
 // ========================================
 function showNonAspalModal(linkCode, linkName, chainageFrom, chainageTo, year, pavementType) {
-    // ✅ Mapping Database Code → Display Name
     const pavementNames = {
         'Concrete': 'Beton',
         'Block': 'Blok',
@@ -592,7 +629,6 @@ function showNonAspalModal(linkCode, linkName, chainageFrom, chainageTo, year, p
     
     const pavementLabel = pavementNames[pavementType] || 'Non-Aspal';
     
-    // ✅ Icon per tipe
     const pavementIcons = {
         'Concrete': 'fa-th-large',
         'Block': 'fa-th',
@@ -735,10 +771,7 @@ function showAspalDetailModal(linkCode, linkName, chainageFrom, chainageTo, year
 // HELPER: BUILD STEP 1 HTML (LUAS RETAK)
 // ========================================
 function buildStep1HTML(rawData, step1) {
-    console.log('📊 Building Step 1 with:', {hasStep1: !!step1, step1Data: step1});
-
     if (!step1) {
-        console.warn('⚠️ Step1 data is missing');
         return '<div class="alert alert-warning">Data Step 1 tidak tersedia</div>';
     }
 
@@ -795,10 +828,7 @@ function buildStep1HTML(rawData, step1) {
 // HELPER: BUILD STEP 2 HTML (LEBAR RETAK)
 // ========================================
 function buildStep2HTML(rawData, step2) {
-    console.log('📊 Building Step 2 with:', {hasStep2: !!step2, step2Data: step2});
-
     if (!step2) {
-        console.warn('⚠️ Step2 data is missing');
         return '<div class="alert alert-warning">Data Step 2 tidak tersedia</div>';
     }
 
@@ -850,10 +880,7 @@ function buildStep2HTML(rawData, step2) {
 // HELPER: BUILD STEP 3 HTML (JUMLAH LUBANG)
 // ========================================
 function buildStep3HTML(rawData, step3) {
-    console.log('📊 Building Step 3 with:', {hasStep3: !!step3, step3Data: step3});
-
     if (!step3) {
-        console.warn('⚠️ Step3 data is missing');
         return '<div class="alert alert-warning">Data Step 3 tidak tersedia</div>';
     }
 
@@ -882,7 +909,7 @@ function buildStep3HTML(rawData, step3) {
                 <div class="alert alert-light mb-3" style="background: #fff3e0;">
                     <code>
                         Normalized = (${smartFormat(rawData.pothole_count, 'integer')} / ${smartFormat(rawData.segment_length_meter, 'decimal1')}) × 100<br>
-                        Normalized = <strong>${smartFormat(rawData.normalized_potholes, 'decimal1')} per 100m</strong>
+                        Normalized = <strong>${smartFormat(rawData.pothole_per_100m, 'decimal1')} per 100m</strong>
                     </code>
                 </div>
 
@@ -905,10 +932,7 @@ function buildStep3HTML(rawData, step3) {
 // HELPER: BUILD STEP 4 HTML (KEDALAMAN ALUR)
 // ========================================
 function buildStep4HTML(rawData, step4) {
-    console.log('📊 Building Step 4 with:', {hasStep4: !!step4, step4Data: step4});
-
     if (!step4) {
-        console.warn('⚠️ Step4 data is missing');
         return '<div class="alert alert-warning">Data Step 4 tidak tersedia</div>';
     }
 
@@ -929,7 +953,7 @@ function buildStep4HTML(rawData, step4) {
             <div class="card-body p-3">
                 <div class="alert alert-light mb-3" style="background: #f5f5f5; border-left: 3px solid #f44336;">
                     <strong><i class="fas fa-calculator"></i> Formula:</strong><br>
-                    <code>${step4.formula || '• < 1cm → Tambah 2.5<br>• 1-3cm → Tambah 10<br>• > 3cm → Tambah 100'}</code>
+                    <code>${step4.formula || '• < 1cm → Tambah 2.5<br>• 1-3cm → Tambah 10<br>• > 3cm → Tambah 20'}</code>
                 </div>
 
                 <table class="table table-sm table-bordered mb-3">
@@ -1025,18 +1049,10 @@ function exportTableToExcel(tableID, filename = '') {
     }
 }
 
-console.log('✅ Pavement Type Display Mapping Loaded');
-console.log('Available types:', {
-    'Asphalt': 'Aspal (SDI applicable)',
-    'Block': 'Blok (No SDI)',
-    'Concrete': 'Beton (No SDI)',
-    'Unpaved': 'Non Aspal (No SDI)',
-    'Impassable': 'Tak Dapat Dilalui (No SDI)'
-});
+console.log('✅ Show Blade with RAW DATA columns loaded successfully');
 </script>
 
 <style>
-    /* Badge pavement type dengan hover effect */
 .badge-pavement {
     transition: all 0.3s ease;
 }
@@ -1046,7 +1062,6 @@ console.log('Available types:', {
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
-/* Icon warning untuk non-aspal */
 .badge .fa-exclamation-triangle {
     animation: pulse 2s infinite;
 }
@@ -1056,25 +1071,27 @@ console.log('Available types:', {
     50% { opacity: 0.6; }
 }
 
-/* Table cell untuk pavement type */
 td.pavement-cell {
     min-width: 120px;
 }
 
-/* Disabled button style */
 .btn-secondary:disabled {
     cursor: not-allowed;
     opacity: 0.6;
 }
+
 .sdi-detail-modal .swal2-popup {
     font-size: 14px;
 }
+
 .sdi-detail-modal .table {
     font-size: 13px;
 }
+
 .sdi-detail-modal .table td {
     padding: 0.5rem;
 }
+
 .badge-lg {
     padding: 0.5rem 1rem;
     font-size: 14px;

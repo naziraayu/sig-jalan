@@ -1,0 +1,619 @@
+{
+  "type": "FeatureCollection",
+  "name": "KECAMATAN SUMBERSARI",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan kaliurang (ganti box culvert)",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.7266436,
+            -8.1651782
+          ],
+          [
+            113.7267348,
+            -8.1652008
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan kaliurang (saluran tertutup)",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.7254027,
+            -8.167414
+          ],
+          [
+            113.7257326,
+            -8.1671565
+          ],
+          [
+            113.7260008,
+            -8.1666706
+          ],
+          [
+            113.7263495,
+            -8.1658874
+          ],
+          [
+            113.7266436,
+            -8.1651782
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan mastrip (saluran tertutup)",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.7252868,
+            -8.1674111
+          ],
+          [
+            113.7244178,
+            -8.1645065
+          ],
+          [
+            113.7241978,
+            -8.1634339
+          ],
+          [
+            113.7239725,
+            -8.1629985
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan mastrip (pemyempitan saluran)",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.7203405,
+            -8.1598932
+          ],
+          [
+            113.7201849,
+            -8.1601905
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan mastrip(saluran tertutup)",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.715176,
+            -8.1585923
+          ],
+          [
+            113.7155542,
+            -8.1587781
+          ],
+          [
+            113.7170723,
+            -8.1591923
+          ],
+          [
+            113.7201494,
+            -8.1601914
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan mastrip (normalisir saluran drainase)",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.7192858,
+            -8.1600048
+          ],
+          [
+            113.7206859,
+            -8.160488
+          ],
+          [
+            113.7223649,
+            -8.1610562
+          ],
+          [
+            113.7229014,
+            -8.1612739
+          ],
+          [
+            113.7231321,
+            -8.1614173
+          ],
+          [
+            113.7235451,
+            -8.1620863
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan letjen suprapto (bangunan diatas saluran )",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.7025743,
+            -8.1869676
+          ],
+          [
+            113.7026561,
+            -8.1869836
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan letjen suprapto (saluran tertutup )",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.7043422,
+            -8.1786657
+          ],
+          [
+            113.7035966,
+            -8.1806303
+          ],
+          [
+            113.7027502,
+            -8.1869609
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan letjen suprapto (Inlet depan  notaris ermi Sunarsih perlu diperbesar)",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.7040017,
+          -8.1795418
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Saluran pembuang ke sungai cakol (blm teridentifikasi secara detail)",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.7025743,
+            -8.1869649
+          ],
+          [
+            113.7024401,
+            -8.186947
+          ],
+          [
+            113.702204,
+            -8.1869005
+          ],
+          [
+            113.7020324,
+            -8.1868859
+          ],
+          [
+            113.7009849,
+            -8.186675
+          ],
+          [
+            113.7006751,
+            -8.1865881
+          ],
+          [
+            113.7006959,
+            -8.1863873
+          ],
+          [
+            113.7004756,
+            -8.1863639
+          ],
+          [
+            113.7005754,
+            -8.1859792
+          ],
+          [
+            113.7007395,
+            -8.1856011
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan letjen sutoyo (saluran tertutup) ARMED",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.7019519,
+            -8.1908469
+          ],
+          [
+            113.7021692,
+            -8.1908442
+          ],
+          [
+            113.7024857,
+            -8.1908562
+          ],
+          [
+            113.7030221,
+            -8.1909345
+          ],
+          [
+            113.7046337,
+            -8.19108
+          ],
+          [
+            113.7046793,
+            -8.191088
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "lampu merah perhutani (Titik lokasi genangan)",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.7150852,
+          -8.1818467
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan karimata (pembersihan platbeton)",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.7155494,
+            -8.1807068
+          ],
+          [
+            113.7156741,
+            -8.1807559
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jembatan jalan sumatra (pembersihan inlet)",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.7054666,
+            -8.1772019
+          ],
+          [
+            113.7052614,
+            -8.1774886
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan jawa (pembersihan walet+grill)",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.7114732,
+            -8.168462
+          ],
+          [
+            113.7176852,
+            -8.1700975
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan sriwijaya ( pembersihan walet )",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.7212227,
+            -8.1863088
+          ],
+          [
+            113.7216304,
+            -8.1838503
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sekitar Kantor Bangkesbanpol",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.7190328,
+          -8.1834353
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Gorong-gorong dekat rumah makan Gang Murni Jalan Karimata",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.7161287,
+          -8.1795782
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Saluran drainase jalan Wolter Mongindisi dekat Pom Bensin",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.6989036,
+            -8.2099641
+          ],
+          [
+            113.6994722,
+            -8.2099694
+          ],
+          [
+            113.6998477,
+            -8.2100491
+          ],
+          [
+            113.7002178,
+            -8.210219
+          ],
+          [
+            113.7006524,
+            -8.2105375
+          ],
+          [
+            113.700883,
+            -8.2106756
+          ],
+          [
+            113.7010815,
+            -8.2107658
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Saluran drainase selatan Ponpes Nuris Antirogo",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.7375061,
+            -8.1392428
+          ],
+          [
+            113.7372674,
+            -8.1395694
+          ],
+          [
+            113.7370072,
+            -8.1398642
+          ],
+          [
+            113.7367739,
+            -8.1401429
+          ],
+          [
+            113.7365057,
+            -8.1406527
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Perumahan Cluster belakang Kantor Kelurahan Kebonsari",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.704305,
+          -8.1850873
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Saluran di depan Polsek Sumbersari ke arah BRI Wirolegi ( Jalan Nasional )",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.7409163,
+            -8.1861669
+          ],
+          [
+            113.7417103,
+            -8.1862784
+          ],
+          [
+            113.7426168,
+            -8.1864111
+          ],
+          [
+            113.7429602,
+            -8.1864748
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Saluran drainase depan STM",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.7263636,
+          -8.154636
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jalan Bengawan Solo dekat Jembatan Semanggi",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.7080818,
+          -8.1675194
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Barat Hotel Grand Valonia",
+        "description": "",
+        "kecamatan": "KECAMATAN SUMBERSARI"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.7238961,
+          -8.170708
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,354 @@
+{
+  "type": "FeatureCollection",
+  "name": "KECAMATAN PATRANG",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan manggar ( saluran ditutup bangunan )",
+        "description": "",
+        "kecamatan": "KECAMATAN PATRANG"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.6930209,
+          -8.1667414
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "pojok smp 7 (platbeton afour jaki)",
+        "description": "",
+        "kecamatan": "KECAMATAN PATRANG"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.693033,
+            -8.1548615
+          ],
+          [
+            113.693033,
+            -8.1549929
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan cendrawasih (drainase jalan smp 7 difungsikan kembali)",
+        "description": "",
+        "kecamatan": "KECAMATAN PATRANG"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.693033,
+            -8.1548615
+          ],
+          [
+            113.6944202,
+            -8.1551854
+          ],
+          [
+            113.69589,
+            -8.15552
+          ],
+          [
+            113.696802,
+            -8.1557058
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan kasuari + cempaka (genangan air sepanjang jalan ,normalisir saluran dan berm)",
+        "description": "",
+        "kecamatan": "KECAMATAN PATRANG"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.679239,
+            -8.1431552
+          ],
+          [
+            113.6790995,
+            -8.1465113
+          ],
+          [
+            113.6789601,
+            -8.1472017
+          ],
+          [
+            113.6795976,
+            -8.1497747
+          ],
+          [
+            113.68223,
+            -8.1550244
+          ],
+          [
+            113.6829143,
+            -8.1566168
+          ],
+          [
+            113.682968,
+            -8.158178
+          ],
+          [
+            113.683204,
+            -8.1589002
+          ],
+          [
+            113.6832255,
+            -8.1596861
+          ],
+          [
+            113.6826577,
+            -8.1609706
+          ],
+          [
+            113.6826416,
+            -8.161406
+          ],
+          [
+            113.6827081,
+            -8.1618586
+          ],
+          [
+            113.6826169,
+            -8.1622834
+          ],
+          [
+            113.6820728,
+            -8.163494
+          ],
+          [
+            113.6815456,
+            -8.1644373
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan pb. sudirman (saluran afour patrang tertutup)",
+        "description": "",
+        "kecamatan": "KECAMATAN PATRANG"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.7086876,
+            -8.1605605
+          ],
+          [
+            113.7080173,
+            -8.161502
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "perumahan patrang regensi (saluran afour krajan patrang tertutup)",
+        "description": "",
+        "kecamatan": "KECAMATAN PATRANG"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.7241067,
+            -8.1457894
+          ],
+          [
+            113.7176721,
+            -8.1509828
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jalan Cempaka GG.1",
+        "description": "",
+        "kecamatan": "KECAMATAN PATRANG"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.6823917,
+            -8.162975
+          ],
+          [
+            113.6831158,
+            -8.1632192
+          ],
+          [
+            113.6835477,
+            -8.1633121
+          ],
+          [
+            113.6839742,
+            -8.163413
+          ],
+          [
+            113.6842612,
+            -8.163498
+          ],
+          [
+            113.6845026,
+            -8.1639812
+          ],
+          [
+            113.6845294,
+            -8.1642653
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Depan TMP Patrang",
+        "description": "",
+        "kecamatan": "KECAMATAN PATRANG"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.7232826,
+          -8.1469334
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jalan Srikoyo",
+        "description": "",
+        "kecamatan": "KECAMATAN PATRANG"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.7173346,
+          -8.1467197
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sekitar Pasar Baratan",
+        "description": "",
+        "kecamatan": "KECAMATAN PATRANG"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.7327199,
+          -8.138825
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jalan Manyar",
+        "description": "",
+        "kecamatan": "KECAMATAN PATRANG"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.687191,
+            -8.145054
+          ],
+          [
+            113.6876175,
+            -8.1451762
+          ],
+          [
+            113.6879367,
+            -8.145285
+          ],
+          [
+            113.6880976,
+            -8.1454178
+          ],
+          [
+            113.6878613,
+            -8.1467583
+          ],
+          [
+            113.6878076,
+            -8.1471459
+          ],
+          [
+            113.6877862,
+            -8.1473769
+          ],
+          [
+            113.6879337,
+            -8.147584
+          ],
+          [
+            113.6885184,
+            -8.1480407
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jalan Mawar GG 03 dan Jalan Wijayakusuma",
+        "description": "",
+        "kecamatan": "KECAMATAN PATRANG"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.7017106,
+            -8.165733
+          ],
+          [
+            113.7015148,
+            -8.1660356
+          ],
+          [
+            113.701614,
+            -8.1663781
+          ],
+          [
+            113.7018393,
+            -8.1667074
+          ],
+          [
+            113.7022792,
+            -8.1663011
+          ]
+        ]
+      }
+    }
+  ]
+}

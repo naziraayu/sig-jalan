@@ -183,29 +183,39 @@ Route::middleware(['auth'])->group(function () {
     // Ruas Jalan Routes
     // --------------------
     Route::prefix('ruas-jalan')->name('ruas-jalan.')->group(function () {
-        Route::get('/data', [RuasJalanController::class, 'getData'])->name('data');
-        
-        Route::delete('/destroy-all', [RuasJalanController::class, 'destroyAll'])
-            ->middleware('permission:delete,ruas_jalan')->name('destroyAll');
-
+        // ✅ Route tanpa parameter dulu
         Route::get('/', [RuasJalanController::class, 'index'])
             ->middleware('permission:read,ruas_jalan')->name('index');
+        
+        Route::get('/data', [RuasJalanController::class, 'data'])->name('data');
+        
         Route::get('/create', [RuasJalanController::class, 'create'])
             ->middleware('permission:add,ruas_jalan')->name('create');
+        
         Route::post('/', [RuasJalanController::class, 'store'])
             ->middleware('permission:add,ruas_jalan')->name('store');
         
-        // ✅ PERBAIKI: Parameter {id} bukan {ruas}
-        Route::get('/{id}', [RuasJalanController::class, 'show'])
-            ->middleware('permission:detail,ruas_jalan')->name('show');
+        Route::delete('/destroy-all', [RuasJalanController::class, 'destroyAll'])
+            ->middleware('permission:delete,ruas_jalan')->name('destroyAll');
+        
+        Route::post('/generate-codes', [RuasJalanController::class, 'generateCodes'])
+            ->name('generateCodes');
+        
+        Route::get('/{id}/check-relations', [RuasJalanController::class, 'checkRelations'])
+            ->name('checkRelations');
+        
         Route::get('/{id}/edit', [RuasJalanController::class, 'edit'])
             ->middleware('permission:update,ruas_jalan')->name('edit');
+        
+        // ✅ Route dengan parameter {id} di paling bawah
+        Route::get('/{id}', [RuasJalanController::class, 'show'])
+            ->middleware('permission:detail,ruas_jalan')->name('show');
+        
         Route::put('/{id}', [RuasJalanController::class, 'update'])
             ->middleware('permission:update,ruas_jalan')->name('update');
+        
         Route::delete('/{id}', [RuasJalanController::class, 'destroy'])
             ->middleware('permission:delete,ruas_jalan')->name('destroy');
-
-        Route::post('/generate-codes', [RuasJalanController::class, 'generateCodes'])->name('generateCodes');
     });
 
     // --------------------
@@ -426,23 +436,24 @@ Route::middleware(['auth'])->group(function () {
 
     // View peta
     Route::get('/peta/alignment', [AlignmentController::class, 'showMap']);
+    
     Route::prefix('api/alignment')->group(function () {
     
-    // Get list kecamatan dengan jumlah segmen
-    Route::get('/kecamatan-list', [AlignmentController::class, 'getKecamatanList']);
-    
-    // Get koordinat dengan SDI berdasarkan kecamatan
-    Route::get('/coords-sdi-by-kecamatan', [AlignmentController::class, 'getCoordsWithSDIByKecamatan']);
-    
-    // Get semua koordinat dengan SDI (untuk semua kecamatan)
-    Route::get('/coords-sdi', [AlignmentController::class, 'getCoordsWithSDI']);
-    
-    // Get koordinat saja (tanpa SDI)
-    Route::get('/coords', [AlignmentController::class, 'getCoords']);
-    
-    // Get list tahun yang tersedia
-    Route::get('/available-years', [AlignmentController::class, 'getAvailableYears']);
-});
+        // Get list kecamatan dengan jumlah segmen
+        Route::get('/kecamatan-list', [AlignmentController::class, 'getKecamatanList']);
+        
+        // Get koordinat dengan SDI berdasarkan kecamatan
+        Route::get('/coords-sdi-by-kecamatan', [AlignmentController::class, 'getCoordsWithSDIByKecamatan']);
+        
+        // Get semua koordinat dengan SDI (untuk semua kecamatan)
+        Route::get('/coords-sdi', [AlignmentController::class, 'getCoordsWithSDI']);
+        
+        // Get koordinat saja (tanpa SDI)
+        Route::get('/coords', [AlignmentController::class, 'getCoords']);
+        
+        // Get list tahun yang tersedia
+        Route::get('/available-years', [AlignmentController::class, 'getAvailableYears']);
+    });
 
     Route::prefix('year-filter')->name('year.filter.')->group(function () {
         Route::get('/available', [YearFilterController::class, 'getAvailableYears'])->name('available');

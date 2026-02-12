@@ -147,12 +147,12 @@
         <ul class="navbar-nav navbar-right">
           <li class="dropdown">
             <a href="#" data-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user">
-              <img alt="image" 
+              {{-- <img alt="image" 
                 src="{{ Auth::check() && Auth::user()->photo 
                     ? asset('storage/' . Auth::user()->photo) 
                     : asset('assets/img/avatar/avatar-1.png') }}" 
                 class="rounded-circle mr-1" 
-                style="width: 35px; height: 35px; object-fit: cover;">
+                style="width: 35px; height: 35px; object-fit: cover;"> --}}
               <div class="d-sm-none d-lg-inline-block">Hi, {{ Auth::check() ? Auth::user()->name : 'Guest' }}</div>
             </a>
             <div class="dropdown-menu dropdown-menu-right">
@@ -161,12 +161,11 @@
                 <i class="far fa-user"></i> Profile
               </a>
               <div class="dropdown-divider"></div>
-              <form id="logout-form" method="POST" action="{{ route('logout') }}" style="display: none;">
-                @csrf
+              <form id="logout-form-navbar" method="POST" action="{{ route('logout') }}" style="display: none;">
+                  @csrf
               </form>
-              <a href="#" class="dropdown-item has-icon text-danger"
-                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                <i class="fas fa-sign-out-alt"></i> Logout
+              <a href="#" class="dropdown-item has-icon text-danger" id="logout-navbar-btn">
+                  <i class="fas fa-sign-out-alt"></i> Logout
               </a>
             </div>
           </li>
@@ -220,6 +219,44 @@
 
   <!-- ✅ TAMBAH: iziToast JS -->
   <script src="{{ asset('assets/modules/izitoast/js/iziToast.min.js') }}"></script>
+
+  @if(session('success'))
+  <script>
+      iziToast.success({
+          title: 'Berhasil',
+          message: '{{ session('success') }}',
+          position: 'topRight',
+          timeout: 3000,
+          transitionIn: 'fadeInDown',
+          transitionOut: 'fadeOutUp'
+      });
+  </script>
+  @endif
+
+  @if(session('error'))
+  <script>
+      iziToast.error({
+          title: 'Error',
+          message: '{{ session('error') }}',
+          position: 'topRight',
+          timeout: 3000,
+          transitionIn: 'fadeInDown',
+          transitionOut: 'fadeOutUp'
+      });
+  </script>
+  @endif
+
+  @if(session('warning'))
+  <script>
+      iziToast.warning({
+          title: 'Peringatan',
+          message: '{{ session('warning') }}',
+          position: 'topRight',
+          timeout: 3000
+      });
+  </script>
+  @endif
+
 
   <!-- Page Specific JS File -->
   <script src="{{ asset('assets/js/page/index.js') }}"></script>
@@ -472,6 +509,47 @@
       loadAvailableYears();
     });
   </script>
+
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Logout dari navbar
+    const logoutNavbarBtn = document.getElementById('logout-navbar-btn');
+    
+    if (logoutNavbarBtn) {
+        logoutNavbarBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            Swal.fire({
+                title: 'Konfirmasi Logout',
+                text: "Apakah Anda yakin ingin keluar?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#6777ef',
+                cancelButtonColor: '#fc544b',
+                confirmButtonText: 'Ya, Keluar',
+                cancelButtonText: 'Batal',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading
+                    Swal.fire({
+                        title: 'Mohon tunggu...',
+                        text: 'Sedang logout',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    
+                    document.getElementById('logout-form-navbar').submit();
+                }
+            });
+        });
+    }
+});
+</script>
 
   @stack('scripts')
 

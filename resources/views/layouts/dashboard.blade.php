@@ -35,22 +35,22 @@
         </div>
         @endif
         
-       {{-- ROW 1: STATISTIK UTAMA - FONT KONSISTEN --}}
+        {{-- ROW 1: STATISTIK UTAMA - 4 CARD RAPI --}}
         <div class="row">
             
             {{-- Card 1: Total Segmen dengan Breakdown Kondisi --}}
             <div class="col-lg-3 col-md-6 col-sm-12">
-                <div class="card card-statistic-2" style="min-height: 320px;">
+                <div class="card card-statistic-2" style="min-height: 260px;">
                     <div class="card-icon shadow-primary bg-primary">
                         <i class="fas fa-road"></i>
                     </div>
                     <div class="card-wrap">
                         <div class="card-header pb-0">
-                            <h4 class="mb-0" style="font-size: 14px;">Total Segmen</h4>
+                            <h4 class="mb-0" style="font-size: 13px; font-weight: 500;">Total Segmen</h4>
                         </div>
-                        <div class="card-body pt-2 pb-2">
-                            <h2 class="mb-1" style="font-size: 28px; font-weight: 700;">{{ number_format($totalSegments ?? 0) }}</h2>
-                            <div class="text-muted" style="font-size: 14px;">
+                        <div class="card-body pt-2 pb-1">
+                            <h2 class="mb-1" style="font-size: 26px; font-weight: 700; line-height: 1.2;">{{ number_format($totalSegments ?? 0) }}</h2>
+                            <div class="text-muted" style="font-size: 11px;">
                                 @if(isset($selectedYear))
                                     <i class="fas fa-calendar-alt"></i> Tahun {{ $selectedYear }}
                                 @else
@@ -59,25 +59,25 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card-body pt-0 pb-2">
-                        <div class="row text-center">
+                    <div class="card-body pt-2 pb-2">
+                        <div class="row text-center mb-2">
                             <div class="col-6 border-right">
-                                <div class="font-weight-bold text-success mb-1" style="font-size: 20px;">{{ $goodCondition ?? 0 }}</div>
-                                <div class="text-muted" style="font-size: 14px;">Baik</div>
+                                <div class="font-weight-bold text-success" style="font-size: 20px; line-height: 1;">{{ $goodCondition ?? 0 }}</div>
+                                <div class="text-muted mt-1" style="font-size: 11px;">Baik</div>
                             </div>
                             <div class="col-6">
-                                <div class="font-weight-bold text-warning mb-1" style="font-size: 20px;">{{ $fairCondition ?? 0 }}</div>
-                                <div class="text-muted" style="font-size: 14px;">Sedang</div>
+                                <div class="font-weight-bold" style="font-size: 20px; color: #FFD700; line-height: 1;">{{ $fairCondition ?? 0 }}</div>
+                                <div class="text-muted mt-1" style="font-size: 11px;">Sedang</div>
                             </div>
                         </div>
-                        <div class="row text-center mt-2 pt-2 border-top">
+                        <div class="row text-center pt-2 border-top">
                             <div class="col-6 border-right">
-                                <div class="font-weight-bold text-danger mb-1" style="font-size: 20px;">{{ $lightDamage ?? 0 }}</div>
-                                <div class="text-muted" style="font-size: 14px;">Rusak Ringan</div>
+                                <div class="font-weight-bold text-warning" style="font-size: 20px; line-height: 1;">{{ $lightDamage ?? 0 }}</div>
+                                <div class="text-muted mt-1" style="font-size: 11px;">Rusak Ringan</div>
                             </div>
                             <div class="col-6">
-                                <div class="font-weight-bold text-danger mb-1" style="font-size: 20px;">{{ $heavyDamage ?? 0 }}</div>
-                                <div class="text-muted" style="font-size: 14px;">Rusak Berat</div>
+                                <div class="font-weight-bold text-danger" style="font-size: 20px; line-height: 1;">{{ $heavyDamage ?? 0 }}</div>
+                                <div class="text-muted mt-1" style="font-size: 11px;">Rusak Berat</div>
                             </div>
                         </div>
                     </div>
@@ -86,9 +86,9 @@
             
             {{-- Card 2: Rata-rata SDI --}}
             <div class="col-lg-3 col-md-6 col-sm-12">
-                <div class="card card-statistic-2" style="min-height: 320px;">
+                <div class="card card-statistic-2" style="min-height: 260px;">
                     <div class="card-chart">
-                        <canvas id="sdi-chart" height="80"></canvas>
+                        <canvas id="sdi-chart" height="60"></canvas>
                     </div>
                     <div class="card-icon shadow-primary 
                         @if(($avgSDI ?? 0) < 50) bg-success
@@ -100,13 +100,12 @@
                     </div>
                     <div class="card-wrap">
                         <div class="card-header pb-0">
-                            <h4 class="mb-0" style="font-size: 14px;">Rata-rata SDI</h4>
+                            <h4 class="mb-0" style="font-size: 13px; font-weight: 500;">Rata-rata SDI</h4>
                         </div>
                         <div class="card-body pt-2">
-                            <h2 class="mb-2" style="font-size: 28px; font-weight: 700;">{{ number_format($avgSDI ?? 0, 2) }}</h2>
-                            <div class="text-muted" style="font-size: 11px;">
+                            <h2 class="mb-2" style="font-size: 26px; font-weight: 700; line-height: 1.2;">{{ number_format($avgSDI ?? 0, 2) }}</h2>
+                            <div style="font-size: 11px;">
                                 @php
-                                    // Tentukan category berdasarkan avgSDI
                                     $avgSDICategory = 'Baik';
                                     if (($avgSDI ?? 0) >= 150) {
                                         $avgSDICategory = 'Rusak Berat';
@@ -116,7 +115,7 @@
                                         $avgSDICategory = 'Sedang';
                                     }
                                 @endphp
-                                <x-sdi-badge :category="$avgSDICategory" style="font-size: 14px;" />
+                                <x-sdi-badge :category="$avgSDICategory" />
                             </div>
                         </div>
                     </div>
@@ -125,20 +124,20 @@
             
             {{-- Card 3: Total Panjang Jalan --}}
             <div class="col-lg-3 col-md-6 col-sm-12">
-                <div class="card card-statistic-2" style="min-height: 320px;">
+                <div class="card card-statistic-2" style="min-height: 260px;">
                     <div class="card-chart">
-                        <canvas id="length-chart" height="80"></canvas>
+                        <canvas id="length-chart" height="60"></canvas>
                     </div>
                     <div class="card-icon shadow-primary bg-primary">
                         <i class="fas fa-route"></i>
                     </div>
                     <div class="card-wrap">
                         <div class="card-header pb-0">
-                            <h4 class="mb-0" style="font-size: 14px;">Panjang Jalan</h4>
+                            <h4 class="mb-0" style="font-size: 13px; font-weight: 500;">Panjang Jalan</h4>
                         </div>
                         <div class="card-body pt-2">
-                            <h2 class="mb-2" style="font-size: 28px; font-weight: 700;">{{ number_format($totalLength ?? 0, 2) }}</h2>
-                            <div class="text-muted" style="font-size: 14px;">kilometer</div>
+                            <h2 class="mb-2" style="font-size: 22px; font-weight: 700; line-height: 1.2;">{{ number_format($totalLength ) }}</h2>
+                            <div class="text-muted" style="font-size: 11px;">kilometer</div>
                         </div>
                     </div>
                 </div>
@@ -146,28 +145,28 @@
             
             {{-- Card 4: Kerusakan Kritis --}}
             <div class="col-lg-3 col-md-6 col-sm-12">
-                <div class="card card-statistic-2" style="min-height: 320px;">
+                <div class="card card-statistic-2" style="min-height: 260px;">
                     <div class="card-icon shadow-danger bg-danger">
                         <i class="fas fa-exclamation-triangle"></i>
                     </div>
                     <div class="card-wrap">
                         <div class="card-header pb-0">
-                            <h4 class="mb-0" style="font-size: 14px;">Kerusakan Kritis</h4>
+                            <h4 class="mb-0" style="font-size: 13px; font-weight: 500;">Kerusakan Kritis</h4>
                         </div>
-                        <div class="card-body pt-2 pb-2">
-                            <h2 class="mb-1" style="font-size: 28px; font-weight: 700;">{{ number_format($criticalSegments ?? 0) }}</h2>
-                            <div class="text-muted" style="font-size: 14px;">Segmen Prioritas</div>
+                        <div class="card-body pt-2 pb-1">
+                            <h2 class="mb-1" style="font-size: 26px; font-weight: 700; line-height: 1.2;">{{ number_format($criticalSegments ?? 0) }}</h2>
+                            <div class="text-muted" style="font-size: 11px;">Segmen Prioritas</div>
                         </div>
                     </div>
-                    <div class="card-body pt-0 pb-2">
+                    <div class="card-body pt-2 pb-2">
                         <div class="row text-center">
                             <div class="col-6 border-right">
-                                <div class="font-weight-bold mb-1" style="font-size: 20px;">{{ number_format($totalPotholes ?? 0) }}</div>
-                                <div class="text-muted" style="font-size: 14px;">Lubang</div>
+                                <div class="font-weight-bold" style="font-size: 20px; line-height: 1;">{{ number_format($totalPotholes ?? 0) }}</div>
+                                <div class="text-muted mt-1" style="font-size: 11px;">Lubang</div>
                             </div>
                             <div class="col-6">
-                                <div class="font-weight-bold mb-1" style="font-size: 20px;">{{ number_format($totalCrackArea ?? 0, 0) }}</div>
-                                <div class="text-muted" style="font-size: 14px;">m² Retak</div>
+                                <div class="font-weight-bold" style="font-size: 20px; line-height: 1;">{{ number_format($totalCrackArea ?? 0, 0) }}</div>
+                                <div class="text-muted mt-1" style="font-size: 11px;">m² Retak</div>
                             </div>
                         </div>
                     </div>
@@ -228,15 +227,15 @@
                                     </div>
                                     <div class="mb-3">
                                         <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <span><i class="fas fa-circle text-warning"></i> Sedang</span>
-                                            <strong class="text-warning">{{ number_format($percentFair ?? 0, 1) }}%</strong>
+                                            <span><i class="fas fa-circle" style="color: #FFD700;"></i> Sedang</span>
+                                            <strong style="color: #FFD700;">{{ number_format($percentFair ?? 0, 1) }}%</strong>
                                         </div>
                                         <small class="text-muted">{{ number_format($lengthByCategory['sedang'] ?? 0, 2) }} km</small>
                                     </div>
                                     <div class="mb-3">
                                         <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <span><i class="fas fa-circle text-danger"></i> Rusak Ringan</span>
-                                            <strong class="text-danger">{{ number_format($percentLight ?? 0, 1) }}%</strong>
+                                            <span><i class="fas fa-circle text-warning"></i> Rusak Ringan</span>
+                                            <strong class="text-warning">{{ number_format($percentLight ?? 0, 1) }}%</strong>
                                         </div>
                                         <small class="text-muted">{{ number_format($lengthByCategory['rusak_ringan'] ?? 0, 2) }} km</small>
                                     </div>
@@ -583,23 +582,23 @@ window.addEventListener('load', function() {
 
     // 🎨 DEFINISI WARNA KONSISTEN UNTUK SEMUA CHART
     const SDI_COLORS = {
-        baik: {
-            bg: 'rgba(72, 187, 120, 0.8)',
-            border: 'rgba(72, 187, 120, 1)'
-        },
-        sedang: {
-            bg: 'rgba(251, 191, 36, 0.8)',
-            border: 'rgba(251, 191, 36, 1)'
-        },
-        rusakRingan: {
-            bg: 'rgba(255, 159, 64, 0.8)',
-            border: 'rgba(255, 159, 64, 1)'
-        },
-        rusakBerat: {
-            bg: 'rgba(245, 101, 101, 0.8)',
-            border: 'rgba(245, 101, 101, 1)'
-        }
-    };
+    baik: {
+        bg: 'rgba(72, 187, 120, 0.8)',
+        border: 'rgba(72, 187, 120, 1)'
+    },
+    sedang: {
+        bg: 'rgba(255, 215, 0, 0.8)',
+        border: 'rgba(255, 215, 0, 1)'
+    },
+    rusakRingan: {
+        bg: 'rgba(255, 193, 7, 0.8)',
+        border: 'rgba(255, 193, 7, 1)'
+    },
+    rusakBerat: {
+        bg: 'rgba(220, 53, 69, 0.8)',
+        border: 'rgba(220, 53, 69, 1)'
+    }
+};
 
     // Helper function
     function createChartSafely(canvasId, config) {

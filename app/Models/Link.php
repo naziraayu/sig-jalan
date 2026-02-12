@@ -2,6 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\CodeLinkFunction;
+use App\Models\CodeLinkStatus;
+use App\Models\DRP;
+use App\Models\Kabupaten;
+use App\Models\Kecamatan;
+use App\Models\LinkKecamatan;
+use App\Models\LinkMaster;
+use App\Models\Province;
+use App\Models\RoadCondition;
+use App\Models\RoadInventory;
 use Illuminate\Database\Eloquent\Model;
 
 class Link extends Model
@@ -186,20 +196,9 @@ class Link extends Model
     // ====================================
     // ✅ ACCESSORS
     // ====================================
-
-    /**
-     * Accessor untuk ambil link_name dari master
-     */
     public function getLinkNameAttribute()
     {
         return $this->linkMaster?->link_name;
     }
 
-    /**
-     * Accessor untuk ambil link_code dari master
-     */
-    public function getLinkCodeAttribute()
-    {
-        return $this->linkMaster?->link_code;
-    }
 }

@@ -1,0 +1,622 @@
+{
+  "type": "FeatureCollection",
+  "name": "KECAMATAN KALIWATES",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan gajah mada ( patung )Platbeton ganti box culvert",
+        "description": "",
+        "kecamatan": "KECAMATAN KALIWATES"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.6715101,
+            -8.1823624
+          ],
+          [
+            113.6714726,
+            -8.1826359
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan gajah mada (normalisir saluran drainase ke sungai)",
+        "description": "",
+        "kecamatan": "KECAMATAN KALIWATES"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.6715101,
+            -8.1823624
+          ],
+          [
+            113.6726098,
+            -8.1819403
+          ],
+          [
+            113.6735111,
+            -8.1815686
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan hayam wuruk (Platbeton bagus)",
+        "description": "",
+        "kecamatan": "KECAMATAN KALIWATES"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.6589061,
+            -8.1872279
+          ],
+          [
+            113.6589866,
+            -8.1874403
+          ],
+          [
+            113.658949,
+            -8.1873474
+          ],
+          [
+            113.6589625,
+            -8.1873766
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan hayam wuruk (saluran drainase tertutup pintu masuk bangunan)",
+        "description": "",
+        "kecamatan": "KECAMATAN KALIWATES"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.652916,
+            -8.1895112
+          ],
+          [
+            113.6585647,
+            -8.1873289
+          ],
+          [
+            113.6625088,
+            -8.1858669
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan hayam wuruk (platbeton bagus)",
+        "description": "",
+        "kecamatan": "KECAMATAN KALIWATES"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.6560413,
+            -8.188337
+          ],
+          [
+            113.6561352,
+            -8.1885415
+          ],
+          [
+            113.6561083,
+            -8.1884857
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "ke arah UIN (normalisir saluran irigasi)",
+        "description": "",
+        "kecamatan": "KECAMATAN KALIWATES"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.6589848,
+            -8.1874767
+          ],
+          [
+            113.6589927,
+            -8.1881569
+          ],
+          [
+            113.658986,
+            -8.1882949
+          ],
+          [
+            113.6589699,
+            -8.1883441
+          ],
+          [
+            113.6588425,
+            -8.1885432
+          ],
+          [
+            113.6587352,
+            -8.1886122
+          ],
+          [
+            113.6586534,
+            -8.1886069
+          ],
+          [
+            113.6584858,
+            -8.1885551
+          ],
+          [
+            113.6583624,
+            -8.1885883
+          ],
+          [
+            113.6583302,
+            -8.188798
+          ],
+          [
+            113.6582149,
+            -8.1889175
+          ],
+          [
+            113.6580432,
+            -8.1889759
+          ],
+          [
+            113.6579554,
+            -8.1890573
+          ],
+          [
+            113.6579313,
+            -8.1891767
+          ],
+          [
+            113.6577838,
+            -8.1893121
+          ],
+          [
+            113.6576014,
+            -8.1908042
+          ],
+          [
+            113.6575853,
+            -8.191282
+          ],
+          [
+            113.6576872,
+            -8.1913829
+          ],
+          [
+            113.6577945,
+            -8.1914307
+          ],
+          [
+            113.657757,
+            -8.1915369
+          ],
+          [
+            113.6575907,
+            -8.1915634
+          ],
+          [
+            113.6575853,
+            -8.1916219
+          ],
+          [
+            113.6577731,
+            -8.1918396
+          ],
+          [
+            113.6577087,
+            -8.1921953
+          ],
+          [
+            113.6573657,
+            -8.1939332
+          ],
+          [
+            113.6570429,
+            -8.1939037
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "ke arah barat UIN (normalisasi saluran irigasi)",
+        "description": "",
+        "kecamatan": "KECAMATAN KALIWATES"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.6570429,
+            -8.1939037
+          ],
+          [
+            113.6555033,
+            -8.1937338
+          ],
+          [
+            113.6551171,
+            -8.1938187
+          ],
+          [
+            113.6547791,
+            -8.1938028
+          ],
+          [
+            113.6540549,
+            -8.1941161
+          ],
+          [
+            113.6534788,
+            -8.1943823
+          ],
+          [
+            113.653157,
+            -8.1945177
+          ],
+          [
+            113.6529585,
+            -8.194523
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "perbaikan pintu air",
+        "description": "",
+        "kecamatan": "KECAMATAN KALIWATES"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              113.6527888,
+              -8.1944401
+            ],
+            [
+              113.6527888,
+              -8.1945994
+            ],
+            [
+              113.6529954,
+              -8.1945941
+            ],
+            [
+              113.65299,
+              -8.1944321
+            ],
+            [
+              113.6527888,
+              -8.1944401
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan otto iskandar mangli (saluran drainase tertutup gedung madrasah)",
+        "description": "",
+        "kecamatan": "KECAMATAN KALIWATES"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.6524568,
+            -8.1933213
+          ],
+          [
+            113.6525051,
+            -8.1923602
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan sentot (ganti box culvert)",
+        "description": "",
+        "kecamatan": "KECAMATAN KALIWATES"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.6821936,
+            -8.1811372
+          ],
+          [
+            113.6821775,
+            -8.1812156
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan dewi sartika (buat saluran drainase baru)",
+        "description": "",
+        "kecamatan": "KECAMATAN KALIWATES"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.7016103,
+            -8.1720044
+          ],
+          [
+            113.7016505,
+            -8.1717416
+          ],
+          [
+            113.7016934,
+            -8.1714681
+          ],
+          [
+            113.7015861,
+            -8.1712956
+          ],
+          [
+            113.7015003,
+            -8.1712504
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan diponegoro (afour patrang+bromo tertutup bangunan)",
+        "description": "",
+        "kecamatan": "KECAMATAN KALIWATES"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.6993619,
+            -8.1712736
+          ],
+          [
+            113.6989971,
+            -8.1712152
+          ],
+          [
+            113.6987932,
+            -8.171409
+          ],
+          [
+            113.6985787,
+            -8.1715231
+          ],
+          [
+            113.6982729,
+            -8.1716214
+          ],
+          [
+            113.6982085,
+            -8.1716692
+          ],
+          [
+            113.6980771,
+            -8.1716771
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "jalan gajah mada (Banjir KFC 3 Mei 2023)",
+        "description": "",
+        "kecamatan": "KECAMATAN KALIWATES"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.690707,
+            -8.17291
+          ],
+          [
+            113.690694,
+            -8.172435
+          ],
+          [
+            113.690871,
+            -8.172042
+          ],
+          [
+            113.691048,
+            -8.171538
+          ],
+          [
+            113.691035,
+            -8.170778
+          ],
+          [
+            113.691115,
+            -8.169897
+          ],
+          [
+            113.691198,
+            -8.169533
+          ],
+          [
+            113.691136,
+            -8.169095
+          ],
+          [
+            113.691146,
+            -8.168729
+          ],
+          [
+            113.690961,
+            -8.168482
+          ],
+          [
+            113.691546,
+            -8.168179
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "penutupan saluran afour langon",
+        "description": "",
+        "kecamatan": "KECAMATAN KALIWATES"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.685298,
+          -8.1778295
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "penutupan saluran menjadi jalan paving oleh perumahan de-pisangan",
+        "description": "",
+        "kecamatan": "KECAMATAN KALIWATES"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          113.6812052,
+          -8.1837271
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Saluran pertigaan Jalan Sentot Prawirodirjo ke Selatan",
+        "description": "",
+        "kecamatan": "KECAMATAN KALIWATES"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.6909978,
+            -8.1833475
+          ],
+          [
+            113.6904426,
+            -8.1831936
+          ],
+          [
+            113.6897372,
+            -8.1830502
+          ],
+          [
+            113.6894207,
+            -8.1830661
+          ],
+          [
+            113.6889083,
+            -8.1830422
+          ],
+          [
+            113.6886889,
+            -8.1829277
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jalan Arowana depan Perumahan Kebonagung Indah",
+        "description": "",
+        "kecamatan": "KECAMATAN KALIWATES"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.6744276,
+            -8.1580441
+          ],
+          [
+            113.6751947,
+            -8.1587637
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Saluran Drainase Jalan Hos Cokroaminoto",
+        "description": "",
+        "kecamatan": "KECAMATAN KALIWATES"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            113.6945637,
+            -8.1748922
+          ],
+          [
+            113.6940085,
+            -8.1746188
+          ],
+          [
+            113.6934828,
+            -8.1743665
+          ],
+          [
+            113.6929973,
+            -8.1742975
+          ],
+          [
+            113.6927666,
+            -8.1742497
+          ]
+        ]
+      }
+    }
+  ]
+}

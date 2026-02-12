@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use App\Models\Alignment;
 use App\Models\Kecamatan;
-use Illuminate\Http\Request;
 use App\Models\RoadCondition;
 use App\Models\RoadInventory;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 
 class AlignmentController extends Controller
 {
@@ -19,9 +20,6 @@ class AlignmentController extends Controller
         return view('peta.kabupaten.index');
     }
 
-    /**
-     * ✅ DIPERBAIKI: Gunakan reference year untuk query link
-     */
     public function getCoords(Request $request)
     {
         try {
@@ -108,11 +106,6 @@ class AlignmentController extends Controller
         }
     }
 
-    /** 
-     * ✅ DIPERBAIKI TOTAL
-     * CATATAN: Endpoint ini untuk SEMUA kecamatan (tanpa filter)
-     * Jika ingin filter kecamatan, gunakan getCoordsWithSDIByKecamatan()
-     */
     public function getCoordsWithSDI(Request $request)
     {
         try {
@@ -342,9 +335,6 @@ class AlignmentController extends Controller
         }
     }
 
-    /**
-     * ✅ DIPERBAIKI: Filter STRICT seperti Dashboard
-     */
     public function getKecamatanList(Request $request)
     {
         try {
@@ -414,9 +404,6 @@ class AlignmentController extends Controller
         }
     }
 
-    /**
-     * ✅ DIPERBAIKI TOTAL dengan VALIDASI INPUT dan CACHE KEY yang BENAR
-     */
     public function getCoordsWithSDIByKecamatan(Request $request)
     {
         try {
@@ -476,7 +463,10 @@ class AlignmentController extends Controller
                             $q->whereIn('kecamatan_code', $kecamatanCodes);
                         });
                     })
-                    ->with(['link.linkMaster:id,link_no,link_name'])
+                    ->with([
+                        'link.linkMaster:id,link_no,link_name',
+                        'link.roadInventories:link_id,pave_width'
+                    ])
                     ->orderBy('link_no')
                     ->orderBy('chainage_from')
                     ->get();
@@ -631,7 +621,8 @@ class AlignmentController extends Controller
                         'sdi_final' => (float) $condition->sdi_value,
                         'category' => $condition->sdi_category,
                         'year' => (int) $condition->year,
-                        'reference_year' => (int) $condition->reference_year
+                        'reference_year' => (int) $condition->reference_year,
+                        'pave_width' => (float) ($condition->link->roadInventories->first()->pave_width ?? 6)
                     ];
                 }
 

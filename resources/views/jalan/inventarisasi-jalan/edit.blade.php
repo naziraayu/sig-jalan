@@ -490,9 +490,9 @@ $(document).ready(function() {
         // Set input Dari/Ke ke segmen terakhir + interval
         if (inventoryData.length > 0) {
             const lastSegment = inventoryData[inventoryData.length - 1];
-            const nextDari = lastSegment.chainage_to * 1000;
+            const nextDari = lastSegment.chainage_to;
             let nextKe = nextDari + interval;
-            const maxMeter = panjangRuasKm * 1000;
+            const maxMeter = panjangRuasKm;
             
             if (nextKe > maxMeter) {
                 nextKe = maxMeter;
@@ -553,8 +553,8 @@ $(document).ready(function() {
         
         // Tambah ke array
         const dataItem = {
-            chainage_from: dari / 1000,
-            chainage_to: ke / 1000,
+            chainage_from: dari,
+            chainage_to: ke,
             pave_type: tipePerkerasan,
             pave_type_text: tipeText,
             pave_width: lebar || null,
@@ -606,8 +606,8 @@ $(document).ready(function() {
         inventoryData.forEach((item, index) => {
             const row = `
                 <tr>
-                    <td>${item.chainage_from * 1000}</td>
-                    <td>${item.chainage_to * 1000}</td>
+                    <td>${item.chainage_from}</td>
+                    <td>${item.chainage_to}</td>
                     <td><small>${item.pave_type_text}</small></td>
                     <td class="text-center">${item.pave_width || '-'}</td>
                     <td class="text-center">${item.row || '-'}</td>

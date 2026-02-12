@@ -23,11 +23,22 @@
                 </div>
                 <div class="card-body p-0" style="position: relative;">
                     
-                    <!-- ✅ FILTER KECAMATAN -->
-                    <div id="kecamatanFilter" style="position: absolute; top: 10px; left: 10px; z-index: 1000; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.15); max-height: 70vh; overflow-y: auto; max-width: 250px;">
-                        <h6 style="margin: 0 0 10px 0; font-weight: bold; font-size: 13px;">
-                            <i class="fas fa-map-marker-alt"></i> Filter Kecamatan
-                        </h6>
+                    <!-- ✅ TOGGLE BUTTON KECAMATAN (Kiri Atas) -->
+                    <button id="toggleKecamatanBtn" class="btn btn-primary btn-sm" 
+                            style="position: absolute; top: 10px; left: 10px; z-index: 1001; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+                        <i class="fas fa-map-marker-alt"></i> Filter Kecamatan
+                    </button>
+
+                    <!-- ✅ FILTER KECAMATAN (Collapsible) -->
+                    <div id="kecamatanFilter" style="position: absolute; top: 50px; left: 10px; z-index: 1000; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.15); max-height: 70vh; overflow-y: auto; max-width: 250px; display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 style="margin: 0; font-weight: bold; font-size: 13px;">
+                                <i class="fas fa-map-marker-alt"></i> Filter Kecamatan
+                            </h6>
+                            <button class="btn btn-sm btn-link text-danger p-0" id="closeKecamatanFilter" style="font-size: 18px;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                         
                         <!-- Tombol Select All / Deselect All -->
                         <div class="mb-2">
@@ -55,11 +66,22 @@
                         </small>
                     </div>
 
-                    <!-- Filter Kategori SDI (Floating) -->
-                    <div id="categoryFilter" style="position: absolute; top: 10px; right: 10px; z-index: 1000; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.15);">
-                        <h6 style="margin: 0 0 10px 0; font-weight: bold; font-size: 13px;">
-                            <i class="fas fa-filter"></i> Filter Kategori SDI
-                        </h6>
+                    <!-- ✅ TOGGLE BUTTON KATEGORI SDI (Kanan Atas) -->
+                    <button id="toggleCategoryBtn" class="btn btn-primary btn-sm" 
+                            style="position: absolute; top: 10px; right: 10px; z-index: 1001; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+                        <i class="fas fa-filter"></i> Filter Kategori
+                    </button>
+
+                    <!-- Filter Kategori SDI (Collapsible) -->
+                    <div id="categoryFilter" style="position: absolute; top: 50px; right: 10px; z-index: 1000; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.15); display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 style="margin: 0; font-weight: bold; font-size: 13px;">
+                                <i class="fas fa-filter"></i> Filter Kategori SDI
+                            </h6>
+                            <button class="btn btn-sm btn-link text-danger p-0" id="closeCategoryFilter" style="font-size: 18px;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                         <div class="form-check">
                             <input class="form-check-input category-checkbox" type="checkbox" value="Baik" id="checkBaik" checked>
                             <label class="form-check-label" for="checkBaik" style="font-size: 12px;">
@@ -87,6 +109,54 @@
                                 <span style="display: inline-block; width: 20px; height: 3px; background: #e74c3c; margin-right: 5px; vertical-align: middle;"></span>
                                 Rusak Berat
                             </label>
+                        </div>
+                        <hr style="margin: 15px 0;">
+
+                        <!-- ✅ TOGGLE DATA DRAINASE 3 KECAMATAN -->
+                        <h6 style="margin: 0 0 10px 0; font-weight: bold; font-size: 13px;">
+                            <i class="fas fa-water"></i> Data Drainase & Genangan
+                        </h6>
+
+                        <!-- Kaliwates -->
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="toggleKaliwates" checked>
+                            <label class="form-check-label" for="toggleKaliwates" style="font-size: 12px;">
+                                <span style="display: inline-block; width: 22px; height: 22px; background: #2196F3; margin-right: 5px; vertical-align: middle; border-radius: 50%; text-align: center; line-height: 22px; color: white; font-size: 11px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">K</span>
+                                Kaliwates
+                            </label>
+                        </div>
+                        <small class="text-muted d-block" style="font-size: 10px; margin-top: -5px; margin-bottom: 8px; margin-left: 27px;">
+                            18 lokasi (2 titik, 15 garis, 1 area)
+                        </small>
+
+                        <!-- Patrang -->
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="togglePatrang" checked>
+                            <label class="form-check-label" for="togglePatrang" style="font-size: 12px;">
+                                <span style="display: inline-block; width: 22px; height: 22px; background: #1976D2; margin-right: 5px; vertical-align: middle; border-radius: 50%; text-align: center; line-height: 22px; color: white; font-size: 11px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">P</span>
+                                Patrang
+                            </label>
+                        </div>
+                        <small class="text-muted d-block" style="font-size: 10px; margin-top: -5px; margin-bottom: 8px; margin-left: 27px;">
+                            12 lokasi (4 titik, 8 garis)
+                        </small>
+
+                        <!-- Sumbersari -->
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="toggleSumbersari" checked>
+                            <label class="form-check-label" for="toggleSumbersari" style="font-size: 12px;">
+                                <span style="display: inline-block; width: 22px; height: 22px; background: #388E3C; margin-right: 5px; vertical-align: middle; border-radius: 50%; text-align: center; line-height: 22px; color: white; font-size: 11px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">S</span>
+                                Sumbersari
+                            </label>
+                        </div>
+                        <small class="text-muted d-block" style="font-size: 10px; margin-top: -5px; margin-left: 27px;">
+                            25 lokasi (8 titik, 17 garis)
+                        </small>
+
+                        <div class="mt-2 p-2" style="background: #e3f2fd; border-radius: 4px; border-left: 3px solid #2196F3;">
+                            <small style="font-size: 10px; color: #1565C0;">
+                                <i class="fas fa-info-circle"></i> <strong>Total: 55 lokasi</strong> data drainase dan genangan banjir
+                            </small>
                         </div>
                         <hr style="margin: 10px 0;">
                         <button class="btn btn-sm btn-primary btn-block" id="applyFilter" style="font-size: 11px;">
@@ -238,8 +308,9 @@
                             <h4><i class="fas fa-chart-bar"></i> Statistik Panjang Jalan per Kategori</h4>
                         </div>
                         <div class="card-body">
+                            <!-- ✅ BARIS 1 - Baik & Sedang -->
                             <div class="row">
-                                <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                                <div class="col-lg-6 col-md-6 col-sm-12 mb-3">
                                     <div class="card card-statistic-1" style="border-left: 4px solid #2ecc71;">
                                         <div class="card-icon" style="background-color: #2ecc71;">
                                             <i class="fas fa-road"></i>
@@ -254,7 +325,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                                <div class="col-lg-6 col-md-6 col-sm-12 mb-3">
                                     <div class="card card-statistic-1" style="border-left: 4px solid #f1c40f;">
                                         <div class="card-icon" style="background-color: #f1c40f;">
                                             <i class="fas fa-road"></i>
@@ -269,7 +340,11 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                            </div>
+
+                            <!-- ✅ BARIS 2 - Rusak Ringan & Rusak Berat -->
+                            <div class="row">
+                                <div class="col-lg-6 col-md-6 col-sm-12 mb-3">
                                     <div class="card card-statistic-1" style="border-left: 4px solid #e67e22;">
                                         <div class="card-icon" style="background-color: #e67e22;">
                                             <i class="fas fa-exclamation-triangle"></i>
@@ -284,7 +359,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                                <div class="col-lg-6 col-md-6 col-sm-12 mb-3">
                                     <div class="card card-statistic-1" style="border-left: 4px solid #e74c3c;">
                                         <div class="card-icon" style="background-color: #e74c3c;">
                                             <i class="fas fa-times-circle"></i>
@@ -295,6 +370,137 @@
                                             </div>
                                             <div class="card-body" id="stat-rusak-berat">
                                                 <span class="text-muted">-</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Estimasi Biaya Perbaikan -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4><i class="fas fa-calculator"></i> Estimasi Biaya Perbaikan</h4>
+                            <div class="card-header-action">
+                                <span class="badge badge-info">Harga per m² (lebar jalan aktual per ruas)</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Info Box -->
+                            <div class="alert alert-info mb-3" style="border-left: 4px solid #17a2b8;">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h6 class="alert-heading" style="color: #0c5460;">
+                                            <i class="fas fa-info-circle"></i> Asumsi Perhitungan
+                                        </h6>
+                                        <div class="row" style="font-size: 13px; color: #0c5460;">
+                                            <div class="col-md-3">
+                                                <strong>Lebar Jalan:</strong> Aktual per ruas (3m - 7m)
+                                            </div>
+                                            <div class="col-md-3">
+                                                <strong>Sedang:</strong> Rp 600.000/m²
+                                            </div>
+                                            <div class="col-md-3">
+                                                <strong>Rusak Ringan:</strong> Rp 800.000/m²
+                                            </div>
+                                            <div class="col-md-3">
+                                                <strong>Rusak Berat:</strong> Rp 1.000.000/m²
+                                            </div>
+                                        </div>
+                                        <small class="d-block mt-2" style="color: #856404;">
+                                            <i class="fas fa-exclamation-triangle"></i> 
+                                            <strong>Catatan:</strong> Kondisi "Baik" tidak memerlukan perbaikan. Estimasi menggunakan lebar jalan aktual dari database (default 6m jika data tidak tersedia). Estimasi ini adalah perhitungan kasar dan dapat berbeda dengan harga aktual di lapangan.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ✅ LAYOUT 2×2 (2 baris, 2 kolom per baris) -->
+                            <div class="row">
+                                <!-- BARIS 1 -->
+                                <!-- Sedang -->
+                                <div class="col-lg-6 col-md-6 col-sm-12 mb-3">
+                                    <div class="card card-statistic-1" style="border-left: 4px solid #f1c40f;">
+                                        <div class="card-icon" style="background-color: #f1c40f;">
+                                            <i class="fas fa-money-bill-wave"></i>
+                                        </div>
+                                        <div class="card-wrap">
+                                            <div class="card-header">
+                                                <h4>Sedang (Rp 600.000/m²)</h4>
+                                            </div>
+                                            <div class="card-body">
+                                                <div id="cost-sedang" style="font-size: 18px; font-weight: 700; color: #333;">
+                                                    <span class="text-muted">-</span>
+                                                </div>
+                                                <small class="text-muted" id="area-sedang">Luas: - m²</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Rusak Ringan -->
+                                <div class="col-lg-6 col-md-6 col-sm-12 mb-3">
+                                    <div class="card card-statistic-1" style="border-left: 4px solid #e67e22;">
+                                        <div class="card-icon" style="background-color: #e67e22;">
+                                            <i class="fas fa-money-bill-wave"></i>
+                                        </div>
+                                        <div class="card-wrap">
+                                            <div class="card-header">
+                                                <h4>Rusak Ringan (Rp 800.000/m²)</h4>
+                                            </div>
+                                            <div class="card-body">
+                                                <div id="cost-rusak-ringan" style="font-size: 18px; font-weight: 700; color: #333;">
+                                                    <span class="text-muted">-</span>
+                                                </div>
+                                                <small class="text-muted" id="area-rusak-ringan">Luas: - m²</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <!-- BARIS 2 -->
+                                <!-- Rusak Berat -->
+                                <div class="col-lg-6 col-md-6 col-sm-12 mb-3">
+                                    <div class="card card-statistic-1" style="border-left: 4px solid #e74c3c;">
+                                        <div class="card-icon" style="background-color: #e74c3c;">
+                                            <i class="fas fa-money-bill-wave"></i>
+                                        </div>
+                                        <div class="card-wrap">
+                                            <div class="card-header">
+                                                <h4>Rusak Berat (Rp 1.000.000/m²)</h4>
+                                            </div>
+                                            <div class="card-body">
+                                                <div id="cost-rusak-berat" style="font-size: 18px; font-weight: 700; color: #333;">
+                                                    <span class="text-muted">-</span>
+                                                </div>
+                                                <small class="text-muted" id="area-rusak-berat">Luas: - m²</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Total Biaya -->
+                                <div class="col-lg-6 col-md-6 col-sm-12 mb-3">
+                                    <div class="card card-statistic-1" style="border-left: 4px solid #6777ef; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                        <div class="card-icon" style="background-color: rgba(255,255,255,0.3);">
+                                            <i class="fas fa-calculator" style="color: white;"></i>
+                                        </div>
+                                        <div class="card-wrap">
+                                            <div class="card-header">
+                                                <h4 style="color: white; opacity: 0.9;">Total Estimasi Biaya</h4>
+                                            </div>
+                                            <div class="card-body">
+                                                <div id="cost-total" style="font-size: 18px; font-weight: 700; color: white;">
+                                                    <span style="opacity: 0.7;">-</span>
+                                                </div>
+                                                <small style="color: white; opacity: 0.8;" id="area-total">Total Luas: - m²</small>
                                             </div>
                                         </div>
                                     </div>
@@ -442,6 +648,11 @@
             transform: translateY(0);
         }
     }
+
+    /* ✅ Smooth animation untuk toggle filters */
+    #kecamatanFilter, #categoryFilter {
+        transition: all 0.3s ease-in-out;
+    }
 </style>
 @endpush
 
@@ -450,7 +661,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-// ==================== ✅ JAVASCRIPT DENGAN INFO CARD ====================
+// ==================== ✅ JAVASCRIPT DENGAN TOGGLE FILTERS ====================
 
 document.addEventListener("DOMContentLoaded", function () {
     // Initialize map
@@ -481,6 +692,336 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // ✅ Load list kecamatan saat halaman load
     loadKecamatanList();
+
+    // ==================== ✅ DATA DRAINASE 3 KECAMATAN ====================
+
+    // Variable untuk data drainase
+    let dataKaliwates = [];
+    let dataPatrang = [];
+    let dataSumbersari = [];
+
+    let kaliwatesLayer = L.layerGroup(); 
+    let patrangLayer = L.layerGroup(); 
+    let sumbersariLayer = L.layerGroup();
+
+    let showKaliwates = true;
+    let showPatrang = true;
+    let showSumbersari = true;
+
+    // ✅ LOAD DATA KALIWATES
+    function loadKaliwatesData() {
+        fetch('/data/kaliwates.json')
+            .then(response => {
+                if (!response.ok) throw new Error('File JSON Kaliwates tidak ditemukan');
+                return response.json();
+            })
+            .then(geojson => {
+                dataKaliwates = geojson.features;
+                renderKaliwatesLayer();
+                updateLegendCount();
+                console.log(`✅ ${geojson.features.length} features Kaliwates berhasil dimuat`);
+            })
+            .catch(error => {
+                console.error('❌ Error loading Kaliwates:', error);
+                console.warn('💡 Pastikan file kaliwates.json ada di public/data/');
+            });
+    }
+
+    // ✅ LOAD DATA PATRANG
+    function loadPatrangData() {
+        fetch('/data/patrang.json')
+            .then(response => {
+                if (!response.ok) throw new Error('File JSON Patrang tidak ditemukan');
+                return response.json();
+            })
+            .then(geojson => {
+                dataPatrang = geojson.features;
+                renderPatrangLayer();
+                updateLegendCount();
+                console.log(`✅ ${geojson.features.length} features Patrang berhasil dimuat`);
+            })
+            .catch(error => {
+                console.error('❌ Error loading Patrang:', error);
+                console.warn('💡 Pastikan file patrang.json ada di public/data/');
+            });
+    }
+
+    // ✅ LOAD DATA SUMBERSARI
+    function loadSumbersariData() {
+        fetch('/data/sumbersari.json')
+            .then(response => {
+                if (!response.ok) throw new Error('File JSON Sumbersari tidak ditemukan');
+                return response.json();
+            })
+            .then(geojson => {
+                dataSumbersari = geojson.features;
+                renderSumbersariLayer();
+                updateLegendCount();
+                console.log(`✅ ${geojson.features.length} features Sumbersari berhasil dimuat`);
+            })
+            .catch(error => {
+                console.error('❌ Error loading Sumbersari:', error);
+                console.warn('💡 Pastikan file sumbersari.json ada di public/data/');
+            });
+    }
+
+    // ✅ RENDER KALIWATES LAYER (Biru Muda)
+    function renderKaliwatesLayer() {
+        kaliwatesLayer.clearLayers();
+        
+        const kaliwatesStyle = {
+            color: '#2196F3',
+            weight: 4,
+            opacity: 0.8,
+            fillColor: '#2196F3',
+            fillOpacity: 0.3
+        };
+        
+        const kaliwatesIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: '<div style="background-color: #2196F3; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3); font-size: 12px; color: white; font-weight: bold;">K</div>',
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+        });
+        
+        dataKaliwates.forEach(feature => {
+            const props = feature.properties;
+            const geom = feature.geometry;
+            
+            const popupContent = `
+                <div style="font-family: Arial, sans-serif;">
+                    <strong style="font-size: 14px; color: #2196F3;">
+                        🌊 ${props.name}
+                    </strong>
+                    <hr style="margin: 8px 0; border-color: #ddd;">
+                    <table style="width: 100%; font-size: 12px;">
+                        <tr>
+                            <td style="padding: 3px 0;"><strong>Kecamatan:</strong></td>
+                            <td>Kaliwates</td>
+                        </tr>
+                        ${props.keterangan ? `
+                        <tr>
+                            <td style="padding: 3px 0; vertical-align: top;"><strong>Keterangan:</strong></td>
+                            <td>${props.keterangan}</td>
+                        </tr>
+                        ` : ''}
+                        <tr>
+                            <td style="padding: 3px 0;"><strong>Tipe:</strong></td>
+                            <td>${geom.type}</td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+            
+            if (geom.type === 'Point') {
+                const marker = L.marker([geom.coordinates[1], geom.coordinates[0]], { 
+                    icon: kaliwatesIcon 
+                }).bindPopup(popupContent);
+                kaliwatesLayer.addLayer(marker);
+                
+            } else if (geom.type === 'LineString') {
+                const coords = geom.coordinates.map(c => [c[1], c[0]]);
+                const polyline = L.polyline(coords, kaliwatesStyle).bindPopup(popupContent);
+                kaliwatesLayer.addLayer(polyline);
+                
+            } else if (geom.type === 'Polygon') {
+                const coords = geom.coordinates[0].map(c => [c[1], c[0]]);
+                const polygon = L.polygon(coords, kaliwatesStyle).bindPopup(popupContent);
+                kaliwatesLayer.addLayer(polygon);
+            }
+        });
+        
+        if (showKaliwates) kaliwatesLayer.addTo(map);
+        console.log(`📍 ${dataKaliwates.length} features Kaliwates ditampilkan`);
+    }
+
+    // ✅ RENDER PATRANG LAYER (Biru Tua)
+    function renderPatrangLayer() {
+        patrangLayer.clearLayers();
+        
+        const patrangStyle = {
+            color: '#1976D2',
+            weight: 4,
+            opacity: 0.8,
+            fillColor: '#1976D2',
+            fillOpacity: 0.3
+        };
+        
+        const patrangIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: '<div style="background-color: #1976D2; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3); font-size: 12px; color: white; font-weight: bold;">P</div>',
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+        });
+        
+        dataPatrang.forEach(feature => {
+            const props = feature.properties;
+            const geom = feature.geometry;
+            
+            const popupContent = `
+                <div style="font-family: Arial, sans-serif;">
+                    <strong style="font-size: 14px; color: #1976D2;">
+                        🌊 ${props.name}
+                    </strong>
+                    <hr style="margin: 8px 0; border-color: #ddd;">
+                    <table style="width: 100%; font-size: 12px;">
+                        <tr>
+                            <td style="padding: 3px 0;"><strong>Kecamatan:</strong></td>
+                            <td>Patrang</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 3px 0;"><strong>Tipe:</strong></td>
+                            <td>${geom.type}</td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+            
+            if (geom.type === 'Point') {
+                const marker = L.marker([geom.coordinates[1], geom.coordinates[0]], { 
+                    icon: patrangIcon 
+                }).bindPopup(popupContent);
+                patrangLayer.addLayer(marker);
+                
+            } else if (geom.type === 'LineString') {
+                const coords = geom.coordinates.map(c => [c[1], c[0]]);
+                const polyline = L.polyline(coords, patrangStyle).bindPopup(popupContent);
+                patrangLayer.addLayer(polyline);
+                
+            } else if (geom.type === 'Polygon') {
+                const coords = geom.coordinates[0].map(c => [c[1], c[0]]);
+                const polygon = L.polygon(coords, patrangStyle).bindPopup(popupContent);
+                patrangLayer.addLayer(polygon);
+            }
+        });
+        
+        if (showPatrang) patrangLayer.addTo(map);
+        console.log(`📍 ${dataPatrang.length} features Patrang ditampilkan`);
+    }
+
+    // ✅ RENDER SUMBERSARI LAYER (Hijau)
+    function renderSumbersariLayer() {
+        sumbersariLayer.clearLayers();
+        
+        const sumbersariStyle = {
+            color: '#388E3C',
+            weight: 4,
+            opacity: 0.8,
+            fillColor: '#388E3C',
+            fillOpacity: 0.3
+        };
+        
+        const sumbersariIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: '<div style="background-color: #388E3C; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3); font-size: 12px; color: white; font-weight: bold;">S</div>',
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+        });
+        
+        dataSumbersari.forEach(feature => {
+            const props = feature.properties;
+            const geom = feature.geometry;
+            
+            const popupContent = `
+                <div style="font-family: Arial, sans-serif;">
+                    <strong style="font-size: 14px; color: #388E3C;">
+                        🌊 ${props.name}
+                    </strong>
+                    <hr style="margin: 8px 0; border-color: #ddd;">
+                    <table style="width: 100%; font-size: 12px;">
+                        <tr>
+                            <td style="padding: 3px 0;"><strong>Kecamatan:</strong></td>
+                            <td>Sumbersari</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 3px 0;"><strong>Tipe:</strong></td>
+                            <td>${geom.type}</td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+            
+            if (geom.type === 'Point') {
+                const marker = L.marker([geom.coordinates[1], geom.coordinates[0]], { 
+                    icon: sumbersariIcon 
+                }).bindPopup(popupContent);
+                sumbersariLayer.addLayer(marker);
+                
+            } else if (geom.type === 'LineString') {
+                const coords = geom.coordinates.map(c => [c[1], c[0]]);
+                const polyline = L.polyline(coords, sumbersariStyle).bindPopup(popupContent);
+                sumbersariLayer.addLayer(polyline);
+                
+            } else if (geom.type === 'Polygon') {
+                const coords = geom.coordinates[0].map(c => [c[1], c[0]]);
+                const polygon = L.polygon(coords, sumbersariStyle).bindPopup(popupContent);
+                sumbersariLayer.addLayer(polygon);
+            }
+        });
+        
+        if (showSumbersari) sumbersariLayer.addTo(map);
+        console.log(`📍 ${dataSumbersari.length} features Sumbersari ditampilkan`);
+    }
+
+    // ✅ TOGGLE FUNCTIONS
+    function toggleKaliwatesLayer() {
+        if (showKaliwates && !map.hasLayer(kaliwatesLayer)) {
+            kaliwatesLayer.addTo(map);
+        } else if (!showKaliwates && map.hasLayer(kaliwatesLayer)) {
+            map.removeLayer(kaliwatesLayer);
+        }
+    }
+
+    function togglePatrangLayer() {
+        if (showPatrang && !map.hasLayer(patrangLayer)) {
+            patrangLayer.addTo(map);
+        } else if (!showPatrang && map.hasLayer(patrangLayer)) {
+            map.removeLayer(patrangLayer);
+        }
+    }
+
+    function toggleSumbersariLayer() {
+        if (showSumbersari && !map.hasLayer(sumbersariLayer)) {
+            sumbersariLayer.addTo(map);
+        } else if (!showSumbersari && map.hasLayer(sumbersariLayer)) {
+            map.removeLayer(sumbersariLayer);
+        }
+    }
+
+    // ✅ UPDATE LEGEND COUNT
+    function updateLegendCount() {
+        // Update legend jika sudah ada
+        if (legendControl) {
+            map.removeControl(legendControl);
+            addLegend();
+        }
+    }
+
+    // ==================== ✅ TOGGLE BUTTON EVENT LISTENERS ====================
+    
+    // Toggle Kecamatan Filter
+    $('#toggleKecamatanBtn').on('click', function() {
+        $('#kecamatanFilter').slideToggle(300);
+        $(this).toggleClass('active');
+    });
+
+    // Close Kecamatan Filter
+    $('#closeKecamatanFilter').on('click', function() {
+        $('#kecamatanFilter').slideUp(300);
+        $('#toggleKecamatanBtn').removeClass('active');
+    });
+
+    // Toggle Category Filter
+    $('#toggleCategoryBtn').on('click', function() {
+        $('#categoryFilter').slideToggle(300);
+        $(this).toggleClass('active');
+    });
+
+    // Close Category Filter
+    $('#closeCategoryFilter').on('click', function() {
+        $('#categoryFilter').slideUp(300);
+        $('#toggleCategoryBtn').removeClass('active');
+    });
 
     // ==================== EVENT LISTENERS ====================
     
@@ -520,6 +1061,23 @@ document.addEventListener("DOMContentLoaded", function () {
         applyFilter();
     });
 
+    // ✅ TOGGLE KALIWATES
+    $('#toggleKaliwates').on('change', function() {
+        showKaliwates = $(this).is(':checked');
+        toggleKaliwatesLayer();
+    });
+
+    // ✅ TOGGLE PATRANG
+    $('#togglePatrang').on('change', function() {
+        showPatrang = $(this).is(':checked');
+        togglePatrangLayer();
+    });
+
+    // ✅ TOGGLE SUMBERSARI
+    $('#toggleSumbersari').on('change', function() {
+        showSumbersari = $(this).is(':checked');
+        toggleSumbersariLayer();
+    });
     // ==================== FUNCTIONS ====================
 
     /**
@@ -883,13 +1441,84 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     /**
-     * Update statistik panjang
+     * Update statistik panjang DAN estimasi biaya (dengan lebar jalan per segmen)
      */
     function updateLengthStatistics(lengthStats) {
-        $('#stat-baik').html((lengthStats['Baik'] / 1000).toFixed(2) + ' KM');
-        $('#stat-sedang').html((lengthStats['Sedang'] / 1000).toFixed(2) + ' KM');
-        $('#stat-rusak-ringan').html((lengthStats['Rusak Ringan'] / 1000).toFixed(2) + ' KM');
-        $('#stat-rusak-berat').html((lengthStats['Rusak Berat'] / 1000).toFixed(2) + ' KM');
+        // Update panjang (existing)
+        $('#stat-baik').html((lengthStats['Baik'] / 1000).toFixed(2) + ' Km');
+        $('#stat-sedang').html((lengthStats['Sedang'] / 1000).toFixed(2) + ' Km');
+        $('#stat-rusak-ringan').html((lengthStats['Rusak Ringan'] / 1000).toFixed(2) + ' Km');
+        $('#stat-rusak-berat').html((lengthStats['Rusak Berat'] / 1000).toFixed(2) + ' Km');
+
+        // ===== ESTIMASI BIAYA DENGAN LEBAR JALAN AKTUAL =====
+        const HARGA_PER_M2 = {
+            'Sedang': 600000,        // Rp 600.000/m²
+            'Rusak Ringan': 800000,  // Rp 800.000/m²
+            'Rusak Berat': 1000000   // Rp 1.000.000/m²
+        };
+
+        // Hitung luas dan biaya per kategori berdasarkan lebar jalan aktual
+        let luasSedang = 0;
+        let luasRusakRingan = 0;
+        let luasRusakBerat = 0;
+
+        // Loop semua segments yang ditampilkan
+        const filteredSegments = allSegments.filter(segment => 
+            selectedCategories.includes(segment.category)
+        );
+
+        filteredSegments.forEach(segment => {
+            const panjang = segment.chainage_to - segment.chainage_from; // dalam meter
+            const lebar = segment.pave_width || 6; // gunakan pave_width atau default 6m
+            const luas = panjang * lebar; // m²
+
+            if (segment.category === 'Sedang') {
+                luasSedang += luas;
+            } else if (segment.category === 'Rusak Ringan') {
+                luasRusakRingan += luas;
+            } else if (segment.category === 'Rusak Berat') {
+                luasRusakBerat += luas;
+            }
+        });
+
+        // Hitung biaya
+        const biayaSedang = luasSedang * HARGA_PER_M2['Sedang'];
+        const biayaRusakRingan = luasRusakRingan * HARGA_PER_M2['Rusak Ringan'];
+        const biayaRusakBerat = luasRusakBerat * HARGA_PER_M2['Rusak Berat'];
+        const biayaTotal = biayaSedang + biayaRusakRingan + biayaRusakBerat;
+
+        // ✅ FORMAT RUPIAH LENGKAP (TANPA SINGKATAN)
+        function formatRupiah(angka) {
+            if (angka === 0) return 'Rp 0';
+            
+            // Format dengan pemisah ribuan (titik untuk Indonesia)
+            return 'Rp ' + angka.toLocaleString('id-ID', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            });
+        }
+
+        // Update UI - Biaya
+        $('#cost-sedang').html(formatRupiah(biayaSedang));
+        $('#cost-rusak-ringan').html(formatRupiah(biayaRusakRingan));
+        $('#cost-rusak-berat').html(formatRupiah(biayaRusakBerat));
+        $('#cost-total').html(formatRupiah(biayaTotal));
+
+        // Update UI - Luas
+        $('#area-sedang').html(`Luas: ${luasSedang.toLocaleString('id-ID', {maximumFractionDigits: 0})} m²`);
+        $('#area-rusak-ringan').html(`Luas: ${luasRusakRingan.toLocaleString('id-ID', {maximumFractionDigits: 0})} m²`);
+        $('#area-rusak-berat').html(`Luas: ${luasRusakBerat.toLocaleString('id-ID', {maximumFractionDigits: 0})} m²`);
+        $('#area-total').html(`Total Luas: ${(luasSedang + luasRusakRingan + luasRusakBerat).toLocaleString('id-ID', {maximumFractionDigits: 0})} m²`);
+
+        console.log('💰 Estimasi Biaya (dengan pave_width aktual):', {
+            luas_sedang: luasSedang.toFixed(0) + ' m²',
+            luas_rusak_ringan: luasRusakRingan.toFixed(0) + ' m²',
+            luas_rusak_berat: luasRusakBerat.toFixed(0) + ' m²',
+            biaya_sedang: formatRupiah(biayaSedang),
+            biaya_rusak_ringan: formatRupiah(biayaRusakRingan),
+            biaya_rusak_berat: formatRupiah(biayaRusakBerat),
+            biaya_total: formatRupiah(biayaTotal)
+        });
     }
 
     /**
@@ -919,12 +1548,49 @@ document.addEventListener("DOMContentLoaded", function () {
                     </div>
                 `;
             });
+
+            // ✅ TAMBAHAN: Section Data Drainase
+            div.innerHTML += '<div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">';
+            div.innerHTML += '<h4><i class="fas fa-water"></i> Data Drainase</h4>';
+            
+            if (dataKaliwates.length > 0) {
+                div.innerHTML += `
+                    <div class="legend-item">
+                        <span style="display: inline-block; width: 20px; height: 20px; margin-right: 8px; border-radius: 50%; background: #2196F3; color: white; text-align: center; line-height: 20px; font-size: 10px; font-weight: bold;">K</span>
+                        <span>Kaliwates (${dataKaliwates.length})</span>
+                    </div>
+                `;
+            }
+            
+            if (dataPatrang.length > 0) {
+                div.innerHTML += `
+                    <div class="legend-item">
+                        <span style="display: inline-block; width: 20px; height: 20px; margin-right: 8px; border-radius: 50%; background: #1976D2; color: white; text-align: center; line-height: 20px; font-size: 10px; font-weight: bold;">P</span>
+                        <span>Patrang (${dataPatrang.length})</span>
+                    </div>
+                `;
+            }
+            
+            if (dataSumbersari.length > 0) {
+                div.innerHTML += `
+                    <div class="legend-item">
+                        <span style="display: inline-block; width: 20px; height: 20px; margin-right: 8px; border-radius: 50%; background: #388E3C; color: white; text-align: center; line-height: 20px; font-size: 10px; font-weight: bold;">S</span>
+                        <span>Sumbersari (${dataSumbersari.length})</span>
+                    </div>
+                `;
+            }
+            
+            div.innerHTML += '</div>';
             
             return div;
         };
         
         legendControl.addTo(map);
     }
+
+    loadKaliwatesData();
+    loadPatrangData();
+    loadSumbersariData();
 });
 </script>
 @endpush

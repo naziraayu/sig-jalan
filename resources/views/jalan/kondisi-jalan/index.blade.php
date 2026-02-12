@@ -347,14 +347,16 @@
                                         <tr>
                                             <th class="text-center">No</th>
                                             <th>Chainage</th>
-                                            <th class="text-center">Tahun</th>
-                                            <th class="text-center">Lebar Jalan (m)</th>
+                                            
+                                            <th class="text-center">SDI1</th>
+                                            <th class="text-center">SDI2</th>
+                                            <th class="text-center">SDI3</th>
+                                            <th class="text-center">SDI4</th>
                                             <th class="text-center">SDI Final</th>
                                             <th class="text-center">Kategori</th>
                                             <th class="text-center">Aksi</th>
                                         </tr>
-                                        </thead>
-
+                                    </thead>
                                     <tbody>
                         `;
 
@@ -386,19 +388,18 @@
                                 <tr>
                                     <td class="text-center">${index + 1}</td>
                                     <td><strong>${item.chainage_from}</strong> - <strong>${item.chainage_to}</strong></td>
-                                    <td class="text-center">${item.year}</td>
-                                    <td class="text-center">${(item.pave_width ?? 0).toFixed(2)}</td>
-
+                                    <td class="text-center">${(item.sdi1 ?? 0).toFixed(2)}</td>
+                                    <td class="text-center">${(item.sdi2 ?? 0).toFixed(2)}</td>
+                                    <td class="text-center">${(item.sdi3 ?? 0).toFixed(2)}</td>
+                                    <td class="text-center font-weight-bold text-info">${(item.sdi_final ?? 0).toFixed(2)}</td>
                                     <td class="text-center font-weight-bold text-primary">
                                         ${(item.sdi_final ?? 0).toFixed(2)}
                                     </td>
-
                                     <td class="text-center">
                                         <span class="${badgeClass}" style="${badgeStyle}">
                                             <i class="fas ${iconClass}"></i> ${item.sdi_category}
                                         </span>
                                     </td>
-
                                     <td class="text-center">
                                         <a href="/kondisi-jalan/show/${item.link_no}" class="btn btn-sm btn-info" title="Lihat Detail Ruas">
                                             <i class="fas fa-eye"></i>
@@ -455,7 +456,7 @@
                                     text: '<i class="fas fa-file-excel"></i> Export Excel',
                                     className: 'btn btn-success btn-sm',
                                     exportOptions: {
-                                        columns: [0,1,2,3,4,5]
+                                        columns: [0,1,2,3,4,5,6,7,8]
                                     }
                                 },
                                 {
@@ -463,7 +464,7 @@
                                     text: '<i class="fas fa-file-pdf"></i> Export PDF',
                                     className: 'btn btn-danger btn-sm',
                                     exportOptions: {
-                                        columns: [0,1,2,3,4,5]
+                                        columns: [0,1,2,3,4,5,6,7,8]
                                     },
                                     orientation: 'landscape',
                                     pageSize: 'A4'
@@ -473,7 +474,7 @@
                                     text: '<i class="fas fa-print"></i> Print',
                                     className: 'btn btn-info btn-sm',
                                     exportOptions: {
-                                        columns: [0,1,2,3,4,5]
+                                        columns: [0,1,2,3,4,5,6,7,8]
                                     }
                                 }
                             ]

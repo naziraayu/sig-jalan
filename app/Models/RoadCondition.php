@@ -2,8 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\CodeDrainCondition;
+use App\Models\CodeFoothpathCondition;
+use App\Models\CodeShoulderCondition;
+use App\Models\CodeSlopeCondition;
+use App\Models\Kabupaten;
+use App\Models\Link;
+use App\Models\LinkMaster;
+use App\Models\Province;
+use App\Models\RoadInventory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class RoadCondition extends Model
 {

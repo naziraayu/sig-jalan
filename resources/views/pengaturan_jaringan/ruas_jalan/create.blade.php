@@ -289,8 +289,15 @@ $(document).ready(function() {
                 year: year
             },
             success: function(response) {
+                console.log('Response:', response);
+                console.log('Link No:', response.link_no);
+                console.log('Link Code:', response.link_code);
+                
                 $('#link_no').val(response.link_no);
                 $('#link_code').val(response.link_code);
+
+                console.log('Link No setelah set:', $('#link_no').val());
+                console.log('Link Code setelah set:', $('#link_code').val());
                 
                 // Show notification
                 if (typeof iziToast !== 'undefined') {
@@ -304,6 +311,7 @@ $(document).ready(function() {
             },
             error: function(xhr) {
                 console.error('Error generating codes:', xhr);
+                console.error('Response Text:', xhr.responseText);
                 
                 let errorMsg = 'Gagal generate kode ruas';
                 try {

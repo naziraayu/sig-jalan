@@ -2,6 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\CodeDrainType;
+use App\Models\CodeImpassable;
+use App\Models\CodeLandUse;
+use App\Models\CodePavementType;
+use App\Models\CodeTerrain;
+use App\Models\Kabupaten;
+use App\Models\Link;
+use App\Models\LinkMaster;
+use App\Models\Province;
 use Illuminate\Database\Eloquent\Model;
 
 class RoadInventory extends Model
@@ -42,8 +51,8 @@ class RoadInventory extends Model
     protected $casts = [
         'year' => 'integer',
         'impassable' => 'boolean',
-        'chainage_from' => 'decimal:2',
-        'chainage_to' => 'decimal:2',
+        'chainage_from' => 'integer',
+        'chainage_to' => 'integer',
     ];
 
     // 🔗 Relasi ke Link

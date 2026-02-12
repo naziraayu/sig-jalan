@@ -231,7 +231,7 @@
                             </div>
                             <div class="card-body">
                                 {{-- Chainage (Selalu ada) --}}
-                                <div class="row mb-3">
+                                <div class="row mb-6">
                                     <div class="col-6">
                                         <div class="form-group">
                                             <label class="font-weight-bold">Dari (km)</label>
@@ -251,46 +251,7 @@
                                 {{-- ========== FORM ASPAL ========== --}}
                                 <div id="formAspal" class="form-kondisi">
                                     
-                                    {{-- CARD 1: KERUSAKAN PERMUKAAN --}}
-                                    <div class="card border mb-3">
-                                        <div class="card-header bg-light">
-                                            <strong>Kerusakan Permukaan</strong>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label>Susunan</label>
-                                                        <input type="text" class="form-control" list="datalist-susunan" data-field="roughness" placeholder="Ketik atau pilih...">
-                                                        <datalist id="datalist-susunan">
-                                                            <option value="1">1 - Baik/rapat</option>
-                                                            <option value="2">2 - Kasar</option>
-                                                        </datalist>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label>Kegemukan (m²)</label>
-                                                        <input type="text" class="form-control dropdown-with-value" list="datalist-percentage-aspal" data-field="bleeding_area" placeholder="Ketik atau pilih...">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label>Agregat Lepas (m²)</label>
-                                                        <input type="text" class="form-control dropdown-with-value" list="datalist-percentage-aspal" data-field="ravelling_area" placeholder="Ketik atau pilih...">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label>Disintegrasi (m²)</label>
-                                                        <input type="text" class="form-control dropdown-with-value" list="datalist-percentage-aspal" data-field="desintegration_area" placeholder="Ketik atau pilih...">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label>Tambalan (m²)</label>
-                                                        <input type="text" class="form-control dropdown-with-value" list="datalist-percentage-aspal" data-field="patching_area" placeholder="Ketik atau pilih...">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {{-- DATALIST PERCENTAGE ASPAL (Reusable) - Tambah 0 = 0 --}}
+                                    {{-- DATALIST PERCENTAGE ASPAL (Reusable) --}}
                                     <datalist id="datalist-percentage-aspal">
                                         <option value="0">0</option>
                                         <option value="18">0 - 5%</option>
@@ -302,76 +263,6 @@
                                         <option value="525">50% ></option>
                                     </datalist>
 
-                                    {{-- CARD 2: RETAK-RETAK --}}
-                                    <div class="card border mb-3">
-                                        <div class="card-header bg-light">
-                                            <strong>Retak-Retak</strong>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-3">
-                                                    <div class="form-group">
-                                                        <label>Jenis Retak</label>
-                                                        <input type="text" class="form-control" list="datalist-jenis-retak" data-field="crack_type" placeholder="Ketik atau pilih...">
-                                                        <datalist id="datalist-jenis-retak">
-                                                            <option value="1">1 - Tidak Ada</option>
-                                                            <option value="2">2 - Tidak berhubungan</option>
-                                                            <option value="3">3 - Saling berhubungan (berbidang luas)</option>
-                                                            <option value="4">4 - Saling berhubungan (berbidang sempit)</option>
-                                                        </datalist>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <div class="form-group">
-                                                        <label>Rata² Lebar Retak</label>
-                                                        <input type="text" class="form-control" list="datalist-lebar-retak" data-field="crack_width" placeholder="Ketik atau pilih...">
-                                                        <datalist id="datalist-lebar-retak">
-                                                            <option value="1">1 - Tidak Ada</option>
-                                                            <option value="2">2 - < 1 mm</option>
-                                                            <option value="3">3 - 1 - 5 mm</option>
-                                                            <option value="4">4 - > 5 mm</option>
-                                                        </datalist>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <div class="form-group">
-                                                        <label>Luas Retak Lain (m²)</label>
-                                                        <input type="text" class="form-control dropdown-with-value" list="datalist-percentage-aspal" data-field="oth_crack_area" placeholder="Ketik atau pilih...">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <div class="form-group">
-                                                        <label>Retak Turun (m²)</label>
-                                                        <input type="text" class="form-control dropdown-with-value" list="datalist-percentage-aspal" data-field="crack_dep_area" placeholder="Ketik atau pilih...">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {{-- CARD 3: RUSAK TEPI --}}
-                                    <div class="card border mb-3">
-                                        <div class="card-header bg-light">
-                                            <strong>Rusak Tepi</strong>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label>Rusak Tepi Kiri (m²)</label>
-                                                        <input type="text" class="form-control" list="datalist-rusak-tepi" data-field="edge_damage_area" placeholder="Ketik atau pilih...">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label>Rusak Tepi Kanan (m²)</label>
-                                                        <input type="text" class="form-control" list="datalist-rusak-tepi" data-field="edge_damage_area_r" placeholder="Ketik atau pilih...">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
                                     {{-- DATALIST RUSAK TEPI --}}
                                     <datalist id="datalist-rusak-tepi">
                                         <option value="0">Tidak Ada (0%)</option>
@@ -379,87 +270,226 @@
                                         <option value="18">Berat (>30%)</option>
                                     </datalist>
 
-                                    {{-- CARD 4: LUBANG --}}
-                                    <div class="card border mb-3">
-                                        <div class="card-header bg-light">
-                                            <strong>Lubang</strong>
+                                    {{-- ROW 1: KERUSAKAN PERMUKAAN & RETAK-RETAK --}}
+                                    <div class="row mb-3">
+                                        {{-- CARD: KERUSAKAN PERMUKAAN --}}
+                                        <div class="col-md-6">
+                                            <div class="card border h-100">
+                                                <div class="card-header bg-light">
+                                                    <strong>Kerusakan Permukaan</strong>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label>Susunan</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-susunan" data-field="roughness" placeholder="Pilih...">
+                                                                <datalist id="datalist-susunan">
+                                                                    <option value="1">1 - Baik/rapat</option>
+                                                                    <option value="2">2 - Kasar</option>
+                                                                </datalist>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label>Kegemukan (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-percentage-aspal" data-field="bleeding_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label>Agregat Lepas (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-percentage-aspal" data-field="ravelling_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label>Disintegrasi (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-percentage-aspal" data-field="desintegration_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label>Tambalan (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-percentage-aspal" data-field="patching_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-4">
-                                                    <div class="form-group">
-                                                        <label>Jumlah Lubang</label>
-                                                        <input type="text" class="form-control" list="datalist-jumlah-lubang" data-field="pothole_count" placeholder="Ketik atau pilih...">
-                                                        <datalist id="datalist-jumlah-lubang">
-                                                            <option value="0">0</option>
-                                                            <option value="1">1</option>
-                                                            <option value="2">2</option>
-                                                            <option value="3">3</option>
-                                                            <option value="4">4</option>
-                                                            <option value="5">5</option>
-                                                            <option value="6">6</option>
-                                                            <option value="7">7</option>
-                                                            <option value="8">>7</option>
-                                                        </datalist>
-                                                    </div>
+
+                                        {{-- CARD: RETAK-RETAK --}}
+                                        <div class="col-md-6">
+                                            <div class="card border h-100">
+                                                <div class="card-header bg-light">
+                                                    <strong>Retak-Retak</strong>
                                                 </div>
-                                                <div class="col-md-4">
-                                                    <div class="form-group">
-                                                        <label>Ukuran Lubang</label>
-                                                        <input type="text" class="form-control" list="datalist-ukuran-lubang" data-field="pothole_size" placeholder="Ketik atau pilih...">
-                                                        <datalist id="datalist-ukuran-lubang">
-                                                            <option value="1">1 - Tidak Ada</option>
-                                                            <option value="2">2 - Kecil-dangkal</option>
-                                                            <option value="3">3 - Kecil-dalam</option>
-                                                            <option value="4">4 - Besar-dangkal</option>
-                                                            <option value="5">5 - Besar-dalam</option>
-                                                        </datalist>
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label>Jenis Retak</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-jenis-retak" data-field="crack_type" placeholder="Pilih...">
+                                                                <datalist id="datalist-jenis-retak">
+                                                                    <option value="1">1 - Tidak Ada</option>
+                                                                    <option value="2">2 - Tidak berhubungan</option>
+                                                                    <option value="3">3 - Saling berhubungan (luas)</option>
+                                                                    <option value="4">4 - Saling berhubungan (sempit)</option>
+                                                                </datalist>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label>Rata² Lebar Retak</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-lebar-retak" data-field="crack_width" placeholder="Pilih...">
+                                                                <datalist id="datalist-lebar-retak">
+                                                                    <option value="1">1 - Tidak Ada</option>
+                                                                    <option value="2">2 - < 1 mm</option>
+                                                                    <option value="3">3 - 1 - 5 mm</option>
+                                                                    <option value="4">4 - > 5 mm</option>
+                                                                </datalist>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <div class="form-group">
-                                                        <label>Luas Lubang (m²)</label>
-                                                        <input type="text" class="form-control" list="datalist-luas-lubang" data-field="pothole_area" placeholder="Ketik atau pilih...">
-                                                        <datalist id="datalist-luas-lubang">
-                                                            <option value="0">0</option>
-                                                            <option value="10">0 - 3%</option>
-                                                            <option value="28">3 - 5%</option>
-                                                            <option value="52">5 - 10%</option>
-                                                            <option value="105">10 - 20%</option>
-                                                            <option value="175">20 - 30%</option>
-                                                            <option value="245">30 - 40%</option>
-                                                            <option value="315">40 - 50%</option>
-                                                            <option value="525">50% ></option>
-                                                        </datalist>
+                                                    <div class="row">
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label>Luas Retak Lain (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-percentage-aspal" data-field="oth_crack_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label>Retak Turun (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-percentage-aspal" data-field="crack_dep_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {{-- CARD 5: ALUR --}}
-                                    <div class="card border mb-3">
-                                        <div class="card-header bg-light">
-                                            <strong>Alur</strong>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label>Alur (m²)</label>
-                                                        <input type="text" class="form-control dropdown-with-value" list="datalist-percentage-aspal" data-field="rutting_area" placeholder="Ketik atau pilih...">
+                                    {{-- ROW 2: RUSAK TEPI & LUBANG --}}
+                                    <div class="row mb-3">
+                                        {{-- CARD: RUSAK TEPI --}}
+                                        <div class="col-md-6">
+                                            <div class="card border h-100">
+                                                <div class="card-header bg-light">
+                                                    <strong>Rusak Tepi</strong>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label>Rusak Tepi Kiri (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-rusak-tepi" data-field="edge_damage_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label>Rusak Tepi Kanan (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-rusak-tepi" data-field="edge_damage_area_r" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label>Rata² Dlm Alur</label>
-                                                        <input type="text" class="form-control" list="datalist-dalam-alur" data-field="rutting_depth" placeholder="Ketik atau pilih...">
-                                                        <datalist id="datalist-dalam-alur">
-                                                            <option value="1">1 - Tidak Ada</option>
-                                                            <option value="2">2 - < 1 cm</option>
-                                                            <option value="3">3 - 1 - 3 cm</option>
-                                                            <option value="4">4 - > 3 cm</option>
-                                                        </datalist>
+                                            </div>
+                                        </div>
+
+                                        {{-- CARD: LUBANG --}}
+                                        <div class="col-md-6">
+                                            <div class="card border h-100">
+                                                <div class="card-header bg-light">
+                                                    <strong>Lubang</strong>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-4">
+                                                            <div class="form-group">
+                                                                <label>Jumlah</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-jumlah-lubang" data-field="pothole_count" placeholder="Pilih...">
+                                                                <datalist id="datalist-jumlah-lubang">
+                                                                    <option value="0">0</option>
+                                                                    <option value="1">1</option>
+                                                                    <option value="2">2</option>
+                                                                    <option value="3">3</option>
+                                                                    <option value="4">4</option>
+                                                                    <option value="5">5</option>
+                                                                    <option value="6">6</option>
+                                                                    <option value="7">7</option>
+                                                                    <option value="8">>7</option>
+                                                                </datalist>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <div class="form-group">
+                                                                <label>Ukuran</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-ukuran-lubang" data-field="pothole_size" placeholder="Pilih...">
+                                                                <datalist id="datalist-ukuran-lubang">
+                                                                    <option value="1">1 - Tidak Ada</option>
+                                                                    <option value="2">2 - Kecil-dangkal</option>
+                                                                    <option value="3">3 - Kecil-dalam</option>
+                                                                    <option value="4">4 - Besar-dangkal</option>
+                                                                    <option value="5">5 - Besar-dalam</option>
+                                                                </datalist>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <div class="form-group">
+                                                                <label>Luas (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-luas-lubang" data-field="pothole_area" placeholder="Pilih...">
+                                                                <datalist id="datalist-luas-lubang">
+                                                                    <option value="0">0</option>
+                                                                    <option value="10">0 - 3%</option>
+                                                                    <option value="28">3 - 5%</option>
+                                                                    <option value="52">5 - 10%</option>
+                                                                    <option value="105">10 - 20%</option>
+                                                                    <option value="175">20 - 30%</option>
+                                                                    <option value="245">30 - 40%</option>
+                                                                    <option value="315">40 - 50%</option>
+                                                                    <option value="525">50% ></option>
+                                                                </datalist>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- ROW 3: ALUR (Full Width) --}}
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <div class="card border">
+                                                <div class="card-header bg-light">
+                                                    <strong>Alur</strong>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label>Alur (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-percentage-aspal" data-field="rutting_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label>Rata² Dlm Alur</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-dalam-alur" data-field="rutting_depth" placeholder="Pilih...">
+                                                                <datalist id="datalist-dalam-alur">
+                                                                    <option value="1">1 - Tidak Ada</option>
+                                                                    <option value="2">2 - < 1 cm</option>
+                                                                    <option value="3">3 - 1 - 3 cm</option>
+                                                                    <option value="4">4 - > 3 cm</option>
+                                                                </datalist>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -470,38 +500,67 @@
 
                                 {{-- ========== FORM BLOK ========== --}}
                                 <div id="formBlok" class="form-kondisi" style="display: none;">
-                                    <div class="card border mb-3">
-                                        <div class="card-header bg-light">
-                                            <strong>Kerusakan Blok</strong>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label>Disintegrasi (m²)</label>
-                                                        <input type="text" class="form-control" list="datalist-percentage-beton" data-field="desintegration_area" placeholder="Ketik atau pilih...">
+                                    {{-- ROW 1: KERUSAKAN UTAMA & RUSAK TEPI --}}
+                                    <div class="row mb-3">
+                                        {{-- CARD: KERUSAKAN UTAMA --}}
+                                        <div class="col-md-6">
+                                            <div class="card border h-100">
+                                                <div class="card-header bg-light">
+                                                    <strong>Kerusakan Utama</strong>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label>Disintegrasi (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-percentage-beton" data-field="desintegration_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label>Retak Turun (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-percentage-beton" data-field="crack_dep_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div class="form-group">
-                                                        <label>Retak Turun (m²)</label>
-                                                        <input type="text" class="form-control" list="datalist-percentage-beton" data-field="crack_dep_area" placeholder="Ketik atau pilih...">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label>Rusak Tepi Kiri (m²)</label>
-                                                        <input type="text" class="form-control" list="datalist-rusak-tepi" data-field="edge_damage_area" placeholder="Ketik atau pilih...">
+                                                    <div class="row">
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label>Luas Lubang (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-luas-lubang" data-field="pothole_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label>Alur (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-percentage-beton" data-field="rutting_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label>Luas Lubang (m²)</label>
-                                                        <input type="text" class="form-control" list="datalist-luas-lubang" data-field="pothole_area" placeholder="Ketik atau pilih...">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label>Alur (m²)</label>
-                                                        <input type="text" class="form-control" list="datalist-percentage-beton" data-field="rutting_area" placeholder="Ketik atau pilih...">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label>Rusak Tepi Kanan (m²)</label>
-                                                        <input type="text" class="form-control" list="datalist-rusak-tepi" data-field="edge_damage_area_r" placeholder="Ketik atau pilih...">
+                                            </div>
+                                        </div>
+
+                                        {{-- CARD: RUSAK TEPI --}}
+                                        <div class="col-md-6">
+                                            <div class="card border h-100">
+                                                <div class="card-header bg-light">
+                                                    <strong>Rusak Tepi</strong>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label>Rusak Tepi Kiri (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-rusak-tepi" data-field="edge_damage_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label>Rusak Tepi Kanan (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-rusak-tepi" data-field="edge_damage_area_r" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -512,45 +571,6 @@
                                 {{-- ========== FORM BETON ========== --}}
                                 <div id="formBeton" class="form-kondisi" style="display: none;">
                                     
-                                    {{-- CARD: KERUSAKAN BETON --}}
-                                    <div class="card border mb-3">
-                                        <div class="card-header bg-light">
-                                            <strong>Kerusakan Beton</strong>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label>Retak (m²)</label>
-                                                        <input type="text" class="form-control dropdown-with-value" list="datalist-percentage-beton" data-field="concrete_cracking_area" placeholder="Ketik atau pilih...">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label>Gompal (m²)</label>
-                                                        <input type="text" class="form-control dropdown-with-value" list="datalist-percentage-beton" data-field="concrete_spalling_area" placeholder="Ketik atau pilih...">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label>Retak Struktur (m²)</label>
-                                                        <input type="text" class="form-control dropdown-with-value" list="datalist-percentage-beton" data-field="concrete_structural_cracking_area" placeholder="Ketik atau pilih...">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label>Patahan/Penurunan (m²)</label>
-                                                        <input type="text" class="form-control dropdown-with-value" list="datalist-percentage-beton" data-field="concrete_blowouts_area" placeholder="Ketik atau pilih...">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label>Pumping (No)</label>
-                                                        <input type="number" class="form-control" data-field="concrete_pumping_no" placeholder="Masukkan jumlah...">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label>Pecah Sudut (No)</label>
-                                                        <input type="number" class="form-control" data-field="concrete_corner_break_no" placeholder="Masukkan jumlah...">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
                                     {{-- DATALIST PERCENTAGE UNTUK BETON --}}
                                     <datalist id="datalist-percentage-beton">
                                         <option value="0">0</option>
@@ -563,182 +583,253 @@
                                         <option value="525">50% ></option>
                                     </datalist>
 
+                                    {{-- CARD: KERUSAKAN BETON --}}
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <div class="card border">
+                                                <div class="card-header bg-light">
+                                                    <strong>Kerusakan Beton</strong>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-md-3">
+                                                            <div class="form-group">
+                                                                <label>Retak (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-percentage-beton" data-field="concrete_cracking_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <div class="form-group">
+                                                                <label>Gompal (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-percentage-beton" data-field="concrete_spalling_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <div class="form-group">
+                                                                <label>Retak Struktur (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-percentage-beton" data-field="concrete_structural_cracking_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <div class="form-group">
+                                                                <label>Patahan/Penurunan (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-percentage-beton" data-field="concrete_blowouts_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-3">
+                                                            <div class="form-group">
+                                                                <label>Pumping (No)</label>
+                                                                <input type="number" class="form-control form-control-sm" data-field="concrete_pumping_no" placeholder="0">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <div class="form-group">
+                                                                <label>Pecah Sudut (No)</label>
+                                                                <input type="number" class="form-control form-control-sm" data-field="concrete_corner_break_no" placeholder="0">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
 
                                 {{-- ========== FORM NON ASPAL ========== --}}
                                 <div id="formNonAspal" class="form-kondisi" style="display: none;">
                                     
-                                    {{-- CARD 1: KEMIRINGAN MELINTANG --}}
-                                    <div class="card border mb-3">
-                                        <div class="card-header bg-light">
-                                            <strong>Kemiringan Melintang</strong>
+                                    {{-- ROW 1: KEMIRINGAN MELINTANG & KERUSAKAN PERMUKAAN --}}
+                                    <div class="row mb-3">
+                                        {{-- CARD: KEMIRINGAN MELINTANG --}}
+                                        <div class="col-md-6">
+                                            <div class="card border h-100">
+                                                <div class="card-header bg-light">
+                                                    <strong>Kemiringan Melintang</strong>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-4">
+                                                            <div class="form-group">
+                                                                <label>Kondisi</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-kondisi" data-field="should_cond_l" placeholder="Pilih...">
+                                                                <datalist id="datalist-kondisi">
+                                                                    <option value="4">4 - Cekung</option>
+                                                                    <option value="1">1 - > 5%</option>
+                                                                    <option value="2">2 - 3 - 5%</option>
+                                                                    <option value="3">3 - Rata</option>
+                                                                </datalist>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <div class="form-group">
+                                                                <label>Kemiringan</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-crossfall-shape" data-field="crossfall_shape" placeholder="Pilih...">
+                                                                <datalist id="datalist-crossfall-shape">
+                                                                    <option value="1">1 - Tidak ada</option>
+                                                                    <option value="2">2 - Rata</option>
+                                                                    <option value="3">3 - Tidak Rata</option>
+                                                                    <option value="4">4 - Gundukan memanjang</option>
+                                                                </datalist>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <div class="form-group">
+                                                                <label>Luas (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-percentage-beton" data-field="crossfall_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-4">
-                                                    <div class="form-group">
-                                                        <label>Kondisi</label>
-                                                        <input type="text" class="form-control" list="datalist-kondisi" data-field="should_cond_l" placeholder="Ketik atau pilih...">
-                                                        <datalist id="datalist-kondisi">
-                                                            <option value="4">4 - Cekung</option>
-                                                            <option value="1">1 - > 5%</option>
-                                                            <option value="2">2 - 3 - 5%</option>
-                                                            <option value="3">3 - Rata</option>
-                                                        </datalist>
-                                                    </div>
+
+                                        {{-- CARD: KERUSAKAN PERMUKAAN --}}
+                                        <div class="col-md-6">
+                                            <div class="card border h-100">
+                                                <div class="card-header bg-light">
+                                                    <strong>Kerusakan Permukaan</strong>
                                                 </div>
-                                                <div class="col-md-4">
-                                                    <div class="form-group">
-                                                        <label>Kemiringan Melintang</label>
-                                                        <input type="text" class="form-control" list="datalist-crossfall-shape" data-field="crossfall_shape" placeholder="Ketik atau pilih...">
-                                                        <datalist id="datalist-crossfall-shape">
-                                                            <option value="1">1 - Tidak ada</option>
-                                                            <option value="2">2 - Rata</option>
-                                                            <option value="3">3 - Tidak Rata</option>
-                                                            <option value="4">4 - Gundukan memanjang</option>
-                                                        </datalist>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <div class="form-group">
-                                                        <label>Luas (m²)</label>
-                                                        <input type="text" class="form-control" list="datalist-percentage-beton" data-field="crossfall_area" placeholder="Ketik atau pilih...">
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-4">
+                                                            <div class="form-group">
+                                                                <label>Penurunan (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-percentage-beton" data-field="depressions_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <div class="form-group">
+                                                                <label>Erosi (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-percentage-beton" data-field="erosion_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <div class="form-group">
+                                                                <label>Bergelombang (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-percentage-beton" data-field="waviness_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {{-- CARD 2: KERUSAKAN PERMUKAAN --}}
-                                    <div class="card border mb-3">
-                                        <div class="card-header bg-light">
-                                            <strong>Kerusakan Permukaan</strong>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-4">
-                                                    <div class="form-group">
-                                                        <label>Penurunan (m²)</label>
-                                                        <input type="text" class="form-control" list="datalist-percentage-beton" data-field="depressions_area" placeholder="Ketik atau pilih...">
-                                                    </div>
+                                    {{-- ROW 2: KERIKIL (Full Width) --}}
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <div class="card border">
+                                                <div class="card-header bg-light">
+                                                    <strong>Kerikil</strong>
                                                 </div>
-                                                <div class="col-md-4">
-                                                    <div class="form-group">
-                                                        <label>Erosi (m²)</label>
-                                                        <input type="text" class="form-control" list="datalist-percentage-beton" data-field="erosion_area" placeholder="Ketik atau pilih...">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <div class="form-group">
-                                                        <label>Bergelombang (m²)</label>
-                                                        <input type="text" class="form-control" list="datalist-percentage-beton" data-field="waviness_area" placeholder="Ketik atau pilih...">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {{-- CARD 3: KERIKIL --}}
-                                    <div class="card border mb-3">
-                                        <div class="card-header bg-light">
-                                            <strong>Kerikil</strong>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-3">
-                                                    <div class="form-group">
-                                                        <label>Ukuran Terbanyak Kerikil</label>
-                                                        <input type="text" class="form-control" list="datalist-ukuran-kerikil" data-field="gravel_size" placeholder="Ketik atau pilih...">
-                                                        <datalist id="datalist-ukuran-kerikil">
-                                                            <option value="1">1 - Tidak ada</option>
-                                                            <option value="2">2 - < 5 cm</option>
-                                                            <option value="3">3 - 5 - 10 cm</option>
-                                                            <option value="4">4 - 10 - 20 cm</option>
-                                                            <option value="5">5 - > 20 cm</option>
-                                                        </datalist>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <div class="form-group">
-                                                        <label>Tebal Kerikil</label>
-                                                        <input type="text" class="form-control" list="datalist-tebal-kerikil" data-field="gravel_thickness" placeholder="Ketik atau pilih...">
-                                                        <datalist id="datalist-tebal-kerikil">
-                                                            <option value="1">1 - Tidak ada</option>
-                                                            <option value="2">2 - < 5 cm</option>
-                                                            <option value="3">3 - 5 - 10 cm</option>
-                                                            <option value="4">4 - 10 - 20 cm</option>
-                                                            <option value="5">5 - > 20 cm</option>
-                                                        </datalist>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <div class="form-group">
-                                                        <label>Luas Kerikil (m²)</label>
-                                                        <input type="text" class="form-control" list="datalist-percentage-beton" data-field="gravel_thickness_area" placeholder="Ketik atau pilih...">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <div class="form-group">
-                                                        <label>Distribusi</label>
-                                                        <input type="text" class="form-control" list="datalist-distribusi" data-field="distribution" placeholder="Ketik atau pilih...">
-                                                        <datalist id="datalist-distribusi">
-                                                            <option value="1">1 - Tidak ada</option>
-                                                            <option value="2">2 - Rata</option>
-                                                            <option value="3">3 - Tidak Rata</option>
-                                                            <option value="4">4 - Gundukan memanjang</option>
-                                                        </datalist>
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-md-3">
+                                                            <div class="form-group">
+                                                                <label>Ukuran Kerikil</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-ukuran-kerikil" data-field="gravel_size" placeholder="Pilih...">
+                                                                <datalist id="datalist-ukuran-kerikil">
+                                                                    <option value="1">1 - Tidak ada</option>
+                                                                    <option value="2">2 - < 5 cm</option>
+                                                                    <option value="3">3 - 5 - 10 cm</option>
+                                                                    <option value="4">4 - 10 - 20 cm</option>
+                                                                    <option value="5">5 - > 20 cm</option>
+                                                                </datalist>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <div class="form-group">
+                                                                <label>Tebal Kerikil</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-tebal-kerikil" data-field="gravel_thickness" placeholder="Pilih...">
+                                                                <datalist id="datalist-tebal-kerikil">
+                                                                    <option value="1">1 - Tidak ada</option>
+                                                                    <option value="2">2 - < 5 cm</option>
+                                                                    <option value="3">3 - 5 - 10 cm</option>
+                                                                    <option value="4">4 - 10 - 20 cm</option>
+                                                                    <option value="5">5 - > 20 cm</option>
+                                                                </datalist>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <div class="form-group">
+                                                                <label>Luas Kerikil (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-percentage-beton" data-field="gravel_thickness_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <div class="form-group">
+                                                                <label>Distribusi</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-distribusi" data-field="distribution" placeholder="Pilih...">
+                                                                <datalist id="datalist-distribusi">
+                                                                    <option value="1">1 - Tidak ada</option>
+                                                                    <option value="2">2 - Rata</option>
+                                                                    <option value="3">3 - Tidak Rata</option>
+                                                                    <option value="4">4 - Gundukan memanjang</option>
+                                                                </datalist>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {{-- CARD 4: LUBANG --}}
-                                    <div class="card border mb-3">
-                                        <div class="card-header bg-light">
-                                            <strong>Lubang</strong>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-4">
-                                                    <div class="form-group">
-                                                        <label>Jumlah Lubang</label>
-                                                        <input type="number" class="form-control" data-field="pothole_count" placeholder="Masukkan jumlah...">
-                                                    </div>
+                                    {{-- ROW 3: LUBANG & ALUR --}}
+                                    <div class="row mb-3">
+                                        {{-- CARD: LUBANG --}}
+                                        <div class="col-md-6">
+                                            <div class="card border h-100">
+                                                <div class="card-header bg-light">
+                                                    <strong>Lubang</strong>
                                                 </div>
-                                                <div class="col-md-4">
-                                                    <div class="form-group">
-                                                        <label>Ukuran Lubang</label>
-                                                        <input type="text" class="form-control" list="datalist-ukuran-lubang" data-field="pothole_size" placeholder="Ketik atau pilih...">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <div class="form-group">
-                                                        <label>Luas Lubang (m²)</label>
-                                                        <input type="text" class="form-control" list="datalist-luas-lubang" data-field="pothole_area" placeholder="Ketik atau pilih...">
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-4">
+                                                            <div class="form-group">
+                                                                <label>Jumlah</label>
+                                                                <input type="number" class="form-control form-control-sm" data-field="pothole_count" placeholder="0">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <div class="form-group">
+                                                                <label>Ukuran</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-ukuran-lubang" data-field="pothole_size" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <div class="form-group">
+                                                                <label>Luas (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-luas-lubang" data-field="pothole_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {{-- CARD 5: ALUR --}}
-                                    <div class="card border mb-3">
-                                        <div class="card-header bg-light">
-                                            <strong>Alur</strong>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label>Alur (m²)</label>
-                                                        <input type="text" class="form-control" list="datalist-percentage-beton" data-field="rutting_area" placeholder="Ketik atau pilih...">
-                                                    </div>
+                                        {{-- CARD: ALUR --}}
+                                        <div class="col-md-6">
+                                            <div class="card border h-100">
+                                                <div class="card-header bg-light">
+                                                    <strong>Alur</strong>
                                                 </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label>Rata² Dlm Alur</label>
-                                                        <input type="text" class="form-control" list="datalist-dalam-alur" data-field="rutting_depth" placeholder="Ketik atau pilih...">
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label>Alur (m²)</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-percentage-beton" data-field="rutting_area" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <div class="form-group">
+                                                                <label>Rata² Dlm Alur</label>
+                                                                <input type="text" class="form-control form-control-sm" list="datalist-dalam-alur" data-field="rutting_depth" placeholder="Pilih...">
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -809,7 +900,7 @@ const REFERENCE_YEAR = {{ $referenceYear ?? 'null' }};
 
 // Routes
 const ROUTE_GET_CHAINAGE = '{{ route("kondisi-jalan.getChainageByRuas") }}';
-const ROUTE_GET_LAST_CHAINAGE = '{{ route("kondisi-jalan.getLastChainage") }}'; // ✅ NEW
+const ROUTE_GET_LAST_CHAINAGE = '{{ route("kondisi-jalan.getLastChainage") }}';
 const ROUTE_STORE = '{{ route("kondisi-jalan.store") }}';
 const ROUTE_INDEX = '{{ route("kondisi-jalan.index") }}';
 
@@ -821,16 +912,13 @@ $(document).ready(function() {
     let surveySetup = {};
     let conditionData = [];
     let panjangRuasKm = 0;
-    let interval = 100; // dalam METER
+    let interval = 100;
     let dataType = 'Aspal';
-    let availableChainages = []; // Array inventory segments
-    let lastChainageToMeter = 0; // ✅ Track dalam METER
+    let availableChainages = [];
+    let lastChainageToMeter = 0;
     
     // ==================== HELPER FUNCTIONS ====================
     
-    /**
-     * Convert Data Type name ke Pavement Code
-     */
     function getPavementCode(dataType) {
         const mapping = {
             'Aspal': 'Asphalt',
@@ -842,9 +930,6 @@ $(document).ready(function() {
         return mapping[dataType] || 'Asphalt';
     }
     
-    /**
-     * ✅ NEW: Load last chainage untuk auto-increment
-     */
     function loadLastChainage(linkNo) {
         $.ajax({
             url: ROUTE_GET_LAST_CHAINAGE,
@@ -855,11 +940,10 @@ $(document).ready(function() {
             },
             success: function(response) {
                 if (response.success && response.has_data) {
-                    lastChainageToMeter = response.last_chainage_to_meter; // ✅ Dalam METER
+                    lastChainageToMeter = response.last_chainage_to_meter;
                     
                     console.log('Last chainage loaded:', lastChainageToMeter, 'meter');
                     
-                    // Set nilai awal (convert METER ke KM untuk display)
                     const nextFromKm = lastChainageToMeter / 1000;
                     const nextToKm = (lastChainageToMeter + interval) / 1000;
                     
@@ -877,7 +961,6 @@ $(document).ready(function() {
                         showConfirmButton: false
                     });
                 } else {
-                    // Belum ada data, mulai dari 0
                     lastChainageToMeter = 0;
                     $('#inputDari').val('0.000');
                     $('#inputKe').val((interval / 1000).toFixed(3));
@@ -887,7 +970,6 @@ $(document).ready(function() {
             },
             error: function(xhr) {
                 console.error('Error loading last chainage:', xhr);
-                // Fallback ke 0
                 lastChainageToMeter = 0;
                 $('#inputDari').val('0.000');
                 $('#inputKe').val((interval / 1000).toFixed(3));
@@ -895,9 +977,6 @@ $(document).ready(function() {
         });
     }
     
-    /**
-     * Load chainage dari inventory
-     */
     function loadChainages(linkNo) {
         $.ajax({
             url: ROUTE_GET_CHAINAGE,
@@ -928,7 +1007,6 @@ $(document).ready(function() {
             return null;
         }
         
-        // Cari segmen pertama yang chainage_from >= lastChainageMeter
         const nextSegment = availableChainages.find(seg => 
             seg.chainage_from >= lastChainageMeter
         );
@@ -936,18 +1014,12 @@ $(document).ready(function() {
         return nextSegment;
     }
     
-    /**
-     * Show form sesuai tipe data
-     */
     function showFormByType(type) {
-        // Hide all forms
         $('.form-kondisi').hide();
         
-        // Remove active class from all tabs
         $('.btn-group button').removeClass('btn-success btn-primary btn-info btn-warning')
             .addClass('btn-outline-secondary');
         
-        // Show selected form and activate tab
         switch(type) {
             case 'Aspal':
                 $('#formAspal').show();
@@ -970,16 +1042,13 @@ $(document).ready(function() {
                 break;
         }
         
-        dataType = type; // ✅ Update global dataType
+        dataType = type;
         $('#headerTipeData').text(type);
         $('#infoTipeData').html(`<span class="badge badge-info">${type}</span>`);
         
-        console.log('Form switched to:', type); // Debug
+        console.log('Form switched to:', type);
     }
     
-    /**
-     * Get data info untuk display di tabel
-     */
     function getDataInfo(item) {
         const fields = [];
         const excludeKeys = ['chainage_from', 'chainage_to', 'data_type', 'pavement'];
@@ -992,9 +1061,6 @@ $(document).ready(function() {
         return fields.length > 0 ? fields.join(', ') : '-';
     }
     
-    /**
-     * Render tabel preview
-     */
     function renderTable() {
         $('#emptyRow').hide();
         $('#tbodyPreview').empty();
@@ -1002,7 +1068,6 @@ $(document).ready(function() {
         conditionData.forEach((item, index) => {
             const dataInfo = getDataInfo(item);
             
-            // ✅ Badge color berdasarkan pavement code (dari database format)
             const pavementBadge = item.pavement === 'Asphalt' ? 'success' : 
                                 item.pavement === 'Concrete' ? 'primary' :
                                 item.pavement === 'Block' ? 'info' :
@@ -1033,9 +1098,6 @@ $(document).ready(function() {
         }
     }
     
-    /**
-     * Save to database via AJAX
-     */
     function saveToDatabase() {
         const payload = {
             _token: CSRF_TOKEN,
@@ -1068,7 +1130,6 @@ $(document).ready(function() {
                 
                 let message = response.message;
                 
-                // ✅ Tampilkan detail error jika ada
                 if (response.errors && response.errors.length > 0) {
                     message += '\n\nError detail:\n';
                     response.errors.forEach(err => {
@@ -1117,9 +1178,6 @@ $(document).ready(function() {
     
     // ==================== STEP 1: SETUP SURVEY ====================
     
-    /**
-     * Event: Ketika ruas dipilih
-     */
     $('#linkNo').on('change', function() {
         const selectedOption = $(this).find('option:selected');
         const linkId = selectedOption.data('link-id');
@@ -1139,10 +1197,7 @@ $(document).ready(function() {
             $('#panjangRuas').val(parseFloat(linkLength).toFixed(2));
             panjangRuasKm = parseFloat(linkLength);
             
-            // Load chainage dari inventory
             loadChainages($(this).val());
-            
-            // ✅ NEW: Load last chainage untuk auto-increment
             loadLastChainage($(this).val());
         } else {
             surveySetup = {};
@@ -1154,13 +1209,9 @@ $(document).ready(function() {
         }
     });
     
-    /**
-     * ✅ UPDATE: Event interval change
-     */
     $('#interval').on('change', function() {
-        interval = parseInt($(this).val()); // dalam METER
+        interval = parseInt($(this).val());
         
-        // Update inputKe berdasarkan interval baru
         const dariKm = parseFloat($('#inputDari').val()) || 0;
         const dariMeter = dariKm * 1000;
         const toMeter = dariMeter + interval;
@@ -1171,19 +1222,12 @@ $(document).ready(function() {
         console.log('Interval changed to:', interval, 'meter');
     });
     
-    /**
-     * Event: Pilih tipe data (Aspal/Blok/Beton/Non Aspal/Tak Dapat Dilalui)
-     */
     $('input[name="data_type"]').on('change', function() {
         dataType = $(this).val();
         console.log('Data type changed to:', dataType);
     });
     
-    /**
-     * Event: Tombol Next (ke Step 2)
-     */
     $('#btnNext, #btnNextFooter').on('click', function() {
-        // Validasi
         if (!$('#linkNo').val()) {
             Swal.fire('Error', 'Pilih Nomor Ruas terlebih dahulu!', 'error');
             return;
@@ -1202,7 +1246,6 @@ $(document).ready(function() {
             return;
         }
         
-        // Simpan data setup
         surveySetup.surveyor_name = $('#surveyorName').val();
         surveySetup.surveyor_name_2 = $('#surveyorName2').val();
         surveySetup.survey_date = $('#surveyDate').val();
@@ -1216,11 +1259,9 @@ $(document).ready(function() {
         
         console.log('Survey Setup:', surveySetup);
         
-        // Tampilkan step 2
         $('#step1').hide();
         $('#step2').show();
         
-        // Update info ruas
         $('#infoRuas').html(`<strong>${surveySetup.link_code}</strong><br><small>${surveySetup.link_name}</small>`);
         $('#infoPanjang').html(`<strong>${parseFloat(surveySetup.link_length).toFixed(2)} km</strong>`);
         $('#infoArah').text(surveySetup.direction);
@@ -1228,16 +1269,9 @@ $(document).ready(function() {
         $('#infoTipeData').html(`<span class="badge badge-info">${dataType}</span>`);
         $('#headerTipeData').text(dataType);
         
-        // Show form sesuai tipe data dari Step 1
         showFormByType(dataType);
-        
-        // ✅ Set nilai awal Dari dan Ke (sudah di-set oleh loadLastChainage)
-        // Tidak perlu set lagi di sini
     });
     
-    /**
-     * Event: Tombol Back (ke Step 1)
-     */
     $('#btnBack').on('click', function() {
         $('#step2').hide();
         $('#step1').show();
@@ -1245,9 +1279,6 @@ $(document).ready(function() {
     
     // ==================== STEP 2: TABS & FORMS ====================
     
-    /**
-     * ✅ UPDATE: Tab click handlers - UPDATE dataType
-     */
     $('#tabAspal').on('click', function() {
         showFormByType('Aspal');
     });
@@ -1266,14 +1297,10 @@ $(document).ready(function() {
     
     // ==================== INPUT & VALIDATION ====================
     
-    /**
-     * ✅ UPDATE: Tombol Tambah - pakai dataType dari tab aktif
-     */
     $('#btnTambah').on('click', function() {
         const dariKm = parseFloat($('#inputDari').val());
         const keKm = parseFloat($('#inputKe').val());
         
-        // Validasi
         if (isNaN(dariKm) || isNaN(keKm)) {
             Swal.fire('Error', 'Nilai Dari dan Ke harus diisi!', 'error');
             return;
@@ -1283,11 +1310,9 @@ $(document).ready(function() {
             return;
         }
         
-        // ✅ Convert KM ke METER untuk validasi
         const dariMeter = Math.round(dariKm * 1000);
         const keMeter = Math.round(keKm * 1000);
         
-        // Validasi overlap dengan data yang sudah diinput
         const hasOverlap = conditionData.some(item => {
             const itemFromMeter = Math.round(item.chainage_from * 1000);
             const itemToMeter = Math.round(item.chainage_to * 1000);
@@ -1302,12 +1327,11 @@ $(document).ready(function() {
             return;
         }
         
-        // ✅ Collect data - SIMPAN DALAM KM (akan diconvert di backend)
         const dataItem = {
             chainage_from: dariKm,
             chainage_to: keKm,
-            pavement: getPavementCode(dataType),  // ✅ CONVERT KE DATABASE FORMAT
-            data_type: dataType                    // ✅ TETAP SIMPAN UNTUK DISPLAY
+            pavement: getPavementCode(dataType),
+            data_type: dataType
         };
         
         console.log('Adding data:', {
@@ -1315,11 +1339,10 @@ $(document).ready(function() {
             to_km: keKm,
             from_meter: dariMeter,
             to_meter: keMeter,
-            pavement_code: dataItem.pavement,  // ✅ "Asphalt", "Block", dll
-            data_type: dataType                 // ✅ "Aspal", "Blok", dll
+            pavement_code: dataItem.pavement,
+            data_type: dataType
         });
         
-        // Collect field values
         $('.form-kondisi:visible input[data-field], .form-kondisi:visible select[data-field]').each(function() {
             const field = $(this).data('field');
             const value = $(this).val();
@@ -1332,14 +1355,12 @@ $(document).ready(function() {
         conditionData.push(dataItem);
         renderTable();
         
-        // ✅ Auto increment ke segmen berikutnya
         const nextFromMeter = keMeter;
         const nextToMeter = nextFromMeter + interval;
         
         $('#inputDari').val((nextFromMeter / 1000).toFixed(3));
         $('#inputKe').val((nextToMeter / 1000).toFixed(3));
         
-        // Clear form inputs (kecuali chainage)
         $('.form-kondisi:visible input[data-field]').val('');
         
         Swal.fire({
@@ -1355,9 +1376,6 @@ $(document).ready(function() {
         });
     });
     
-    /**
-     * Global function: Hapus satu data
-     */
     window.hapusData = function(index) {
         Swal.fire({
             title: 'Hapus Data?',
@@ -1373,7 +1391,6 @@ $(document).ready(function() {
                 conditionData.splice(index, 1);
                 renderTable();
                 
-                // Reset chainage ke segmen terakhir
                 if (conditionData.length > 0) {
                     const lastItem = conditionData[conditionData.length - 1];
                     const nextFromKm = lastItem.chainage_to;
@@ -1383,7 +1400,6 @@ $(document).ready(function() {
                     $('#inputDari').val(nextFromKm.toFixed(3));
                     $('#inputKe').val((nextToMeter / 1000).toFixed(3));
                 } else {
-                    // Kembali ke chainage awal dari database
                     const nextFromKm = lastChainageToMeter / 1000;
                     const nextToKm = (lastChainageToMeter + interval) / 1000;
                     
@@ -1402,9 +1418,6 @@ $(document).ready(function() {
         });
     };  
     
-    /**
-     * Event: Hapus semua data
-     */
     $('#btnHapusSemua').on('click', function() {
         if (conditionData.length === 0) {
             Swal.fire('Info', 'Belum ada data yang diinput', 'info');
@@ -1425,7 +1438,6 @@ $(document).ready(function() {
                 conditionData = [];
                 renderTable();
                 
-                // Reset ke chainage awal dari database
                 const nextFromKm = lastChainageToMeter / 1000;
                 const nextToKm = (lastChainageToMeter + interval) / 1000;
                 
@@ -1443,16 +1455,12 @@ $(document).ready(function() {
         });
     });
     
-    /**
-     * Event: Simpan semua data ke database
-     */
     $('#btnSimpanSemua').on('click', function() {
         if (conditionData.length === 0) {
             Swal.fire('Error', 'Belum ada data yang diinput!', 'error');
             return;
         }
         
-        // ✅ Hitung breakdown per pavement type (gunakan data_type untuk display)
         const pavementBreakdown = conditionData.reduce((acc, item) => {
             acc[item.data_type] = (acc[item.data_type] || 0) + 1;
             return acc;
@@ -1487,9 +1495,6 @@ $(document).ready(function() {
         });
     });
 
-    /**
-     * Tambahkan log untuk debugging
-     */
     console.log('✅ Pavement Type Mapping Loaded');
     console.log('Mapping:', {
         'Aspal': getPavementCode('Aspal'),

@@ -468,11 +468,11 @@ $(document).ready(function() {
             return;
         }
         if (ke <= dari) {
-            Swal.fire('Error', 'Nilai Ke harus lebih besar dari Dari!', 'error');
+            Swal.fire('Error', 'Total segmen sudah melebihi panjang ruas!', 'error');
             return;
         }
         
-        // ✅ PERBAIKAN: Validasi tidak boleh melebihi panjang ruas (dalam meter)
+        // ✅ Validasi tidak boleh melebihi panjang ruas (dalam meter)
         const maxMeter = panjangRuasKm * 1000;
         if (ke > maxMeter) {
             Swal.fire('Error', `Nilai Ke tidak boleh melebihi panjang ruas (${maxMeter} m)!`, 'error');
@@ -490,10 +490,10 @@ $(document).ready(function() {
             return;
         }
         
-        // Tambah ke array
+        // ✅ PERBAIKAN: Simpan dalam METER (BUKAN kilometer!)
         const dataItem = {
-            chainage_from: dari / 1000, // Convert ke km
-            chainage_to: ke / 1000,
+            chainage_from: dari,  // ✅ SUDAH DALAM METER, TIDAK PERLU DIBAGI 1000
+            chainage_to: ke,      // ✅ SUDAH DALAM METER, TIDAK PERLU DIBAGI 1000
             pave_type: tipePerkerasan,
             pave_type_text: tipeText,
             pave_width: lebar || null,
@@ -510,7 +510,7 @@ $(document).ready(function() {
         // Tambah ke tabel
         renderTable();
         
-        // ✅ PERBAIKAN: Auto increment dengan logika cek sisa panjang ruas
+        // ✅ Auto increment dengan logika cek sisa panjang ruas
         const nextDari = ke;
         let nextKe = ke + interval;
         
@@ -550,8 +550,8 @@ $(document).ready(function() {
         inventoryData.forEach((item, index) => {
             const row = `
                 <tr>
-                    <td>${item.chainage_from * 1000}</td>
-                    <td>${item.chainage_to * 1000}</td>
+                    <td>${item.chainage_from}</td>
+                    <td>${item.chainage_to}</td>
                     <td><small>${item.pave_type_text}</small></td>
                     <td class="text-center">${item.pave_width || '-'}</td>
                     <td class="text-center">${item.row || '-'}</td>

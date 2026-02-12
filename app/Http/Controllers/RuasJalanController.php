@@ -2,18 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Link;
-use App\Models\User;
-use App\Models\Province;
-use App\Models\Kabupaten;
-use App\Models\LinkMaster;
 use App\Exports\LinkExport;
+use App\Http\Controllers\Controller;
 use App\Imports\LinkImport;
-use Illuminate\Http\Request;
-use App\Models\CodeLinkStatus;
 use App\Models\CodeLinkFunction;
+use App\Models\CodeLinkStatus;
+use App\Models\Kabupaten;
+use App\Models\Link;
+use App\Models\LinkMaster;
+use App\Models\Province;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -72,13 +74,24 @@ class RuasJalanController extends Controller
             'currentYear'
         ));
     }
+
     public function generateCodes(Request $request)
     {
         $year = $request->input('year', now()->year);
         
+        $linkNo = $this->generateLinkNo($year);
+        $linkCode = $this->generateLinkCode($year);
+        
+        // ✅ TAMBAHKAN LOG
+        Log::info('Generate Codes', [
+            'year' => $year,
+            'link_no' => $linkNo,
+            'link_code' => $linkCode
+        ]);
+        
         return response()->json([
-            'link_no' => $this->generateLinkNo($year),
-            'link_code' => $this->generateLinkCode($year)
+            'link_no' => $linkNo,
+            'link_code' => $linkCode
         ]);
     }
 
@@ -219,35 +232,134 @@ class RuasJalanController extends Controller
     }
 
     public function destroy($id)
-    {
+{
+    $ruas = Link::findOrFail($id);
+    
+    // ✅ CEK RELASI DENGAN TABEL LAIN (sesuai model Link)
+    $relatedData = [];
+    $relatedCount = [];
+    
+    // Cek relasi dengan RoadInventory
+    if ($ruas->roadInventories()->exists()) {
+        $count = $ruas->roadInventories()->count();
+        $relatedData[] = "Inventarisasi Jalan";
+        $relatedCount[] = "{$count} Data Inventarisasi Jalan";
+    }
+    
+    // Cek relasi dengan RoadCondition
+    if ($ruas->roadConditions()->exists()) {
+        $count = $ruas->roadConditions()->count();
+        $relatedData[] = "Kondisi Jalan";
+        $relatedCount[] = "{$count} Data Kondisi Jalan";
+    }
+    
+    // Cek relasi dengan LinkKecamatan
+    if ($ruas->linkKecamatans()->exists()) {
+        $count = $ruas->linkKecamatans()->count();
+        $relatedData[] = "Link Kecamatan";
+        $relatedCount[] = "{$count} Data Link Kecamatan";
+    }
+    
+    // ❌ JIKA ADA RELASI, TOLAK PENGHAPUSAN
+    if (!empty($relatedData)) {
+        $linkName = $ruas->linkMaster?->link_name ?? 'Ruas jalan ini';
+        $linkCode = $ruas->link_code ?? '-';
+        
+        $errorMessage = "Data ruas jalan <strong>{$linkName}</strong> (Kode: {$linkCode}) tidak dapat dihapus karena masih digunakan oleh:<br>";
+        $errorMessage .= "<ul class='mb-0 mt-2'>";
+        foreach ($relatedCount as $item) {
+            $errorMessage .= "<li>{$item}</li>";
+        }
+        $errorMessage .= "</ul>";
+        $errorMessage .= "<br><small class='text-muted'><i class='fas fa-info-circle'></i> Silakan hapus atau pindahkan data terkait terlebih dahulu sebelum menghapus ruas jalan ini.</small>";
+        
+        return redirect()->back()->with('error', $errorMessage);
+    }
+    
+    // ✅ JIKA TIDAK ADA RELASI, LANJUTKAN PENGHAPUSAN
+    // Cek apakah ada data tahun lain untuk link_master_id yang sama
+    $otherYears = Link::where('link_master_id', $ruas->link_master_id)
+                     ->where('id', '!=', $id)
+                     ->exists();
+    
+    DB::beginTransaction();
+    try {
+        $linkName = $ruas->linkMaster?->link_name ?? 'Ruas jalan';
+        $linkCode = $ruas->link_code ?? '-';
+        $year = $ruas->year ?? '-';
+        
+        // Hapus link
+        $ruas->delete();
+        
+        // Jika tidak ada tahun lain, hapus juga link_master
+        if (!$otherYears && $ruas->linkMaster) {
+            $ruas->linkMaster->delete();
+        }
+        
+        DB::commit();
+        
+        return redirect()->route('ruas-jalan.index')
+            ->with('success', "Ruas jalan <strong>{$linkName}</strong> (Kode: {$linkCode}, Tahun: {$year}) berhasil dihapus.");
+            
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Error deleting ruas jalan: ' . $e->getMessage(), [
+            'link_id' => $id,
+            'user_id' => Auth::id()
+        ]);
+        
+        return redirect()->back()
+            ->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+    }
+}
+
+/**
+ * Cek relasi sebelum hapus (untuk AJAX)
+ */
+public function checkRelations($id)
+{
+    try {
         $ruas = Link::findOrFail($id);
         
-        // Cek apakah ada data tahun lain untuk link_master_id yang sama
-        $otherYears = Link::where('link_master_id', $ruas->link_master_id)
-                         ->where('id', '!=', $id)
-                         ->exists();
+        $relations = [];
+        $hasRelations = false;
         
-        DB::beginTransaction();
-        try {
-            // Hapus link
-            $ruas->delete();
-            
-            // Jika tidak ada tahun lain, hapus juga link_master
-            if (!$otherYears && $ruas->linkMaster) {
-                $ruas->linkMaster->delete();
-            }
-            
-            DB::commit();
-            
-            return redirect()->route('ruas-jalan.index')
-                ->with('success', 'Ruas jalan berhasil dihapus.');
-                
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()
-                ->withErrors(['error' => 'Gagal menghapus data: ' . $e->getMessage()]);
+        // Cek relasi dengan RoadInventory
+        if ($ruas->roadInventories()->exists()) {
+            $relations['roadInventories'] = $ruas->roadInventories()->count();
+            $hasRelations = true;
         }
+        
+        // Cek relasi dengan RoadCondition
+        if ($ruas->roadConditions()->exists()) {
+            $relations['roadConditions'] = $ruas->roadConditions()->count();
+            $hasRelations = true;
+        }
+        
+        // Cek relasi dengan LinkKecamatan
+        if ($ruas->linkKecamatans()->exists()) {
+            $relations['linkKecamatans'] = $ruas->linkKecamatans()->count();
+            $hasRelations = true;
+        }
+        
+        return response()->json([
+            'success' => true,
+            'hasRelations' => $hasRelations,
+            'relations' => $relations,
+            'linkName' => $ruas->linkMaster?->link_name ?? '-',
+            'linkCode' => $ruas->link_code ?? '-',
+            'year' => $ruas->year ?? '-'
+        ]);
+        
+    } catch (\Exception $e) {
+        Log::error('Error checking relations: ' . $e->getMessage());
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal memeriksa relasi data'
+        ], 500);
     }
+}
 
     public function destroyAll()
     {
@@ -283,74 +395,107 @@ class RuasJalanController extends Controller
         }
     }
 
-    public function getData(Request $request)
-{
-    $selectedYear = $this->getSelectedYear();
-    
-    /** @var User|null $user */
-    $user = Auth::user();
+    public function data(Request $request)
+    {
+        $selectedYear = $this->getSelectedYear();
+        
+        /** @var User|null $user */
+        $user = Auth::user();
 
-    // ✅ PERBAIKAN: Pastikan select link.* dan join dengan benar
-    $query = Link::query()
-        ->select([
-            'link.*',  // Ambil semua kolom dari tabel link
-        ])
-        ->with(['linkMaster', 'province', 'kabupaten', 'statusRelation', 'functionRelation'])
-        ->where('link.year', $selectedYear);
+        $query = Link::query()
+            ->select('link.*')
+            ->with(['linkMaster', 'province', 'kabupaten', 'statusRelation', 'functionRelation'])
+            ->where('link.year', $selectedYear);
 
-    // Filter
-    if ($request->filterProvinsi) {
-        $query->where('link.province_code', $request->filterProvinsi);
+        // Filter
+        if ($request->filterProvinsi) {
+            $query->where('link.province_code', $request->filterProvinsi);
+        }
+        if ($request->filterKabupaten) {
+            $query->where('link.kabupaten_code', $request->filterKabupaten);
+        }
+
+        return DataTables::of($query)
+            // ✅ link_code sudah otomatis ada karena select('link.*')
+            // ✅ link_name tetap perlu addColumn karena dari accessor
+            ->addColumn('link_name', fn($row) => $row->linkMaster?->link_name ?? '-')
+            ->addColumn('status_name', fn($row) => $row->statusRelation?->code_description_ind ?? '-')
+            ->addColumn('function_name', fn($row) => $row->functionRelation?->code_description_ind ?? '-')
+            ->addColumn('province_name', fn($row) => $row->province?->province_name ?? '-')
+            ->addColumn('kabupaten_name', fn($row) => $row->kabupaten?->kabupaten_name ?? '-')
+            
+            // ✅ Filter columns
+            ->filterColumn('link_name', function($query, $keyword) {
+                $query->whereHas('linkMaster', function($q) use ($keyword) {
+                    $q->where('link_name', 'like', "%{$keyword}%");
+                });
+            })
+            // ✅ link_code bisa langsung di-filter karena kolom asli
+            ->filterColumn('link_code', function($query, $keyword) {
+                $query->where('link.link_code', 'like', "%{$keyword}%");
+            })
+            ->filterColumn('province_name', function($query, $keyword) {
+                $query->whereHas('province', function($q) use ($keyword) {
+                    $q->where('province_name', 'like', "%{$keyword}%");
+                });
+            })
+            ->filterColumn('kabupaten_name', function($query, $keyword) {
+                $query->whereHas('kabupaten', function($q) use ($keyword) {
+                    $q->where('kabupaten_name', 'like', "%{$keyword}%");
+                });
+            })
+            ->filterColumn('status_name', function($query, $keyword) {
+                $query->whereHas('statusRelation', function($q) use ($keyword) {
+                    $q->where('code_description_ind', 'like', "%{$keyword}%");
+                });
+            })
+            ->filterColumn('function_name', function($query, $keyword) {
+                $query->whereHas('functionRelation', function($q) use ($keyword) {
+                    $q->where('code_description_ind', 'like', "%{$keyword}%");
+                });
+            })
+            
+            ->addColumn('actions', function ($row) use ($user) {
+                $btn = '<div class="d-flex gap-1 justify-content-center">';
+
+                if ($user && $user->hasPermission('detail', 'ruas_jalan')) {
+                    $btn .= '<a href="'.route('ruas-jalan.show', $row->id).'" 
+                                class="btn btn-info btn-sm" title="Detail Data">
+                                <i class="fas fa-eye"></i>
+                            </a>';
+                }
+
+                if ($user && $user->hasPermission('update', 'ruas_jalan')) {
+                    $btn .= '<a href="'.route('ruas-jalan.edit', $row->id).'" 
+                                class="btn btn-warning btn-sm" title="Edit Data">
+                                <i class="fas fa-edit"></i>
+                            </a>';
+                }
+
+                if ($user && $user->hasPermission('delete', 'ruas_jalan')) {
+                    // ✅ UBAH: Hapus onsubmit dari form, kita handle via JavaScript
+                    $linkName = $row->linkMaster?->link_name ?? 'ruas jalan ini';
+                    $btn .= '<form action="'.route('ruas-jalan.destroy', $row->id).'" 
+                                    method="POST" 
+                                    class="d-inline delete-form"
+                                    data-link-name="'.htmlspecialchars($linkName, ENT_QUOTES).'"
+                                    data-link-code="'.($row->link_code ?? '-').'"
+                                    data-year="'.($row->year ?? '-').'">
+                                    '.csrf_field().method_field('DELETE').'
+                                    <button type="submit" 
+                                            class="btn btn-danger btn-sm" 
+                                            title="Hapus Data">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>';
+                }
+
+                $btn .= '</div>';
+                return $btn;
+            })
+            ->rawColumns(['actions'])
+            ->make(true);
     }
-    if ($request->filterKabupaten) {
-        $query->where('link.kabupaten_code', $request->filterKabupaten);
-    }
-
-    return DataTables::of($query)
-        ->addColumn('link_name', fn($row) => $row->linkMaster?->link_name ?? '-')
-        ->addColumn('status_name', fn($row) => $row->statusRelation?->code_description_ind ?? '-')
-        ->addColumn('function_name', fn($row) => $row->functionRelation?->code_description_ind ?? '-')
-        ->addColumn('province_name', fn($row) => $row->province?->province_name ?? '-')
-        ->addColumn('kabupaten_name', fn($row) => $row->kabupaten?->kabupaten_name ?? '-')
-        // ✅ TAMBAHKAN: Pastikan link_code ter-render
-        ->editColumn('link_code', fn($row) => $row->link_code ?? '<span class="text-muted">-</span>')
-        ->addColumn('actions', function ($row) use ($user) {
-            $btn = '<div class="d-flex gap-1 justify-content-center">';
-
-            if ($user && $user->hasPermission('detail', 'ruas_jalan')) {
-                $btn .= '<a href="'.route('ruas-jalan.show', $row->id).'" 
-                            class="btn btn-info btn-sm" title="Detail Data">
-                            <i class="fas fa-eye"></i>
-                         </a>';
-            }
-
-            if ($user && $user->hasPermission('update', 'ruas_jalan')) {
-                $btn .= '<a href="'.route('ruas-jalan.edit', $row->id).'" 
-                            class="btn btn-warning btn-sm" title="Edit Data">
-                            <i class="fas fa-edit"></i>
-                         </a>';
-            }
-
-            if ($user && $user->hasPermission('delete', 'ruas_jalan')) {
-                $btn .= '<form action="'.route('ruas-jalan.destroy', $row->id).'" 
-                                method="POST" 
-                                style="display:inline;" 
-                                onsubmit="return confirm(\'Yakin ingin menghapus ruas jalan ini?\')">
-                                '.csrf_field().method_field('DELETE').'
-                                <button type="submit" 
-                                        class="btn btn-danger btn-sm" 
-                                        title="Hapus Data">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>';
-            }
-
-            $btn .= '</div>';
-            return $btn;
-        })
-        ->rawColumns(['actions', 'link_code'])
-        ->make(true);
-}
 
     private function generateLinkNo($year)
     {

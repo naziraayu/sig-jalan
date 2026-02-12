@@ -170,9 +170,9 @@ $(document).ready(function () {
             url: "{{ route('ruas-jalan.data') }}",
             type: 'GET',
             data: function (d) {
-                // ✅ Hardcode filter (tidak bisa diubah user)
-                d.filterProvinsi = '{{ $defaultProvinsi }}'; // 35
-                d.filterKabupaten = '{{ $defaultKabupaten }}'; // 09
+                d.filterProvinsi = '{{ $defaultProvinsi }}';
+                d.filterKabupaten = '{{ $defaultKabupaten }}';
+                console.log('DataTables Request:', d);
             },
             error: function(xhr, error, code) {
                 console.error('DataTables Error:', {
@@ -218,35 +218,35 @@ $(document).ready(function () {
             },
             { 
                 data: 'link_code', 
-                name: 'link.link_code',
+                name: 'link_code',
                 render: function(data, type, row) {
                     return data || '<span class="text-muted">-</span>';
                 }
             },
             { 
                 data: 'link_name', 
-                name: 'link_master.link_name',
+                name: 'link_name',
                 render: function(data, type, row) {
                     return data || '<span class="text-muted">-</span>';
                 }
             },
             { 
                 data: 'province_name', 
-                name: 'province.province_name',
+                name: 'province_name',
                 render: function(data, type, row) {
                     return data || '<span class="text-muted">-</span>';
                 }
             },
             { 
                 data: 'kabupaten_name', 
-                name: 'kabupaten.kabupaten_name',
+                name: 'kabupaten_name',
                 render: function(data, type, row) {
                     return data || '<span class="text-muted">-</span>';
                 }
             },
             { 
                 data: 'status_name', 
-                name: 'code_link_status.code_description_ind',
+                name: 'status_name',
                 render: function(data, type, row) {
                     if (!data || data === '-') {
                         return '<span class="badge badge-secondary">N/A</span>';
@@ -256,7 +256,7 @@ $(document).ready(function () {
             },
             { 
                 data: 'function_name', 
-                name: 'code_link_function.code_description_ind',
+                name: 'function_name',
                 render: function(data, type, row) {
                     if (!data || data === '-') {
                         return '<span class="badge badge-secondary">N/A</span>';
@@ -274,7 +274,7 @@ $(document).ready(function () {
         ],
         pageLength: 10,
         lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Semua"]],
-        order: [[1, 'asc']], // Sort by link_code
+        order: [[1, 'asc']],
         language: {
             processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span>',
             searchPlaceholder: 'Cari data...',
@@ -296,6 +296,207 @@ $(document).ready(function () {
         dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rtip',
     });
 
+    $(document).on('submit', '.delete-form', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const linkName = form.data('link-name');
+        const linkCode = form.data('link-code');
+        const year = form.data('year');
+        const actionUrl = form.attr('action');
+        
+        // Extract link ID dari URL
+        const linkId = actionUrl.split('/').pop();
+        
+        // ✅ Tampilkan loading indicator
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Memeriksa data...',
+                html: 'Mohon tunggu sebentar',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+        }
+        
+        // ✅ AJAX: Cek relasi terlebih dahulu
+        $.ajax({
+            url: `/ruas-jalan/${linkId}/check-relations`,
+            method: 'GET',
+            success: function(response) {
+                if (!response.success) {
+                    showErrorAlert('Gagal memeriksa data relasi');
+                    return;
+                }
+                
+                // ❌ JIKA ADA RELASI, TAMPILKAN PERINGATAN DAN BLOKIR HAPUS
+                if (response.hasRelations) {
+                    let relatedDataList = '';
+                    
+                    if (response.relations.drp) {
+                        relatedDataList += `<li><i class="fas fa-road"></i> <strong>${response.relations.drp}</strong> Detail Ruas Panggal (DRP)</li>`;
+                    }
+                    if (response.relations.roadInventories) {
+                        relatedDataList += `<li><i class="fas fa-clipboard-list"></i> <strong>${response.relations.roadInventories}</strong> Data Inventarisasi Jalan</li>`;
+                    }
+                    if (response.relations.roadConditions) {
+                        relatedDataList += `<li><i class="fas fa-wrench"></i> <strong>${response.relations.roadConditions}</strong> Data Kondisi Jalan</li>`;
+                    }
+                    if (response.relations.linkKecamatans) {
+                        relatedDataList += `<li><i class="fas fa-map-marked-alt"></i> <strong>${response.relations.linkKecamatans}</strong> Data Link Kecamatan</li>`;
+                    }
+                    
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            title: 'Tidak Dapat Menghapus!',
+                            html: `
+                                <div class="text-left">
+                                    <div class="alert alert-danger">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <strong>Data tidak dapat dihapus karena masih digunakan oleh data lain!</strong>
+                                    </div>
+                                    <hr>
+                                    <table class="table table-sm table-borderless mb-3">
+                                        <tr>
+                                            <td width="40%"><strong><i class="fas fa-road"></i> Nama Ruas</strong></td>
+                                            <td>: ${response.linkName || linkName}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong><i class="fas fa-barcode"></i> Kode SK</strong></td>
+                                            <td>: ${response.linkCode || linkCode}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong><i class="fas fa-calendar-alt"></i> Tahun</strong></td>
+                                            <td>: ${response.year || year}</td>
+                                        </tr>
+                                    </table>
+                                    <hr>
+                                    <p class="mb-2"><strong><i class="fas fa-link"></i> Data yang masih terkait:</strong></p>
+                                    <ul class="list-unstyled ml-3">${relatedDataList}</ul>
+                                    <div class="alert alert-info mt-3 mb-0">
+                                        <i class="fas fa-info-circle"></i>
+                                        <small><strong>Petunjuk:</strong> Silakan hapus atau pindahkan data terkait terlebih dahulu sebelum menghapus ruas jalan ini.</small>
+                                    </div>
+                                </div>
+                            `,
+                            icon: 'error',
+                            confirmButtonColor: '#6c757d',
+                            confirmButtonText: '<i class="fas fa-check"></i> Mengerti',
+                            customClass: {
+                                popup: 'swal-wide',
+                                htmlContainer: 'text-left'
+                            }
+                        });
+                    } else {
+                        // Fallback jika SweetAlert tidak tersedia
+                        alert(`Tidak dapat menghapus!\n\nData tidak dapat dihapus karena masih digunakan oleh:\n${relatedDataList.replace(/<[^>]*>/g, '')}`);
+                    }
+                    
+                    return; // ❌ STOP, tidak lanjut ke hapus
+                }
+                
+                // ✅ JIKA TIDAK ADA RELASI, LANJUTKAN KONFIRMASI HAPUS
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'Konfirmasi Hapus',
+                        html: `
+                            <div class="text-left">
+                                <p>Apakah Anda yakin ingin menghapus ruas jalan berikut?</p>
+                                <hr>
+                                <table class="table table-sm table-borderless">
+                                    <tr>
+                                        <td width="40%"><strong><i class="fas fa-road"></i> Nama Ruas</strong></td>
+                                        <td>: ${response.linkName || linkName}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong><i class="fas fa-barcode"></i> Kode SK</strong></td>
+                                        <td>: ${response.linkCode || linkCode}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong><i class="fas fa-calendar-alt"></i> Tahun</strong></td>
+                                        <td>: ${response.year || year}</td>
+                                    </tr>
+                                </table>
+                                <div class="alert alert-warning mt-3 mb-0">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>Peringatan:</strong> Tindakan ini tidak dapat dibatalkan!
+                                </div>
+                            </div>
+                        `,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: '<i class="fas fa-trash"></i> Ya, Hapus!',
+                        cancelButtonText: '<i class="fas fa-times"></i> Batal',
+                        reverseButtons: true,
+                        customClass: {
+                            popup: 'swal-wide'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form[0].submit();
+                        }
+                    });
+                } else {
+                    // Fallback confirm dialog
+                    const confirmMsg = `Apakah Anda yakin ingin menghapus ruas jalan berikut?\n\n` +
+                                    `Nama Ruas: ${response.linkName || linkName}\n` +
+                                    `Kode SK: ${response.linkCode || linkCode}\n` +
+                                    `Tahun: ${response.year || year}\n\n` +
+                                    `Tindakan ini tidak dapat dibatalkan!`;
+                    
+                    if (confirm(confirmMsg)) {
+                        form[0].submit();
+                    }
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error checking relations:', {xhr, status, error});
+                
+                // Fallback: tetap tampilkan konfirmasi delete biasa
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'Peringatan',
+                        text: 'Gagal memeriksa relasi data. Tetap lanjutkan hapus?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Ya, Lanjutkan',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form[0].submit();
+                        }
+                    });
+                } else {
+                    if (confirm(`Gagal memeriksa relasi data. Tetap lanjutkan hapus ${linkName}?`)) {
+                        form[0].submit();
+                    }
+                }
+            }
+        });
+        
+        return false;
+    });
+
+    // Helper function untuk error alert
+    function showErrorAlert(message) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Error',
+                text: message,
+                icon: 'error',
+                confirmButtonColor: '#6c757d'
+            });
+        } else {
+            alert('Error: ' + message);
+        }
+    }
+
     // ✅ Auto-adjust DataTable on sidebar toggle
     function adjustDataTable() {
         setTimeout(function () {
@@ -303,12 +504,10 @@ $(document).ready(function () {
         }, 350);
     }
 
-    // Sidebar toggle handler
     $(document).on('click', "[data-toggle='sidebar'], #sidebarToggle", function () {
         adjustDataTable();
     });
 
-    // Body class observer for sidebar animation
     const observer = new MutationObserver(function (mutations) {
         mutations.forEach(function(mutation) {
             if (mutation.attributeName === "class") {
@@ -331,29 +530,42 @@ $(document).ready(function () {
 });
 </script>
 
-{{-- ✅ Custom CSS for better styling --}}
+{{-- ✅ Custom CSS --}}
 <style>
-    /* Badge styling */
+    .swal-wide {
+        width: 650px !important;
+        max-width: 90% !important;
+    }
+    
+    .swal2-html-container {
+        overflow: visible !important;
+    }
+    
+    .swal2-html-container .list-unstyled li {
+        padding: 5px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .swal2-html-container .list-unstyled li:last-child {
+        border-bottom: none;
+    }
     .badge {
         font-size: 11px;
         padding: 4px 8px;
         font-weight: 600;
     }
 
-    /* DataTable search box */
     .dataTables_filter input {
         border-radius: 20px;
         padding-left: 15px;
     }
 
-    /* Table actions buttons */
     .table .btn {
         padding: 4px 8px;
         font-size: 12px;
         margin: 0 2px;
     }
 
-    /* Gap utility for older Bootstrap versions */
     .gap-2 > * {
         margin-right: 0.5rem;
     }
@@ -362,7 +574,6 @@ $(document).ready(function () {
         margin-right: 0;
     }
 
-    /* Responsive filters */
     @media (max-width: 768px) {
         .card-header-action {
             width: 100%;
@@ -374,17 +585,24 @@ $(document).ready(function () {
         }
     }
 
-    /* Loading overlay */
     .dataTables_processing {
         background: rgba(255, 255, 255, 0.9) !important;
         border: none !important;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1) !important;
     }
 
-    /* Info badges */
     .section-lead .badge {
         margin-right: 5px;
         margin-bottom: 5px;
+    }
+    
+    /* ✅ TAMBAHAN: Custom SweetAlert2 width */
+    .swal-wide {
+        width: 600px !important;
+    }
+    
+    .swal2-html-container {
+        overflow: visible !important;
     }
 </style>
 @endpush
