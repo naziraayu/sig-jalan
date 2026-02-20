@@ -206,7 +206,7 @@ class SDICalculator
         $sdi3 = $sdi2 + $sdi3_addition;
 
         // ========================================
-        // STEP 4: KEDALAMAN ALUR RODA (SDI4)
+        // STEP 4: KEDALAMAN BEKAS RODA (SDI4)
         // ✅ FIXED: Bobot 4 sekarang +20 (bukan +100)
         // ========================================
         $ruttingDepthBobot = intval($condition->rutting_depth ?? 1);
@@ -227,7 +227,7 @@ class SDICalculator
             $sdi4 = $sdi3 + $sdi4_addition;
             $sdi4_explanation = sprintf('Alur 1-3cm (bobot 3) → SDI4 = SDI3 + (5 × 2) = %.2f', $sdi4);
         } else {
-            // ✅ FIXED: Kedalaman > 3cm = +20 (bukan +100!)
+            // Kedalaman > 3cm = +20 
             $sdi4_addition = 20;
             $sdi4 = $sdi3 + $sdi4_addition;
             $sdi4_explanation = sprintf('Alur > 3cm (bobot 4) → SDI4 = SDI3 + 20 = %.2f', $sdi4);
