@@ -468,14 +468,14 @@ $(document).ready(function() {
             return;
         }
         if (ke <= dari) {
-            Swal.fire('Error', 'Total segmen sudah melebihi panjang ruas!', 'error');
+            Swal.fire('Error', 'Nilai Ke harus lebih besar dari nilai Dari!', 'error');
             return;
         }
         
         // ✅ Validasi tidak boleh melebihi panjang ruas (dalam meter)
         const maxMeter = panjangRuasKm * 1000;
         if (ke > maxMeter) {
-            Swal.fire('Error', `Nilai Ke tidak boleh melebihi panjang ruas (${maxMeter} m)!`, 'error');
+            Swal.fire('Error', `Total segmen sudah melebihi panjang ruas! Maksimal ${maxMeter} m.`, 'error');
             return;
         }
         
@@ -590,6 +590,20 @@ $(document).ready(function() {
             if (result.isConfirmed) {
                 inventoryData.splice(index, 1);
                 renderTable();
+
+                // ✅ FIX TC-SA050: Reset input Dari/Ke mengikuti segmen terakhir
+                const maxMeter = panjangRuasKm * 1000;
+                if (inventoryData.length > 0) {
+                    const lastSegment = inventoryData[inventoryData.length - 1];
+                    const nextDari = lastSegment.chainage_to;
+                    let nextKe = nextDari + interval;
+                    if (nextKe > maxMeter) nextKe = maxMeter;
+                    $('#inputDari').val(nextDari).prop('readonly', false);
+                    $('#inputKe').val(nextKe).prop('readonly', false);
+                } else {
+                    $('#inputDari').val(0).prop('readonly', false);
+                    $('#inputKe').val(interval).prop('readonly', false);
+                }
             }
         });
     };

@@ -792,12 +792,12 @@ class RoadConditionController extends Controller
                     'sdi1' => floatval($sdiDetail['sdi1'] ?? 0),
                     'sdi2' => floatval($sdiDetail['sdi2'] ?? 0),
                     'sdi3' => floatval($sdiDetail['sdi3'] ?? 0),
+                    'sdi4' => floatval($sdiDetail['sdi4'] ?? 0),
                     'sdi_final' => floatval($sdiDetail['sdi_final'] ?? 0),
                     'sdi_category' => $sdiDetail['category'] ?? 'Data Tidak Lengkap',
                     'link_no' => $item->link_no,
                 ];
             });
-
             return response()->json([
                 'success' => true,
                 'data' => $dataWithSDI,

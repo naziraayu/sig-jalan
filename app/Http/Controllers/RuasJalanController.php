@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\LinkExport;
 use App\Http\Controllers\Controller;
-use App\Imports\LinkImport;
 use App\Models\CodeLinkFunction;
 use App\Models\CodeLinkStatus;
 use App\Models\Kabupaten;
@@ -102,13 +100,18 @@ class RuasJalanController extends Controller
             'link_no' => 'required|unique:link,link_no',
             'province_code' => 'required',
             'kabupaten_code' => 'required',
-            'link_code' => 'required', // ✅ Pastikan required
-            'link_name' => 'required|string|max:191',
+            'link_code' => 'required',
+            'link_name' => ['required', 'string', 'max:191', 'regex:/^[a-zA-Z0-9\s\.\-\/]+$/'], // ✅
             'status' => 'nullable',
             'function' => 'nullable',
             'class' => 'nullable',
-            'link_length_official' => 'nullable|numeric',
-            'link_length_actual' => 'nullable|numeric',
+            'link_length_official' => 'nullable|numeric|min:0',
+            'link_length_actual' => 'nullable|numeric|min:0',
+        ], [
+            'link_name.required' => 'Nama Ruas wajib diisi.',
+            'link_name.regex' => 'Nama Ruas hanya boleh mengandung huruf, angka, spasi, titik, strip, dan garis miring.', // ✅
+            'link_length_official.min' => 'Panjang Ruas (SK) tidak boleh bernilai negatif.',
+            'link_length_actual.min' => 'Panjang Ruas (Survei) tidak boleh bernilai negatif.',
         ]);
 
         DB::beginTransaction();
@@ -184,15 +187,22 @@ class RuasJalanController extends Controller
         $ruas = Link::with('linkMaster')->findOrFail($id);
 
         $validated = $request->validate([
-            'link_no' => 'required|unique:link,link_no,' . $ruas->id . ',id',
+            'year' => 'required|integer|min:2020|max:2100',
+            'link_no' => 'required|unique:link,link_no',
             'province_code' => 'required',
             'kabupaten_code' => 'required',
             'link_code' => 'required',
-            'link_name' => 'required|string|max:191',
+            'link_name' => ['required', 'string', 'max:191', 'regex:/^[a-zA-Z0-9\s\.\-\/]+$/'], // ✅
             'status' => 'nullable',
             'function' => 'nullable',
-            'link_length_official' => 'nullable|numeric',
-            'link_length_actual' => 'nullable|numeric',
+            'class' => 'nullable',
+            'link_length_official' => 'nullable|numeric|min:0',
+            'link_length_actual' => 'nullable|numeric|min:0',
+        ], [
+            'link_name.required' => 'Nama Ruas wajib diisi.',
+            'link_name.regex' => 'Nama Ruas hanya boleh mengandung huruf, angka, spasi, titik, strip, dan garis miring.', // ✅
+            'link_length_official.min' => 'Panjang Ruas (SK) tidak boleh bernilai negatif.',
+            'link_length_actual.min' => 'Panjang Ruas (Survei) tidak boleh bernilai negatif.',
         ]);
 
         DB::beginTransaction();
@@ -232,134 +242,134 @@ class RuasJalanController extends Controller
     }
 
     public function destroy($id)
-{
-    $ruas = Link::findOrFail($id);
-    
-    // ✅ CEK RELASI DENGAN TABEL LAIN (sesuai model Link)
-    $relatedData = [];
-    $relatedCount = [];
-    
-    // Cek relasi dengan RoadInventory
-    if ($ruas->roadInventories()->exists()) {
-        $count = $ruas->roadInventories()->count();
-        $relatedData[] = "Inventarisasi Jalan";
-        $relatedCount[] = "{$count} Data Inventarisasi Jalan";
-    }
-    
-    // Cek relasi dengan RoadCondition
-    if ($ruas->roadConditions()->exists()) {
-        $count = $ruas->roadConditions()->count();
-        $relatedData[] = "Kondisi Jalan";
-        $relatedCount[] = "{$count} Data Kondisi Jalan";
-    }
-    
-    // Cek relasi dengan LinkKecamatan
-    if ($ruas->linkKecamatans()->exists()) {
-        $count = $ruas->linkKecamatans()->count();
-        $relatedData[] = "Link Kecamatan";
-        $relatedCount[] = "{$count} Data Link Kecamatan";
-    }
-    
-    // ❌ JIKA ADA RELASI, TOLAK PENGHAPUSAN
-    if (!empty($relatedData)) {
-        $linkName = $ruas->linkMaster?->link_name ?? 'Ruas jalan ini';
-        $linkCode = $ruas->link_code ?? '-';
-        
-        $errorMessage = "Data ruas jalan <strong>{$linkName}</strong> (Kode: {$linkCode}) tidak dapat dihapus karena masih digunakan oleh:<br>";
-        $errorMessage .= "<ul class='mb-0 mt-2'>";
-        foreach ($relatedCount as $item) {
-            $errorMessage .= "<li>{$item}</li>";
-        }
-        $errorMessage .= "</ul>";
-        $errorMessage .= "<br><small class='text-muted'><i class='fas fa-info-circle'></i> Silakan hapus atau pindahkan data terkait terlebih dahulu sebelum menghapus ruas jalan ini.</small>";
-        
-        return redirect()->back()->with('error', $errorMessage);
-    }
-    
-    // ✅ JIKA TIDAK ADA RELASI, LANJUTKAN PENGHAPUSAN
-    // Cek apakah ada data tahun lain untuk link_master_id yang sama
-    $otherYears = Link::where('link_master_id', $ruas->link_master_id)
-                     ->where('id', '!=', $id)
-                     ->exists();
-    
-    DB::beginTransaction();
-    try {
-        $linkName = $ruas->linkMaster?->link_name ?? 'Ruas jalan';
-        $linkCode = $ruas->link_code ?? '-';
-        $year = $ruas->year ?? '-';
-        
-        // Hapus link
-        $ruas->delete();
-        
-        // Jika tidak ada tahun lain, hapus juga link_master
-        if (!$otherYears && $ruas->linkMaster) {
-            $ruas->linkMaster->delete();
-        }
-        
-        DB::commit();
-        
-        return redirect()->route('ruas-jalan.index')
-            ->with('success', "Ruas jalan <strong>{$linkName}</strong> (Kode: {$linkCode}, Tahun: {$year}) berhasil dihapus.");
-            
-    } catch (\Exception $e) {
-        DB::rollBack();
-        Log::error('Error deleting ruas jalan: ' . $e->getMessage(), [
-            'link_id' => $id,
-            'user_id' => Auth::id()
-        ]);
-        
-        return redirect()->back()
-            ->with('error', 'Gagal menghapus data: ' . $e->getMessage());
-    }
-}
-
-/**
- * Cek relasi sebelum hapus (untuk AJAX)
- */
-public function checkRelations($id)
-{
-    try {
+    {
         $ruas = Link::findOrFail($id);
         
-        $relations = [];
-        $hasRelations = false;
+        // ✅ CEK RELASI DENGAN TABEL LAIN (sesuai model Link)
+        $relatedData = [];
+        $relatedCount = [];
         
         // Cek relasi dengan RoadInventory
         if ($ruas->roadInventories()->exists()) {
-            $relations['roadInventories'] = $ruas->roadInventories()->count();
-            $hasRelations = true;
+            $count = $ruas->roadInventories()->count();
+            $relatedData[] = "Inventarisasi Jalan";
+            $relatedCount[] = "{$count} Data Inventarisasi Jalan";
         }
         
         // Cek relasi dengan RoadCondition
         if ($ruas->roadConditions()->exists()) {
-            $relations['roadConditions'] = $ruas->roadConditions()->count();
-            $hasRelations = true;
+            $count = $ruas->roadConditions()->count();
+            $relatedData[] = "Kondisi Jalan";
+            $relatedCount[] = "{$count} Data Kondisi Jalan";
         }
         
         // Cek relasi dengan LinkKecamatan
         if ($ruas->linkKecamatans()->exists()) {
-            $relations['linkKecamatans'] = $ruas->linkKecamatans()->count();
-            $hasRelations = true;
+            $count = $ruas->linkKecamatans()->count();
+            $relatedData[] = "Link Kecamatan";
+            $relatedCount[] = "{$count} Data Link Kecamatan";
         }
         
-        return response()->json([
-            'success' => true,
-            'hasRelations' => $hasRelations,
-            'relations' => $relations,
-            'linkName' => $ruas->linkMaster?->link_name ?? '-',
-            'linkCode' => $ruas->link_code ?? '-',
-            'year' => $ruas->year ?? '-'
-        ]);
+        // ❌ JIKA ADA RELASI, TOLAK PENGHAPUSAN
+        if (!empty($relatedData)) {
+            $linkName = $ruas->linkMaster?->link_name ?? 'Ruas jalan ini';
+            $linkCode = $ruas->link_code ?? '-';
+            
+            $errorMessage = "Data ruas jalan <strong>{$linkName}</strong> (Kode: {$linkCode}) tidak dapat dihapus karena masih digunakan oleh:<br>";
+            $errorMessage .= "<ul class='mb-0 mt-2'>";
+            foreach ($relatedCount as $item) {
+                $errorMessage .= "<li>{$item}</li>";
+            }
+            $errorMessage .= "</ul>";
+            $errorMessage .= "<br><small class='text-muted'><i class='fas fa-info-circle'></i> Silakan hapus atau pindahkan data terkait terlebih dahulu sebelum menghapus ruas jalan ini.</small>";
+            
+            return redirect()->back()->with('error', $errorMessage);
+        }
         
-    } catch (\Exception $e) {
-        Log::error('Error checking relations: ' . $e->getMessage());
+        // ✅ JIKA TIDAK ADA RELASI, LANJUTKAN PENGHAPUSAN
+        // Cek apakah ada data tahun lain untuk link_master_id yang sama
+        $otherYears = Link::where('link_master_id', $ruas->link_master_id)
+                        ->where('id', '!=', $id)
+                        ->exists();
         
-        return response()->json([
-            'success' => false,
-            'message' => 'Gagal memeriksa relasi data'
-        ], 500);
+        DB::beginTransaction();
+        try {
+            $linkName = $ruas->linkMaster?->link_name ?? 'Ruas jalan';
+            $linkCode = $ruas->link_code ?? '-';
+            $year = $ruas->year ?? '-';
+            
+            // Hapus link
+            $ruas->delete();
+            
+            // Jika tidak ada tahun lain, hapus juga link_master
+            if (!$otherYears && $ruas->linkMaster) {
+                $ruas->linkMaster->delete();
+            }
+            
+            DB::commit();
+            
+            return redirect()->route('ruas-jalan.index')
+                ->with('success', "Ruas jalan <strong>{$linkName}</strong> (Kode: {$linkCode}, Tahun: {$year}) berhasil dihapus.");
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error deleting ruas jalan: ' . $e->getMessage(), [
+                'link_id' => $id,
+                'user_id' => Auth::id()
+            ]);
+            
+            return redirect()->back()
+                ->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+        }
     }
-}
+
+    /**
+     * Cek relasi sebelum hapus (untuk AJAX)
+     */
+    public function checkRelations($id)
+    {
+        try {
+            $ruas = Link::findOrFail($id);
+            
+            $relations = [];
+            $hasRelations = false;
+            
+            // Cek relasi dengan RoadInventory
+            if ($ruas->roadInventories()->exists()) {
+                $relations['roadInventories'] = $ruas->roadInventories()->count();
+                $hasRelations = true;
+            }
+            
+            // Cek relasi dengan RoadCondition
+            if ($ruas->roadConditions()->exists()) {
+                $relations['roadConditions'] = $ruas->roadConditions()->count();
+                $hasRelations = true;
+            }
+            
+            // Cek relasi dengan LinkKecamatan
+            if ($ruas->linkKecamatans()->exists()) {
+                $relations['linkKecamatans'] = $ruas->linkKecamatans()->count();
+                $hasRelations = true;
+            }
+            
+            return response()->json([
+                'success' => true,
+                'hasRelations' => $hasRelations,
+                'relations' => $relations,
+                'linkName' => $ruas->linkMaster?->link_name ?? '-',
+                'linkCode' => $ruas->link_code ?? '-',
+                'year' => $ruas->year ?? '-'
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error checking relations: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memeriksa relasi data'
+            ], 500);
+        }
+    }
 
     public function destroyAll()
     {

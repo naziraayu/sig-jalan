@@ -473,33 +473,37 @@ $(document).ready(function() {
                 chainage_from: parseFloat(item.chainage_from),
                 chainage_to: parseFloat(item.chainage_to),
                 pave_type: item.pave_type,
-                pave_type_text: item.pavement_type?.code_description_ind || '-',
+                // ✅ FIX relasi nama: pavement_type bukan pavementType di JSON
+                pave_type_text: item.pavement_type?.code_description_ind || item.pave_type || '-',
                 pave_width: item.pave_width,
                 row: item.row,
                 terrain: item.terrain,
-                terrain_text: item.terrain_type?.code_description_ind || '-',
+                // ✅ FIX relasi nama: terrain_type bukan terrainType di JSON
+                terrain_text: item.terrain_type?.code_description_ind || item.terrain || '-',
                 impassable: item.impassable,
                 impassable_reason: item.impassable_reason,
-                impassable_reason_text: item.impassable_reason ? (item.impassable_reason_data?.code_description_ind || '-') : '-'
+                // ✅ FIX relasi nama: impassable_reason (object relasi) bukan impassable_reason_data
+                impassable_reason_text: item.impassable_reason 
+                    ? (item.impassable_reason_relation?.code_description_ind || '-') 
+                    : '-'
             };
             inventoryData.push(dataItem);
         });
         
         renderTable();
         
-        // Set input Dari/Ke ke segmen terakhir + interval
         if (inventoryData.length > 0) {
             const lastSegment = inventoryData[inventoryData.length - 1];
             const nextDari = lastSegment.chainage_to;
             let nextKe = nextDari + interval;
-            const maxMeter = panjangRuasKm;
+            const maxMeter = panjangRuasKm * 1000; // ✅ FIX TC-SA071: konversi km ke meter
             
             if (nextKe > maxMeter) {
                 nextKe = maxMeter;
             }
             
-            $('#inputDari').val(nextDari);
-            $('#inputKe').val(nextKe);
+            $('#inputDari').val(nextDari).prop('readonly', false);
+            $('#inputKe').val(nextKe).prop('readonly', false);
         }
         
         Swal.fire({
@@ -531,13 +535,13 @@ $(document).ready(function() {
             return;
         }
         if (ke <= dari) {
-            Swal.fire('Error', 'Nilai Ke harus lebih besar dari Dari!', 'error');
+            Swal.fire('Error', 'Nilai Ke harus lebih besar dari nilai Dari!', 'error');
             return;
         }
         
         const maxMeter = panjangRuasKm * 1000;
         if (ke > maxMeter) {
-            Swal.fire('Error', `Nilai Ke tidak boleh melebihi panjang ruas (${maxMeter} m)!`, 'error');
+            Swal.fire('Error', `Total segmen sudah melebihi panjang ruas! Maksimal ${maxMeter} m.`, 'error');
             return;
         }
         
@@ -650,6 +654,20 @@ $(document).ready(function() {
             if (result.isConfirmed) {
                 inventoryData.splice(index, 1);
                 renderTable();
+
+                // ✅ FIX TC-SA050: Reset input Dari/Ke mengikuti segmen terakhir
+                const maxMeter = panjangRuasKm * 1000;
+                if (inventoryData.length > 0) {
+                    const lastSegment = inventoryData[inventoryData.length - 1];
+                    const nextDari = lastSegment.chainage_to;
+                    let nextKe = nextDari + interval;
+                    if (nextKe > maxMeter) nextKe = maxMeter;
+                    $('#inputDari').val(nextDari).prop('readonly', false);
+                    $('#inputKe').val(nextKe).prop('readonly', false);
+                } else {
+                    $('#inputDari').val(0).prop('readonly', false);
+                    $('#inputKe').val(interval).prop('readonly', false);
+                }
             }
         });
     };

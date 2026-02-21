@@ -1143,7 +1143,10 @@ $(document).ready(function() {
                     text: message,
                     confirmButtonColor: '#28a745'
                 }).then(() => {
-                    window.location.href = ROUTE_INDEX;
+                    // Redirect dengan bawa link_no dan year agar index langsung tampil data
+                    const linkNo = response.data.link_no;
+                    const year = response.data.year;
+                    window.location.href = ROUTE_INDEX + '?auto_link_no=' + linkNo + '&auto_year=' + year;
                 });
             },
             error: function(xhr, status, error) {

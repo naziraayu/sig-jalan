@@ -31,7 +31,7 @@
                         </div>
                         <div class="col-md-2">
                             <strong>Chainage:</strong><br>
-                            <span class="badge badge-info">{{ $condition->chainage_from }} - {{ $condition->chainage_to }} km</span>
+                            <span class="badge badge-info">{{ $condition->chainage_from }} - {{ $condition->chainage_to }} m</span>
                         </div>
                         <div class="col-md-2">
                             <strong>Tahun:</strong><br>
@@ -99,13 +99,15 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label class="font-weight-bold">Dari (km)</label>
-                                            <input type="text" class="form-control bg-light" value="{{ $condition->chainage_from }}" readonly>
+                                            <input type="text" class="form-control bg-light" 
+                                                value="{{ number_format($condition->chainage_from / 1000, 3) }}" readonly>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label class="font-weight-bold">Ke (km)</label>
-                                            <input type="text" class="form-control bg-light" value="{{ $condition->chainage_to }}" readonly>
+                                            <input type="text" class="form-control bg-light" 
+                                                value="{{ number_format($condition->chainage_to / 1000, 3) }}" readonly>
                                         </div>
                                     </div>
                                 </div>

@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\RoadInventoryExport;
 use App\Http\Controllers\Controller;
-use App\Imports\RoadInventoryImport;
 use App\Models\CodeImpassable;
 use App\Models\CodeLinkStatus;
 use App\Models\CodePavementType;
@@ -433,5 +431,40 @@ class InventarisasiJalanController extends Controller
         
         return redirect()->route('inventarisasi-jalan.index')
             ->with('success', "Berhasil menghapus {$deleted} data inventarisasi tahun {$selectedYear}.");
+    }
+
+    public function destroy($link_no)
+    {
+        $selectedYear = session('selected_year');
+
+        if (!$selectedYear) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pilih tahun terlebih dahulu!'
+            ], 422);
+        }
+
+        // Cari link berdasarkan link_no dan tahun
+        $link = Link::where('link_no', $link_no)
+            ->where('year', $selectedYear)
+            ->first();
+
+        if (!$link) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data inventarisasi tidak ditemukan!'
+            ], 404);
+        }
+
+        // Hitung jumlah segmen yang akan dihapus
+        $segmenCount = RoadInventory::where('link_id', $link->id)->count();
+
+        // Cascade delete semua segmen terkait
+        $deleted = RoadInventory::where('link_id', $link->id)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Data inventarisasi berhasil dihapus! ({$deleted} segmen dihapus)"
+        ]);
     }
 }

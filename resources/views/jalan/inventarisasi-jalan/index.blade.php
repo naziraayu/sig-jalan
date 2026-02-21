@@ -277,6 +277,15 @@ $(document).ready(function(){
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                             @endif
+                                            @if(auth()->user()->hasPermission('delete','inventarisasi_jalan'))
+                                                <button type="button" 
+                                                    class="btn btn-sm btn-danger btn-hapus-inventarisasi"
+                                                    data-link-no="${linkNoValue}"
+                                                    data-ruas-info="${item.link?.link_master?.link_name ?? 'Ruas ' + linkNoValue}"
+                                                    title="Hapus Data Inventarisasi">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -336,6 +345,73 @@ $(document).ready(function(){
                                 }
                             ]
                         });
+
+                        // ✅ FIX TC-SA075/076/077: Event handler hapus per baris (pakai event delegation)
+                        $(document).on('click', '.btn-hapus-inventarisasi', function() {
+                            const linkNo = $(this).data('link-no');
+                            const ruasInfo = $(this).data('ruas-info');
+
+                            Swal.fire({
+                                title: 'Hapus Data Inventarisasi?',
+                                html: `
+                                    <p>Anda akan menghapus data inventarisasi untuk:</p>
+                                    <p><strong>${ruasInfo}</strong></p>
+                                    <p class="text-danger"><small><i class="fas fa-exclamation-triangle"></i> 
+                                    Semua segmen terkait akan ikut terhapus dan tidak dapat dikembalikan!</small></p>
+                                `,
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonColor: '#d33',
+                                cancelButtonColor: '#6c757d',
+                                confirmButtonText: 'Ya, Hapus',
+                                cancelButtonText: 'Batal'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    hapusInventarisasi(linkNo);
+                                }
+                            });
+                        });
+
+                        function hapusInventarisasi(linkNo) {
+                            const deleteUrl = `/inventarisasi-jalan/delete/${linkNo}`;
+
+                            $.ajax({
+                                url: deleteUrl,
+                                type: 'DELETE',
+                                data: {
+                                    _token: '{{ csrf_token() }}'
+                                },
+                                beforeSend: function() {
+                                    Swal.fire({
+                                        title: 'Menghapus...',
+                                        text: 'Mohon tunggu',
+                                        allowOutsideClick: false,
+                                        didOpen: () => { Swal.showLoading(); }
+                                    });
+                                },
+                                success: function(response) {
+                                    if (response.success) {
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Berhasil!',
+                                            text: response.message || 'Data berhasil dihapus',
+                                            timer: 2000,
+                                            showConfirmButton: false
+                                        }).then(() => {
+                                            // Reload data dengan trigger ulang filter ruas
+                                            $('#filterRuas').val('').trigger('change');
+                                        });
+                                    } else {
+                                        Swal.fire('Gagal', response.message || 'Gagal menghapus data', 'error');
+                                    }
+                                },
+                                error: function(xhr) {
+                                    let msg = 'Terjadi kesalahan saat menghapus data';
+                                    if (xhr.responseJSON?.message) msg = xhr.responseJSON.message;
+                                    Swal.fire('Error', msg, 'error');
+                                }
+                            });
+                        }
                         
                     } else {
                         $('#detailRuas').html(`

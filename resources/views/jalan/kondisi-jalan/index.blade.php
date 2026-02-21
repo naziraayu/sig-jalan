@@ -391,7 +391,7 @@
                                     <td class="text-center">${(item.sdi1 ?? 0).toFixed(2)}</td>
                                     <td class="text-center">${(item.sdi2 ?? 0).toFixed(2)}</td>
                                     <td class="text-center">${(item.sdi3 ?? 0).toFixed(2)}</td>
-                                    <td class="text-center font-weight-bold text-info">${(item.sdi_final ?? 0).toFixed(2)}</td>
+                                    <td class="text-center">${(item.sdi4 ?? 0).toFixed(2)}</td>
                                     <td class="text-center font-weight-bold text-primary">
                                         ${(item.sdi_final ?? 0).toFixed(2)}
                                     </td>
@@ -554,6 +554,33 @@
         };
 
         initializeRuas();
+
+        // ✅ AUTO-LOAD: Jika redirect dari halaman create, langsung tampilkan data ruas yang baru disimpan
+        const urlParams = new URLSearchParams(window.location.search);
+        const autoLinkNo = urlParams.get('auto_link_no');
+        const autoYear = urlParams.get('auto_year');
+
+        if (autoLinkNo && autoYear) {
+            // Tunggu sampai dropdown ruas selesai dimuat, lalu pilih otomatis
+            const waitForRuas = setInterval(function() {
+                const $option = $('#filterRuas option[value="' + autoLinkNo + '"]');
+                if ($option.length > 0) {
+                    clearInterval(waitForRuas);
+                    $('#filterRuas').val(autoLinkNo);
+                    $('#btnFilter').prop('disabled', false);
+                    $('#btnFilter').trigger('click');
+                    
+                    // Bersihkan URL dari query params tanpa reload
+                    const cleanUrl = window.location.pathname;
+                    window.history.replaceState({}, document.title, cleanUrl);
+                }
+            }, 300); // Cek setiap 300ms sampai dropdown siap
+            
+            // Timeout fallback setelah 10 detik agar tidak loop selamanya
+            setTimeout(function() {
+                clearInterval(waitForRuas);
+            }, 10000);
+        }
     });
 </script>
 @endpush
