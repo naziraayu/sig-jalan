@@ -284,30 +284,30 @@ Route::middleware(['auth'])->group(function () {
     // --------------------
     // Ruas Jalan Kecamatan Routes
     // --------------------
-    Route::prefix('ruas-jalan-kecamatan')->name('ruas-jalan-kecamatan.')->group(function () {
+    Route::prefix('link-kecamatan')->name('link-kecamatan.')->group(function () {
         // Hapus semua
         Route::delete('/destroy-all', [LinkKecamatanController::class, 'destroyAll'])
-            ->middleware('permission:delete,ruas_jalan_kecamatan')->name('destroyAll');
+            ->middleware('permission:delete,link_kecamatan')->name('destroyAll');
 
         // CRUD - urutkan route yang spesifik dulu sebelum yang pakai parameter
         Route::get('/', [LinkKecamatanController::class, 'index'])
-            ->middleware('permission:read,ruas_jalan_kecamatan')->name('index');
+            ->middleware('permission:read,link_kecamatan')->name('index');
         Route::get('/create', [LinkKecamatanController::class, 'create'])
-            ->middleware('permission:add,ruas_jalan_kecamatan')->name('create');
+            ->middleware('permission:add,link_kecamatan')->name('create');
         Route::post('/', [LinkKecamatanController::class, 'store'])
-            ->middleware('permission:add,ruas_jalan_kecamatan')->name('store');
+            ->middleware('permission:add,link_kecamatan')->name('store');
         Route::get('/detail', [LinkKecamatanController::class, 'getDetail'])
             ->name('getDetail');
         Route::get('/show/{link_no}', [LinkKecamatanController::class, 'show'])
-            ->middleware('permission:read,ruas_jalan_kecamatan')->name('show');
+            ->middleware('permission:read,link_kecamatan')->name('show');
         
         // Route dengan parameter di akhir agar tidak bentrok
         Route::get('/{linkKecamatan}/edit', [LinkKecamatanController::class, 'edit'])
-            ->middleware('permission:update,ruas_jalan_kecamatan')->name('edit');
+            ->middleware('permission:update,link_kecamatan')->name('edit');
         Route::put('/{linkKecamatan}', [LinkKecamatanController::class, 'update'])
-            ->middleware('permission:update,ruas_jalan_kecamatan')->name('update');
+            ->middleware('permission:update,link_kecamatan')->name('update');
         Route::delete('/{linkKecamatan}', [LinkKecamatanController::class, 'destroy'])
-            ->middleware('permission:delete,ruas_jalan_kecamatan')->name('destroy');
+            ->middleware('permission:delete,link_kecamatan')->name('destroy');
     });
 
     // --------------------
@@ -407,21 +407,17 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // --------------------
-    // Map Routes
-    // --------------------
-
-    // --------------------
     // Import Export Routes (Terpusat)
     // --------------------
     Route::prefix('import-export')->name('import_export.')->group(function () {
         Route::get('/', [ImportExportController::class, 'index'])
             ->middleware('permission:detail,import_export')->name('index');
-        
         Route::post('/export', [ImportExportController::class, 'export'])
-            ->name('export');
-        
+            ->name('export');        
         Route::post('/import', [ImportExportController::class, 'import'])
             ->name('import');
+        Route::post('/download-template', [ImportExportController::class, 'downloadTemplate'])
+            ->name('download_template');
     });
 
     // --------------------

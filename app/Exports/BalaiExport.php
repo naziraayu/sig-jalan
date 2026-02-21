@@ -13,7 +13,7 @@ class BalaiExport implements FromCollection, WithHeadings
     */
     public function collection()
     {
-        return Balai::select('balai_code', 'balai_name', 'province_code')->get();
+        return Balai::select('province_code', 'balai_code', 'balai_name')->get();
     }
 
     public function headings(): array

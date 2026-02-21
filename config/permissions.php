@@ -11,7 +11,7 @@ return [
     // 'kelas_jalan' => ['read', 'add', 'detail', 'update', 'delete', 'import', 'export'],
     // 'koridor' => ['read', 'add', 'detail', 'update', 'delete', 'import', 'export'],
     // 'ruas_jalan_kabupaten' => ['read', 'add', 'detail', 'update', 'delete', 'import', 'export'],
-    // 'ruas_jalan_kecamatan' => ['read', 'add', 'detail', 'update', 'delete', 'import', 'export'],
+    'link_kecamatan' => ['read', 'add', 'detail', 'update', 'delete', 'import', 'export'],
     'inventarisasi_jalan' => ['read', 'add', 'detail', 'update', 'delete', 'import', 'export'],
     'kondisi_jalan' => ['read', 'add', 'detail', 'update', 'delete', 'import', 'export'],
     'koordinat_gps' => ['read', 'add', 'detail', 'update', 'delete', 'import', 'export'],
