@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Imports\LinkKecamatanImport;
 use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class LinkKecamatanSeeder extends Seeder
 {
@@ -18,7 +17,7 @@ class LinkKecamatanSeeder extends Seeder
 
         if (file_exists($path)) {
             Excel::import(new LinkKecamatanImport, $path);
-            $this->command->info('Link data imported from Excel successfully!');
+            $this->command->info('LinkKecamatan data imported from Excel successfully!');
         } else {
             $this->command->error("File not found: $path");
         }

@@ -2,11 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\CodeLinkStatus;
 use Illuminate\Database\Seeder;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\CodeLinkStatusImport;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CodeLinkStatusSeeder extends Seeder
 {
@@ -19,7 +17,7 @@ class CodeLinkStatusSeeder extends Seeder
 
         if (file_exists($path)) {
             Excel::import(new CodeLinkStatusImport, $path);
-            $this->command->info('Link data imported from Excel successfully!');
+            $this->command->info('CODE_LinkStatus data imported from Excel successfully!');
         } else {
             $this->command->error("File not found: $path");
         }

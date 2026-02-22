@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Imports\LinkMasterImport;
 use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class LinkMasterSeeder extends Seeder
 {
@@ -19,7 +18,7 @@ class LinkMasterSeeder extends Seeder
 
         if (file_exists($path)) {
             Excel::import(new LinkMasterImport, $path);
-            $this->command->info('Link data imported from Excel successfully!');
+            $this->command->info('LinkMaster data imported from Excel successfully!');
         } else {
             $this->command->error("File not found: $path");
         }

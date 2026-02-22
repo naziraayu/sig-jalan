@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\CodeImpassableImport;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CodeImpassableSeeder extends Seeder
 {
@@ -18,7 +17,7 @@ class CodeImpassableSeeder extends Seeder
 
         if (file_exists($path)) {
             Excel::import(new CodeImpassableImport, $path);
-            $this->command->info('Link data imported from Excel successfully!');
+            $this->command->info('CODE_Impassable data imported from Excel successfully!');
         } else {
             $this->command->error("File not found: $path");
         }

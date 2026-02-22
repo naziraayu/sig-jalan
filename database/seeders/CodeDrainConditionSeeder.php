@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\CodeDrainConditionImport;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CodeDrainConditionSeeder extends Seeder
 {
@@ -18,7 +17,7 @@ class CodeDrainConditionSeeder extends Seeder
 
         if (file_exists($path)) {
             Excel::import(new CodeDrainConditionImport, $path);
-            $this->command->info('Link data imported from Excel successfully!');
+            $this->command->info('CODE_DrainCondition data imported from Excel successfully!');
         } else {
             $this->command->error("File not found: $path");
         }

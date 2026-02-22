@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use data;
 use Illuminate\Database\Seeder;
 use App\Imports\LinkClassImport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -19,7 +18,7 @@ class LinkClassSeeder extends Seeder
 
         if (file_exists($path)) {
             Excel::import(new LinkClassImport, $path);
-            $this->command->info('Link data imported from Excel successfully!');
+            $this->command->info('LinkClass data imported from Excel successfully!');
         } else {
             $this->command->error("File not found: $path");
         }

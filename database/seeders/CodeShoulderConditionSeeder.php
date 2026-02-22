@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\CodeShoulderConditionImport;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CodeShoulderConditionSeeder extends Seeder
 {
@@ -18,7 +17,7 @@ class CodeShoulderConditionSeeder extends Seeder
 
         if (file_exists($path)) {
             Excel::import(new CodeShoulderConditionImport, $path);
-            $this->command->info('Link data imported from Excel successfully!');
+            $this->command->info('CODE_ShoulderCondition data imported from Excel successfully!');
         } else {
             $this->command->error("File not found: $path");
         }

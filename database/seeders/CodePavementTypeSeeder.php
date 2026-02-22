@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\CodePavementTypeImport;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CodePavementTypeSeeder extends Seeder
 {
@@ -18,7 +17,7 @@ class CodePavementTypeSeeder extends Seeder
 
         if (file_exists($path)) {
             Excel::import(new CodePavementTypeImport, $path);
-            $this->command->info('Link data imported from Excel successfully!');
+            $this->command->info('CODE_PavementType data imported from Excel successfully!');
         } else {
             $this->command->error("File not found: $path");
         }

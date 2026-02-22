@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\CodeFoothpathConditionImport;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CodeFoothpathConditionSeeder extends Seeder
 {
@@ -18,7 +17,7 @@ class CodeFoothpathConditionSeeder extends Seeder
 
         if (file_exists($path)) {
             Excel::import(new CodeFoothpathConditionImport, $path);
-            $this->command->info('Link data imported from Excel successfully!');
+            $this->command->info('CODE_FootpathCondition data imported from Excel successfully!');
         } else {
             $this->command->error("File not found: $path");
         }

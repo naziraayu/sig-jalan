@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Imports\CodeLandUseImport;
 use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CodeLandUseSeeder extends Seeder
 {
@@ -18,7 +17,7 @@ class CodeLandUseSeeder extends Seeder
 
         if (file_exists($path)) {
             Excel::import(new CodeLandUseImport, $path);
-            $this->command->info('Link data imported from Excel successfully!');
+            $this->command->info('CODE_LandUse data imported from Excel successfully!');
         } else {
             $this->command->error("File not found: $path");
         }

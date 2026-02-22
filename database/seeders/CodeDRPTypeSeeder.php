@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Imports\CodeDRPTypeImport;
 use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CodeDRPTypeSeeder extends Seeder
 {
@@ -18,7 +17,7 @@ class CodeDRPTypeSeeder extends Seeder
 
         if (file_exists($path)) {
             Excel::import(new CodeDRPTypeImport, $path);
-            $this->command->info('Link data imported from Excel successfully!');
+            $this->command->info('CODE_DRPType data imported from Excel successfully!');
         } else {
             $this->command->error("File not found: $path");
         }

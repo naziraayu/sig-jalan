@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\CodeSlopeConditionImport;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CodeSlopeConditionSeeder extends Seeder
 {
@@ -18,7 +17,7 @@ class CodeSlopeConditionSeeder extends Seeder
 
         if (file_exists($path)) {
             Excel::import(new CodeSlopeConditionImport, $path);
-            $this->command->info('Link data imported from Excel successfully!');
+            $this->command->info('CODE_SlopeCondition data imported from Excel successfully!');
         } else {
             $this->command->error("File not found: $path");
         }
