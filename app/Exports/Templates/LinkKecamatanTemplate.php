@@ -26,7 +26,7 @@ class LinkKecamatanTemplate implements FromArray, WithHeadings, WithStyles, With
         return [
             'Province_Code*',
             'Kabupaten_Code*',
-            'Link_No* (sistem otomatis cari Link_Id)',
+            'Link_No*',
             'DRP_From*',
             'DRP_To*',
             'Kecamatan_Code*',

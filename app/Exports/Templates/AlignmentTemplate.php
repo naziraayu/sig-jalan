@@ -25,7 +25,7 @@ class AlignmentTemplate implements FromArray, WithHeadings, WithStyles, WithColu
         return [
             'Province_Code*',
             'Kabupaten_Code*',
-            'Link_No* (sistem otomatis cari link_master_id)',
+            'Link_No*',
             'Year*',
             'Chainage*',
             'Chainage_RB',

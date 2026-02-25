@@ -1,9 +1,8 @@
 <?php
-// FILE: app/Imports/LinkKecamatanImport.php (REPLACE file yang lama)
 
 namespace App\Imports;
 
-use App\Models\Link;
+use App\Models\LinkMaster; // ✅ Ganti dari Link ke LinkMaster
 use App\Models\LinkKecamatan;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -18,9 +17,7 @@ class LinkKecamatanImport implements ToModel, WithHeadingRow, WithBatchInserts, 
 
     protected $skippedCount = 0;
     protected $errors = [];
-
-    // ✅ Cache link_id agar tidak query berulang untuk link_no yang sama
-    protected $linkIdCache = [];
+    protected $linkMasterIdCache = []; // ✅ Rename cache
 
     public function model(array $row)
     {
@@ -35,43 +32,40 @@ class LinkKecamatanImport implements ToModel, WithHeadingRow, WithBatchInserts, 
             return null;
         }
 
-        // ✅ AUTO LOOKUP link_id dari link_no - pakai cache agar efisien
-        $linkId = $this->getLinkId($linkNo, $provinceCode, $kabupatenCode);
+        // ✅ Lookup link_master_id
+        $linkMasterId = $this->getLinkMasterId($linkNo, $provinceCode, $kabupatenCode);
 
-        if (!$linkId) {
+        if (!$linkMasterId) {
             $this->skippedCount++;
-            $this->errors[] = "Dilewati: link_no '{$linkNo}' tidak ditemukan di database. Pastikan Ruas Jalan sudah diimport terlebih dahulu.";
+            $this->errors[] = "Dilewati: link_no '{$linkNo}' tidak ditemukan di link_master. Pastikan Ruas Jalan sudah diimport terlebih dahulu.";
             return null;
         }
 
         return new LinkKecamatan([
-            'province_code'  => $provinceCode,
-            'kabupaten_code' => $kabupatenCode,
-            'link_id'        => $linkId, // ✅ Dari lookup otomatis
-            'drp_from'       => $row['drp_from'] ?? null,
-            'drp_to'         => $row['drp_to'] ?? null,
-            'kecamatan_code' => $kecamatanCode,
+            'province_code'   => $provinceCode,
+            'kabupaten_code'  => $kabupatenCode,
+            'link_master_id'  => $linkMasterId, // ✅ Ganti dari link_id
+            'drp_from'        => $row['drp_from'] ?? null,
+            'drp_to'          => $row['drp_to'] ?? null,
+            'kecamatan_code'  => $kecamatanCode,
         ]);
     }
 
-    /**
-     * ✅ Lookup link_id dengan caching untuk performa
-     */
-    protected function getLinkId(string $linkNo, string $provinceCode, string $kabupatenCode): ?int
+    protected function getLinkMasterId(string $linkNo, string $provinceCode, string $kabupatenCode): ?int
     {
         $cacheKey = "{$linkNo}_{$provinceCode}_{$kabupatenCode}";
 
-        if (!isset($this->linkIdCache[$cacheKey])) {
-            $link = Link::where('link_no', $linkNo)
+        if (!isset($this->linkMasterIdCache[$cacheKey])) {
+            $linkMaster = LinkMaster::where('link_no', $linkNo)
                 ->where('province_code', $provinceCode)
                 ->where('kabupaten_code', $kabupatenCode)
                 ->select('id')
                 ->first();
 
-            $this->linkIdCache[$cacheKey] = $link ? $link->id : null;
+            $this->linkMasterIdCache[$cacheKey] = $linkMaster ? $linkMaster->id : null;
         }
 
-        return $this->linkIdCache[$cacheKey];
+        return $this->linkMasterIdCache[$cacheKey];
     }
 
     public function chunkSize(): int { return 1000; }

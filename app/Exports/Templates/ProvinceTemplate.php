@@ -27,8 +27,8 @@ class ProvinceTemplate implements FromArray, WithHeadings, WithStyles, WithColum
         return [
             'Province_Code*',
             'Province_Name*',
-            'Default_Province (1=Ya, 0=Tidak)',
-            'Stable (1=Stable, 0=Unstable)',
+            'Default_Province',
+            'Stable',
         ];
     }
 

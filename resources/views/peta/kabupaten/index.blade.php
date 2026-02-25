@@ -524,6 +524,10 @@
         width: 100%;
         border-radius: 0 0 0.25rem 0.25rem;
     }
+
+    .leaflet-control-attribution {
+        display: none !important;
+    }
     
     .legend {
         background: white;

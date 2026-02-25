@@ -33,14 +33,14 @@ class LinkTemplate implements FromArray, WithHeadings, WithStyles, WithColumnWid
     {
         return [
             'Link_No*',
-            'Link_Name* (untuk referensi master)',
+            'Link_Name*',
             'Province_Code*',
             'Kabupaten_Code*',
             'Year*',
             'Link_Code',
-            'Status (kode dari tabel code_link_status)',
-            'Function (kode dari tabel code_link_function)',
-            'Class (kode dari tabel code_link_class)',
+            'Status',
+            'Function',
+            'Class',
             'Project_Number',
             'Access_Status',
             'Link_Length_Official',

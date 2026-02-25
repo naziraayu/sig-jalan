@@ -74,8 +74,14 @@ class RoadConditionImport implements
         // ✅ AUTO LOOKUP link_id dari link_no + province + kabupaten
         $provinceCode  = $row['province_code'] ?? null;
         $kabupatenCode = $row['kabupaten_code'] ?? null;
-        $linkId        = $this->getLinkId($row['link_no'], $provinceCode, $kabupatenCode);
+        $year = $row['reference_year'] ?? null; // ✅ Pakai reference_year untuk lookup link
 
+        $linkId = $this->getLinkId(
+            $row['link_no'], 
+            $provinceCode, 
+            $kabupatenCode,
+            $year // ✅ Kirim year
+        );
         if (!$linkId) {
             $this->skippedCount++;
             $this->errors[] = "Dilewati: link_no '{$row['link_no']}' tidak ditemukan. Import Ruas Jalan terlebih dahulu.";
@@ -176,16 +182,17 @@ class RoadConditionImport implements
     /**
      * ✅ Lookup link_id dengan caching agar tidak query berulang
      */
-    protected function getLinkId(?string $linkNo, ?string $provinceCode, ?string $kabupatenCode): ?int
+    protected function getLinkId(?string $linkNo, ?string $provinceCode, ?string $kabupatenCode, ?int $year = null): ?int
     {
         if (!$linkNo) return null;
 
-        $cacheKey = "{$linkNo}_{$provinceCode}_{$kabupatenCode}";
+        $cacheKey = "{$linkNo}_{$provinceCode}_{$kabupatenCode}_{$year}";
 
         if (!isset($this->linkIdCache[$cacheKey])) {
             $query = Link::where('link_no', $linkNo);
             if ($provinceCode)  $query->where('province_code', $provinceCode);
             if ($kabupatenCode) $query->where('kabupaten_code', $kabupatenCode);
+            if ($year)          $query->where('year', $year); // ✅ Tambah ini
 
             $link = $query->select('id')->first();
             $this->linkIdCache[$cacheKey] = $link ? $link->id : null;

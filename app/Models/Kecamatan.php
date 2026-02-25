@@ -35,12 +35,12 @@ class Kecamatan extends Model
     public function links()
     {
         return $this->belongsToMany(
-            Link::class,           // ✅ Model tujuan: Link
-            'link_kecamatan',      // Pivot table
-            'kecamatan_code',      // FK di pivot ke kecamatan
-            'link_id',             // FK di pivot ke link
-            'kecamatan_code',      // Local key di kecamatan
-            'id'                   // Local key di link
+            LinkMaster::class,     // ✅ Ganti dari Link ke LinkMaster
+            'link_kecamatan',
+            'kecamatan_code',
+            'link_master_id',      // ✅ Ganti dari link_id
+            'kecamatan_code',
+            'id'
         );
     }
 

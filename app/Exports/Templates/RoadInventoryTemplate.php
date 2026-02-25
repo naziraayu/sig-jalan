@@ -25,7 +25,7 @@ class RoadInventoryTemplate implements FromArray, WithHeadings, WithStyles, With
         return [
             'Province_Code*',
             'Kabupaten_Code*',
-            'Link_No* (sistem otomatis cari Link_Id)',
+            'Link_No*',
             'Year*',
             'Chainage_From*',
             'Chainage_To*',
@@ -35,19 +35,18 @@ class RoadInventoryTemplate implements FromArray, WithHeadings, WithStyles, With
             'Offset_To',
             'Pave_Width',
             'ROW',
-            'Pave_Type (kode pavement)',
+            'Pave_Type',
             'Should_Width_L',
             'Should_Width_R',
-            'Should_Type_L (kode pavement)',
-            'Should_Type_R (kode pavement)',
-            'Drain_Type_L (kode drain)',
-            'Drain_Type_R (kode drain)',
-            'Terrain (kode terrain)',
-            'Land_Use_L (kode land use)',
-            'Land_Use_R (kode land use)',
-            'Impassable (1=Ya, 0=Tidak)',
-            'Impassable_Reason (kode impassable)',
-            // TIDAK ADA: id, link_id - dihandle otomatis
+            'Should_Type_L',
+            'Should_Type_R',
+            'Drain_Type_L',
+            'Drain_Type_R',
+            'Terrain',
+            'Land_Use_L',
+            'Land_Use_R',
+            'Impassable',
+            'Impassable_Reason',
         ];
     }
 

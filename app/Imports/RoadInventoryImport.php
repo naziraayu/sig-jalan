@@ -34,7 +34,7 @@ class RoadInventoryImport implements ToModel, WithHeadingRow, WithChunkReading, 
         }
 
         // ✅ AUTO LOOKUP link_id dari link_no + province + kabupaten
-        $linkId = $this->getLinkId($linkNo, $provinceCode, $kabupatenCode);
+        $linkId = $this->getLinkId($linkNo, $provinceCode, $kabupatenCode, $year);
 
         if (!$linkId) {
             $this->skippedCount++;
@@ -48,8 +48,8 @@ class RoadInventoryImport implements ToModel, WithHeadingRow, WithChunkReading, 
             'link_id'          => $linkId, // ✅ Dari lookup otomatis
             'link_no'          => $linkNo,
             'year'             => $year,
-            'chainage_from'    => $row['chainage_from'] ?? 0,
-            'chainage_to'      => $row['chainage_to'] ?? 0,
+            'chainage_from'    => $row['chainagefrom'] ?? 0,
+            'chainage_to'      => $row['chainageto'] ?? 0,
             'drp_from'         => $row['drp_from'] ?? null,
             'offset_from'      => $row['offset_from'] ?? null,
             'drp_to'           => $row['drp_to'] ?? null,
@@ -74,14 +74,15 @@ class RoadInventoryImport implements ToModel, WithHeadingRow, WithChunkReading, 
     /**
      * ✅ Lookup link_id dengan caching
      */
-    protected function getLinkId(string $linkNo, string $provinceCode, string $kabupatenCode): ?int
+    protected function getLinkId(string $linkNo, string $provinceCode, string $kabupatenCode, ?int $year = null): ?int
     {
-        $cacheKey = "{$linkNo}_{$provinceCode}_{$kabupatenCode}";
+        $cacheKey = "{$linkNo}_{$provinceCode}_{$kabupatenCode}_{$year}";
 
         if (!isset($this->linkIdCache[$cacheKey])) {
             $link = Link::where('link_no', $linkNo)
                 ->where('province_code', $provinceCode)
                 ->where('kabupaten_code', $kabupatenCode)
+                ->when($year, fn($q) => $q->where('year', $year))
                 ->select('id')
                 ->first();
 

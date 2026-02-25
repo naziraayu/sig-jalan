@@ -28,8 +28,8 @@ class KabupatenTemplate implements FromArray, WithHeadings, WithStyles, WithColu
             'Kabupaten_Name*',
             'Balai_Code*',
             'Island_Code*',
-            'Default_Kabupaten (1=Ya, 0=Tidak)',
-            'Stable (1=Stable, 0=Unstable)',
+            'Default_Kabupaten',
+            'Stable',
         ];
     }
 

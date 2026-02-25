@@ -2,6 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\Kabupaten;
+use App\Models\Kecamatan;
+use App\Models\LinkMaster;
+use App\Models\Province;
+use App\Models\RoadCondition;
 use Illuminate\Database\Eloquent\Model;
 
 class LinkKecamatan extends Model
@@ -15,7 +20,7 @@ class LinkKecamatan extends Model
     protected $fillable = [
         'province_code',
         'kabupaten_code',
-        'link_id',
+        'link_master_id',
         'drp_from',
         'drp_to',
         'kecamatan_code',
@@ -31,24 +36,9 @@ class LinkKecamatan extends Model
         return $this->belongsTo(Kabupaten::class, 'kabupaten_code', 'kabupaten_code');
     }
 
-    public function link()
+    public function linkMaster()
     {
-        return $this->belongsTo(Link::class, 'link_id', 'id');
-    }
-
-    /**
-     * ✅ TAMBAHAN: Relasi ke RoadCondition melalui Link
-     */
-    public function roadConditions()
-    {
-        return $this->hasManyThrough(
-            RoadCondition::class,
-            Link::class,
-            'id',        // FK di tabel link
-            'link_id',   // FK di tabel road_condition
-            'link_id',   // Local key di link_kecamatan
-            'id'         // Local key di link
-        );
+        return $this->belongsTo(LinkMaster::class, 'link_master_id', 'id');
     }
 
     /// Relasi ke titik DRP awal - dengan filter link_no

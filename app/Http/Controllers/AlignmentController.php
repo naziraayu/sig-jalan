@@ -3,10 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Alignment;
-use App\Models\Kecamatan;
 use App\Models\RoadCondition;
-use App\Models\RoadInventory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -354,8 +351,10 @@ class AlignmentController extends Controller
             
             // ✅ STRICT FILTER seperti Dashboard
             $kecamatans = DB::table('link_kecamatan as lk')
+                // ✅ BENAR - join lewat link_master
+                ->join('link_master as lm', 'lk.link_master_id', '=', 'lm.id')
                 ->join('link as l', function($join) use ($referenceYear) {
-                    $join->on('lk.link_id', '=', 'l.id');
+                    $join->on('lm.id', '=', 'l.link_master_id');
                     if ($referenceYear) {
                         $join->where('l.year', '=', $referenceYear);
                     }
@@ -455,10 +454,8 @@ class AlignmentController extends Controller
                     ->whereHas('kabupaten', function ($query) {
                         $query->where('kabupaten_name', 'LIKE', '%JEMBER%');
                     })
-                    ->whereHas('link', function($query) use ($kecamatanCodes, $referenceYear) {
-                        if ($referenceYear) {
-                            $query->where('year', $referenceYear);
-                        }
+                    // ✅ BENAR - lewat linkMaster
+                    ->whereHas('link.linkMaster', function($query) use ($kecamatanCodes) {
                         $query->whereHas('linkKecamatans', function($q) use ($kecamatanCodes) {
                             $q->whereIn('kecamatan_code', $kecamatanCodes);
                         });
@@ -610,7 +607,6 @@ class AlignmentController extends Controller
                     // ===== STEP 5: Masukkan ke result =====
                     $result[] = [
                         'link_no' => $condition->link_no,
-                        'link_id' => $condition->link_id,
                         'link_name' => $condition->link->linkMaster->link_name ?? 'Nama ruas tidak tersedia',
                         'chainage_from' => (float) $condition->chainage_from,
                         'chainage_to' => (float) $condition->chainage_to,

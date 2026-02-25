@@ -25,7 +25,7 @@ class DRPTemplate implements FromArray, WithHeadings, WithStyles, WithColumnWidt
         return [
             'Province_Code*',
             'Kabupaten_Code*',
-            'Link_No* (bukan Link_Id)',
+            'Link_No*',
             'DRP_Num*',
             'Chainage*',
             'DRP_Order',
@@ -36,7 +36,7 @@ class DRPTemplate implements FromArray, WithHeadings, WithStyles, WithColumnWidt
             'DRP_East_Deg',
             'DRP_East_Min',
             'DRP_East_Sec',
-            'DRP_Type (kode dari tabel code_drptype)',
+            'DRP_Type',
             'DRP_Desc',
             'DRP_Comment',
         ];

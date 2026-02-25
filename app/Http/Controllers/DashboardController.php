@@ -295,12 +295,12 @@ class DashboardController extends Controller
         $kecamatanStats = DB::table('road_condition as rc')
             ->join('link as l', function($join) use ($referenceYear) {
                 $join->on('rc.link_no', '=', 'l.link_no');
-                // ✅ STRICT: Link harus dari reference year
                 if ($referenceYear) {
                     $join->where('l.year', '=', $referenceYear);
                 }
             })
-            ->join('link_kecamatan as lk', 'l.id', '=', 'lk.link_id')
+            ->join('link_master as lm', 'l.link_master_id', '=', 'lm.id') // ✅ lewat link_master
+            ->join('link_kecamatan as lk', 'lm.id', '=', 'lk.link_master_id') // ✅ link_master_id
             ->join('kecamatan as k', 'lk.kecamatan_code', '=', 'k.kecamatan_code')
             ->join('kabupaten as kab', 'k.kabupaten_code', '=', 'kab.kabupaten_code')
             ->where('kab.kabupaten_name', 'LIKE', '%JEMBER%')

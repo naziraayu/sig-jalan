@@ -127,27 +127,6 @@ class Link extends Model
         return $this->hasMany(RoadCondition::class, 'link_id', 'id');
     }
 
-    public function linkKecamatans()
-    {
-        return $this->hasMany(LinkKecamatan::class, 'link_id', 'id');
-    }
-
-    /**
-     * ✅ TAMBAHAN: Relasi Many-to-Many ke Kecamatan
-     * Melalui tabel pivot link_kecamatan
-     */
-    public function kecamatans()
-    {
-        return $this->belongsToMany(
-            Kecamatan::class,
-            'link_kecamatan',  // Pivot table
-            'link_id',         // FK di pivot yang menunjuk ke link.id
-            'kecamatan_code',  // FK di pivot yang menunjuk ke kecamatan.kecamatan_code
-            'id',              // Local key di link (primary key)
-            'kecamatan_code'   // Local key di kecamatan
-        );
-    }
-
     // ====================================
     // ✅ SCOPES
     // ====================================

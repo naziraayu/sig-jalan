@@ -21,6 +21,35 @@ class LinkMaster extends Model
         return $this->hasMany(Link::class, 'link_master_id', 'id');
     }
 
+    public function linkKecamatans()
+    {
+        return $this->hasMany(LinkKecamatan::class, 'link_master_id', 'id');
+    }
+
+    public function kecamatans()
+    {
+        return $this->belongsToMany(
+            Kecamatan::class,
+            'link_kecamatan',
+            'link_master_id',
+            'kecamatan_code',
+            'id',
+            'kecamatan_code'
+        );
+    }
+
+    public function roadConditions()
+    {
+        return $this->hasManyThrough(
+            RoadCondition::class,
+            Link::class,
+            'link_master_id', // FK di tabel link → link_master
+            'link_id',        // FK di tabel road_condition → link
+            'id',             // ✅ Primary key LinkMaster
+            'id'              // Primary key Link
+        );
+    }
+
     public function alignments()
     {
         return $this->hasMany(Alignment::class, 'link_master_id', 'id');
