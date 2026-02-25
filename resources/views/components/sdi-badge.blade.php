@@ -1,3 +1,7 @@
+@php
+    $bgColor = $bgColor ?? '#6c757d';
+    $textColor = $textColor ?? '#ffffff';
+@endphp
 <span 
     {{ $attributes->merge([
         'class' => 'badge sdi-badge',
