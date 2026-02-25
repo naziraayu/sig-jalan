@@ -1,6 +1,7 @@
 @php
     $bgColor = $bgColor ?? '#6c757d';
     $textColor = $textColor ?? '#ffffff';
+    $sdiValue = $sdiValue ?? null;
 @endphp
 <span 
     {{ $attributes->merge([
