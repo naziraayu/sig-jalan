@@ -65,7 +65,7 @@ class LinkImport implements ToModel, WithHeadingRow, WithBatchInserts, WithChunk
             'function'             => $row['function'] ?? null,
             'class'                => $row['class'] ?? null,
             'project_number'       => $row['project_number'] ?? null,
-            'access_status'        => $row['access_status'] ?? null,
+            'access_status'        => $row['accessstatus'] ?? null,
             'link_length_official' => $row['link_length_official'] ?? 0,
             'link_length_actual'   => $row['link_length_actual'] ?? 0,
             'WTI'                  => $row['wti'] ?? 0,
