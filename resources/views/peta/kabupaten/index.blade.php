@@ -114,12 +114,13 @@
 
                         <!-- ✅ TOGGLE DATA DRAINASE 3 KECAMATAN -->
                         <h6 style="margin: 0 0 10px 0; font-weight: bold; font-size: 13px;">
-                            <i class="fas fa-water"></i> Data Drainase & Genangan
+                            <i class="fas fa-water"></i> Data Genangan Air
                         </h6>
 
                         <!-- Kaliwates -->
+                        {{-- ✅ PERUBAHAN 1: Default UNCHECKED (tidak ada attribute 'checked') --}}
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="toggleKaliwates" checked>
+                            <input class="form-check-input" type="checkbox" id="toggleKaliwates">
                             <label class="form-check-label" for="toggleKaliwates" style="font-size: 12px;">
                                 <span style="display: inline-block; width: 22px; height: 22px; background: #2196F3; margin-right: 5px; vertical-align: middle; border-radius: 50%; text-align: center; line-height: 22px; color: white; font-size: 11px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">K</span>
                                 Kaliwates
@@ -130,8 +131,9 @@
                         </small>
 
                         <!-- Patrang -->
+                        {{-- ✅ PERUBAHAN 1: Default UNCHECKED --}}
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="togglePatrang" checked>
+                            <input class="form-check-input" type="checkbox" id="togglePatrang">
                             <label class="form-check-label" for="togglePatrang" style="font-size: 12px;">
                                 <span style="display: inline-block; width: 22px; height: 22px; background: #1976D2; margin-right: 5px; vertical-align: middle; border-radius: 50%; text-align: center; line-height: 22px; color: white; font-size: 11px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">P</span>
                                 Patrang
@@ -142,8 +144,9 @@
                         </small>
 
                         <!-- Sumbersari -->
+                        {{-- ✅ PERUBAHAN 1: Default UNCHECKED --}}
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="toggleSumbersari" checked>
+                            <input class="form-check-input" type="checkbox" id="toggleSumbersari">
                             <label class="form-check-label" for="toggleSumbersari" style="font-size: 12px;">
                                 <span style="display: inline-block; width: 22px; height: 22px; background: #388E3C; margin-right: 5px; vertical-align: middle; border-radius: 50%; text-align: center; line-height: 22px; color: white; font-size: 11px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">S</span>
                                 Sumbersari
@@ -155,7 +158,7 @@
 
                         <div class="mt-2 p-2" style="background: #e3f2fd; border-radius: 4px; border-left: 3px solid #2196F3;">
                             <small style="font-size: 10px; color: #1565C0;">
-                                <i class="fas fa-info-circle"></i> <strong>Total: 55 lokasi</strong> data drainase dan genangan banjir
+                                <i class="fas fa-info-circle"></i> <strong>Total: 55 lokasi</strong> data genangan air
                             </small>
                         </div>
                         <hr style="margin: 10px 0;">
@@ -319,8 +322,10 @@
                                             <div class="card-header">
                                                 <h4>Baik</h4>
                                             </div>
-                                            <div class="card-body" id="stat-baik">
-                                                <span class="text-muted">-</span>
+                                            {{-- ✅ PERUBAHAN 2: Tambah elemen persentase di sebelah panjang --}}
+                                            <div class="card-body d-flex align-items-baseline" id="stat-baik-wrap">
+                                                <span id="stat-baik"><span class="text-muted">-</span></span>
+                                                <span id="pct-baik" class="ml-2" style="font-size: 14px; font-weight: 500; color: #2ecc71;"></span>
                                             </div>
                                         </div>
                                     </div>
@@ -334,8 +339,10 @@
                                             <div class="card-header">
                                                 <h4>Sedang</h4>
                                             </div>
-                                            <div class="card-body" id="stat-sedang">
-                                                <span class="text-muted">-</span>
+                                            {{-- ✅ PERUBAHAN 2: Tambah elemen persentase --}}
+                                            <div class="card-body d-flex align-items-baseline" id="stat-sedang-wrap">
+                                                <span id="stat-sedang"><span class="text-muted">-</span></span>
+                                                <span id="pct-sedang" class="ml-2" style="font-size: 14px; font-weight: 500; color: #d4ac0d;"></span>
                                             </div>
                                         </div>
                                     </div>
@@ -353,8 +360,10 @@
                                             <div class="card-header">
                                                 <h4>Rusak Ringan</h4>
                                             </div>
-                                            <div class="card-body" id="stat-rusak-ringan">
-                                                <span class="text-muted">-</span>
+                                            {{-- ✅ PERUBAHAN 2: Tambah elemen persentase --}}
+                                            <div class="card-body d-flex align-items-baseline" id="stat-rusak-ringan-wrap">
+                                                <span id="stat-rusak-ringan"><span class="text-muted">-</span></span>
+                                                <span id="pct-rusak-ringan" class="ml-2" style="font-size: 14px; font-weight: 500; color: #e67e22;"></span>
                                             </div>
                                         </div>
                                     </div>
@@ -368,8 +377,10 @@
                                             <div class="card-header">
                                                 <h4>Rusak Berat</h4>
                                             </div>
-                                            <div class="card-body" id="stat-rusak-berat">
-                                                <span class="text-muted">-</span>
+                                            {{-- ✅ PERUBAHAN 2: Tambah elemen persentase --}}
+                                            <div class="card-body d-flex align-items-baseline" id="stat-rusak-berat-wrap">
+                                                <span id="stat-rusak-berat"><span class="text-muted">-</span></span>
+                                                <span id="pct-rusak-berat" class="ml-2" style="font-size: 14px; font-weight: 500; color: #e74c3c;"></span>
                                             </div>
                                         </div>
                                     </div>
@@ -529,35 +540,6 @@
         display: none !important;
     }
     
-    .legend {
-        background: white;
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-        line-height: 1.8;
-    }
-    
-    .legend h4 {
-        margin: 0 0 10px 0;
-        font-size: 14px;
-        font-weight: bold;
-        color: #333;
-    }
-    
-    .legend-item {
-        margin: 5px 0;
-        display: flex;
-        align-items: center;
-        font-size: 12px;
-    }
-    
-    .legend-color {
-        display: inline-block;
-        width: 25px;
-        height: 4px;
-        margin-right: 8px;
-        border-radius: 2px;
-    }
     
     .leaflet-popup-content {
         margin: 10px;
@@ -708,9 +690,10 @@ document.addEventListener("DOMContentLoaded", function () {
     let patrangLayer = L.layerGroup(); 
     let sumbersariLayer = L.layerGroup();
 
-    let showKaliwates = true;
-    let showPatrang = true;
-    let showSumbersari = true;
+    // ✅ PERUBAHAN 1: Default semua false — layer TIDAK ditampilkan saat halaman dibuka
+    let showKaliwates = false;
+    let showPatrang = false;
+    let showSumbersari = false;
 
     // ✅ LOAD DATA KALIWATES
     function loadKaliwatesData() {
@@ -722,7 +705,6 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(geojson => {
                 dataKaliwates = geojson.features;
                 renderKaliwatesLayer();
-                updateLegendCount();
                 console.log(`✅ ${geojson.features.length} features Kaliwates berhasil dimuat`);
             })
             .catch(error => {
@@ -741,7 +723,6 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(geojson => {
                 dataPatrang = geojson.features;
                 renderPatrangLayer();
-                updateLegendCount();
                 console.log(`✅ ${geojson.features.length} features Patrang berhasil dimuat`);
             })
             .catch(error => {
@@ -760,7 +741,6 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(geojson => {
                 dataSumbersari = geojson.features;
                 renderSumbersariLayer();
-                updateLegendCount();
                 console.log(`✅ ${geojson.features.length} features Sumbersari berhasil dimuat`);
             })
             .catch(error => {
@@ -835,8 +815,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
         
+        // ✅ PERUBAHAN 1: Hanya tambahkan ke map kalau showKaliwates = true
         if (showKaliwates) kaliwatesLayer.addTo(map);
-        console.log(`📍 ${dataKaliwates.length} features Kaliwates ditampilkan`);
+        console.log(`📍 ${dataKaliwates.length} features Kaliwates dimuat (${showKaliwates ? 'ditampilkan' : 'tersembunyi'})`);
     }
 
     // ✅ RENDER PATRANG LAYER (Biru Tua)
@@ -899,8 +880,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
         
+        // ✅ PERUBAHAN 1: Hanya tambahkan ke map kalau showPatrang = true
         if (showPatrang) patrangLayer.addTo(map);
-        console.log(`📍 ${dataPatrang.length} features Patrang ditampilkan`);
+        console.log(`📍 ${dataPatrang.length} features Patrang dimuat (${showPatrang ? 'ditampilkan' : 'tersembunyi'})`);
     }
 
     // ✅ RENDER SUMBERSARI LAYER (Hijau)
@@ -963,8 +945,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
         
+        // ✅ PERUBAHAN 1: Hanya tambahkan ke map kalau showSumbersari = true
         if (showSumbersari) sumbersariLayer.addTo(map);
-        console.log(`📍 ${dataSumbersari.length} features Sumbersari ditampilkan`);
+        console.log(`📍 ${dataSumbersari.length} features Sumbersari dimuat (${showSumbersari ? 'ditampilkan' : 'tersembunyi'})`);
     }
 
     // ✅ TOGGLE FUNCTIONS
@@ -992,14 +975,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // ✅ UPDATE LEGEND COUNT
-    function updateLegendCount() {
-        // Update legend jika sudah ada
-        if (legendControl) {
-            map.removeControl(legendControl);
-            addLegend();
-        }
-    }
+    // ✅ UPDATE LEGEND COUNT - dihapus (legend sudah tidak digunakan)
 
     // ==================== ✅ TOGGLE BUTTON EVENT LISTENERS ====================
     
@@ -1082,6 +1058,7 @@ document.addEventListener("DOMContentLoaded", function () {
         showSumbersari = $(this).is(':checked');
         toggleSumbersariLayer();
     });
+
     // ==================== FUNCTIONS ====================
 
     /**
@@ -1196,7 +1173,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (response.success && response.data && response.data.length > 0) {
                     allSegments = response.data;
                     renderSegments();
-                    addLegend();
                 } else {
                     $('#total-links').html('Tidak ada data');
                     alert(response.message || 'Tidak ada data untuk kecamatan yang dipilih');
@@ -1445,36 +1421,51 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     /**
-     * Update statistik panjang DAN estimasi biaya (dengan lebar jalan per segmen)
+     * ✅ PERUBAHAN 2: Update statistik panjang + persentase per kategori
      */
     function updateLengthStatistics(lengthStats) {
-        // Update panjang (existing)
+        // ===== Hitung total panjang dari semua kategori yang ada di data (bukan hanya yang difilter) =====
+        // Supaya persentase konsisten terhadap total keseluruhan data yang dimuat
+        let totalAllLength = Object.values(lengthStats).reduce((sum, val) => sum + val, 0);
+
+        // Helper hitung persentase
+        function calcPct(value) {
+            if (totalAllLength === 0) return '0%';
+            return ((value / totalAllLength) * 100).toFixed(1) + '%';
+        }
+
+        // Update panjang + persentase
         $('#stat-baik').html((lengthStats['Baik'] / 1000).toFixed(2) + ' Km');
+        $('#pct-baik').html('(' + calcPct(lengthStats['Baik']) + ')');
+
         $('#stat-sedang').html((lengthStats['Sedang'] / 1000).toFixed(2) + ' Km');
+        $('#pct-sedang').html('(' + calcPct(lengthStats['Sedang']) + ')');
+
         $('#stat-rusak-ringan').html((lengthStats['Rusak Ringan'] / 1000).toFixed(2) + ' Km');
+        $('#pct-rusak-ringan').html('(' + calcPct(lengthStats['Rusak Ringan']) + ')');
+
         $('#stat-rusak-berat').html((lengthStats['Rusak Berat'] / 1000).toFixed(2) + ' Km');
+        $('#pct-rusak-berat').html('(' + calcPct(lengthStats['Rusak Berat']) + ')');
 
         // ===== ESTIMASI BIAYA DENGAN LEBAR JALAN AKTUAL =====
         const HARGA_PER_M2 = {
-            'Sedang': 600000,        // Rp 600.000/m²
-            'Rusak Ringan': 800000,  // Rp 800.000/m²
-            'Rusak Berat': 1000000   // Rp 1.000.000/m²
+            'Sedang': 600000,
+            'Rusak Ringan': 800000,
+            'Rusak Berat': 1000000
         };
 
-        // Hitung luas dan biaya per kategori berdasarkan lebar jalan aktual
         let luasSedang = 0;
         let luasRusakRingan = 0;
         let luasRusakBerat = 0;
 
-        // Loop semua segments yang ditampilkan
         const filteredSegments = allSegments.filter(segment => 
             selectedCategories.includes(segment.category)
         );
 
         filteredSegments.forEach(segment => {
-            const panjang = segment.chainage_to - segment.chainage_from; // dalam meter
-            const lebar = segment.pave_width || 6; // gunakan pave_width atau default 6m
-            const luas = panjang * lebar; // m²
+            const panjang = segment.chainage_to - segment.chainage_from;
+            const lebar = segment.pave_width || 6;
+            const luas = panjang * lebar;
 
             if (segment.category === 'Sedang') {
                 luasSedang += luas;
@@ -1485,17 +1476,13 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
 
-        // Hitung biaya
         const biayaSedang = luasSedang * HARGA_PER_M2['Sedang'];
         const biayaRusakRingan = luasRusakRingan * HARGA_PER_M2['Rusak Ringan'];
         const biayaRusakBerat = luasRusakBerat * HARGA_PER_M2['Rusak Berat'];
         const biayaTotal = biayaSedang + biayaRusakRingan + biayaRusakBerat;
 
-        // ✅ FORMAT RUPIAH LENGKAP (TANPA SINGKATAN)
         function formatRupiah(angka) {
             if (angka === 0) return 'Rp 0';
-            
-            // Format dengan pemisah ribuan (titik untuk Indonesia)
             return 'Rp ' + angka.toLocaleString('id-ID', {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0
@@ -1515,81 +1502,11 @@ document.addEventListener("DOMContentLoaded", function () {
         $('#area-total').html(`Total Luas: ${(luasSedang + luasRusakRingan + luasRusakBerat).toLocaleString('id-ID', {maximumFractionDigits: 0})} m²`);
 
         console.log('💰 Estimasi Biaya (dengan pave_width aktual):', {
-            luas_sedang: luasSedang.toFixed(0) + ' m²',
-            luas_rusak_ringan: luasRusakRingan.toFixed(0) + ' m²',
-            luas_rusak_berat: luasRusakBerat.toFixed(0) + ' m²',
             biaya_sedang: formatRupiah(biayaSedang),
             biaya_rusak_ringan: formatRupiah(biayaRusakRingan),
             biaya_rusak_berat: formatRupiah(biayaRusakBerat),
             biaya_total: formatRupiah(biayaTotal)
         });
-    }
-
-    /**
-     * Add legend
-     */
-    let legendControl = null;
-    function addLegend() {
-        if (legendControl) {
-            map.removeControl(legendControl);
-        }
-
-        legendControl = L.control({ position: 'bottomright' });
-        
-        legendControl.onAdd = function() {
-            let div = L.DomUtil.create('div', 'legend');
-            
-            div.innerHTML = '<h4><i class="fas fa-info-circle"></i> Kategori SDI</h4>';
-            div.innerHTML += '<small style="color: #666; display: block; margin-bottom: 10px;">Surface Distress Index</small>';
-            
-            const categories = ['Baik', 'Sedang', 'Rusak Ringan', 'Rusak Berat'];
-            
-            categories.forEach(category => {
-                div.innerHTML += `
-                    <div class="legend-item">
-                        <span class="legend-color" style="background: ${sdiColors[category]};"></span>
-                        <span><strong>${category}</strong></span>
-                    </div>
-                `;
-            });
-
-            // ✅ TAMBAHAN: Section Data Drainase
-            div.innerHTML += '<div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">';
-            div.innerHTML += '<h4><i class="fas fa-water"></i> Data Drainase</h4>';
-            
-            if (dataKaliwates.length > 0) {
-                div.innerHTML += `
-                    <div class="legend-item">
-                        <span style="display: inline-block; width: 20px; height: 20px; margin-right: 8px; border-radius: 50%; background: #2196F3; color: white; text-align: center; line-height: 20px; font-size: 10px; font-weight: bold;">K</span>
-                        <span>Kaliwates (${dataKaliwates.length})</span>
-                    </div>
-                `;
-            }
-            
-            if (dataPatrang.length > 0) {
-                div.innerHTML += `
-                    <div class="legend-item">
-                        <span style="display: inline-block; width: 20px; height: 20px; margin-right: 8px; border-radius: 50%; background: #1976D2; color: white; text-align: center; line-height: 20px; font-size: 10px; font-weight: bold;">P</span>
-                        <span>Patrang (${dataPatrang.length})</span>
-                    </div>
-                `;
-            }
-            
-            if (dataSumbersari.length > 0) {
-                div.innerHTML += `
-                    <div class="legend-item">
-                        <span style="display: inline-block; width: 20px; height: 20px; margin-right: 8px; border-radius: 50%; background: #388E3C; color: white; text-align: center; line-height: 20px; font-size: 10px; font-weight: bold;">S</span>
-                        <span>Sumbersari (${dataSumbersari.length})</span>
-                    </div>
-                `;
-            }
-            
-            div.innerHTML += '</div>';
-            
-            return div;
-        };
-        
-        legendControl.addTo(map);
     }
 
     loadKaliwatesData();
