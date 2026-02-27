@@ -7,6 +7,7 @@ use App\Models\CodeLinkFunction;
 use App\Models\CodeLinkStatus;
 use App\Models\Kabupaten;
 use App\Models\Link;
+use App\Models\LinkKecamatan;
 use App\Models\LinkMaster;
 use App\Models\Province;
 use App\Models\User;
@@ -153,7 +154,21 @@ class RuasJalanController extends Controller
                 $linkData['link_code'] = $this->generateLinkCode($validated['year']);
             }
 
-            Link::create($linkData);
+            // ✅ Gunakan only() untuk field yang memang ada di $fillable Link
+            Link::create([
+                'year'                 => $validated['year'],
+                'province_code'        => $validated['province_code'],
+                'kabupaten_code'       => $validated['kabupaten_code'],
+                'link_no'              => $validated['link_no'],
+                'link_master_id'       => $linkMaster->id,
+                'link_code'            => $validated['link_code'],
+                'status'               => $validated['status'] ?? null,
+                'function'             => $validated['function'] ?? null,
+                'class'                => $validated['class'] ?? null,
+                'link_length_official' => $validated['link_length_official'] ?? null,
+                'link_length_actual'   => $validated['link_length_actual'] ?? null,
+                'access_status'        => $request->access_status ?? null,
+            ]);
 
             DB::commit();
 
@@ -188,7 +203,7 @@ class RuasJalanController extends Controller
 
         $validated = $request->validate([
             'year' => 'required|integer|min:2020|max:2100',
-            'link_no' => 'required|unique:link,link_no',
+            'link_no' => 'required|unique:link,link_no,' . $id,
             'province_code' => 'required',
             'kabupaten_code' => 'required',
             'link_code' => 'required',
@@ -264,13 +279,12 @@ class RuasJalanController extends Controller
         }
         
         // Cek relasi dengan LinkKecamatan
-        if ($ruas->linkKecamatans()->exists()) {
-            $count = $ruas->linkKecamatans()->count();
+        $linkKecamatanCount = LinkKecamatan::where('link_master_id', $ruas->link_master_id)->count();
+        if ($linkKecamatanCount > 0) {
             $relatedData[] = "Link Kecamatan";
-            $relatedCount[] = "{$count} Data Link Kecamatan";
+            $relatedCount[] = "{$linkKecamatanCount} Data Link Kecamatan";
         }
         
-        // ❌ JIKA ADA RELASI, TOLAK PENGHAPUSAN
         if (!empty($relatedData)) {
             $linkName = $ruas->linkMaster?->link_name ?? 'Ruas jalan ini';
             $linkCode = $ruas->link_code ?? '-';
@@ -323,13 +337,10 @@ class RuasJalanController extends Controller
         }
     }
 
-    /**
-     * Cek relasi sebelum hapus (untuk AJAX)
-     */
     public function checkRelations($id)
     {
         try {
-            $ruas = Link::findOrFail($id);
+            $ruas = Link::with('linkMaster')->findOrFail($id);
             
             $relations = [];
             $hasRelations = false;
@@ -346,19 +357,21 @@ class RuasJalanController extends Controller
                 $hasRelations = true;
             }
             
-            // Cek relasi dengan LinkKecamatan
-            if ($ruas->linkKecamatans()->exists()) {
-                $relations['linkKecamatans'] = $ruas->linkKecamatans()->count();
+            // ✅ GANTI: Query langsung, tidak pakai hasManyThrough
+            // karena link_kecamatan tidak punya Primary Key
+            $linkKecamatanCount = \App\Models\LinkKecamatan::where('link_master_id', $ruas->link_master_id)->count();
+            if ($linkKecamatanCount > 0) {
+                $relations['linkKecamatans'] = $linkKecamatanCount;
                 $hasRelations = true;
             }
             
             return response()->json([
-                'success' => true,
+                'success'      => true,
                 'hasRelations' => $hasRelations,
-                'relations' => $relations,
-                'linkName' => $ruas->linkMaster?->link_name ?? '-',
-                'linkCode' => $ruas->link_code ?? '-',
-                'year' => $ruas->year ?? '-'
+                'relations'    => $relations,
+                'linkName'     => $ruas->linkMaster?->link_name ?? '-',
+                'linkCode'     => $ruas->link_code ?? '-',
+                'year'         => $ruas->year ?? '-'
             ]);
             
         } catch (\Exception $e) {

@@ -51,6 +51,9 @@
                         @if($user->hasPermission('detail', 'ruas_jalan'))
                             <li><a class="nav-link" href="{{ route(name: 'ruas-jalan.index') }}">Ruas Jalan</a></li>
                         @endif
+                        @if($user->hasPermission('detail', 'inventarisasi_jalan'))
+                            <li><a class="nav-link" href="{{ route(name: 'inventarisasi-jalan.index') }}">Inventarisasi Jalan</a></li>
+                        @endif
                         {{-- @if($user->hasPermission('detail', 'drp'))
                             <li><a class="nav-link" href="{{ route(name: 'drp.index') }}">DRP</a></li>
                         @endif
@@ -72,9 +75,6 @@
                 <li class="dropdown">
                     <a href="#" class="nav-link has-dropdown"><i class="fas fa-th-large"></i> <span>Jalan</span></a>
                     <ul class="dropdown-menu">
-                        @if($user->hasPermission('detail', 'inventarisasi_jalan'))
-                            <li><a class="nav-link" href="{{ route(name: 'inventarisasi-jalan.index') }}">Inventarisasi Jalan</a></li>
-                        @endif
                         @if($user->hasPermission('detail', 'kondisi_jalan'))
                             <li><a class="nav-link" href="{{ route(name: 'kondisi-jalan.index') }}">Kondisi Jalan</a></li>
                         @endif
@@ -89,16 +89,13 @@
             @endif
 
             {{-- Peta --}}
-            @if($user->features()->intersect(['kabupaten','kecamatan'])->isNotEmpty())
+            @if($user->features()->intersect(['peta_kabupaten', 'kecamatan'])->isNotEmpty())
                 <li class="dropdown">
                     <a href="#" class="nav-link has-dropdown"><i class="fas fa-map"></i> <span>Peta</span></a>
                     <ul class="dropdown-menu">
-                        @if($user->hasPermission('detail', 'kabupaten'))
+                        @if($user->hasPermission('detail', 'peta_kabupaten'))
                             <li><a class="nav-link" href="{{ url('/peta/alignment') }}">Kabupaten</a></li>
                         @endif
-                        {{-- @if($user->hasPermission('detail', 'kecamatan'))
-                            <li><a class="nav-link" href="#">Kecamatan</a></li>
-                        @endif --}}
                     </ul>
                 </li>
             @endif

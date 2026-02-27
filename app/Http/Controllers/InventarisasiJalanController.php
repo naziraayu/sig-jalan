@@ -171,7 +171,6 @@ class InventarisasiJalanController extends Controller
         $linkNo = $request->get('link_no');
         $selectedYear = session('selected_year');
 
-        // ✅ PERBAIKAN: Query dengan whereHas yang benar
         $ruas = RoadInventory::with([
             'link.linkMaster',
             'province',
@@ -186,13 +185,9 @@ class InventarisasiJalanController extends Controller
             'landUseR',
             'impassableReason',
         ])
-        ->whereHas('link', function($query) use ($linkNo, $selectedYear) {
-            $query->where('link_no', $linkNo);
-            
-            if ($selectedYear) {
-                $query->where('year', $selectedYear);
-            }
-        })
+        // ✅ Langsung filter dari kolom road_inventory sendiri
+        ->where('link_no', $linkNo)
+        ->when($selectedYear, fn($q) => $q->where('year', $selectedYear))
         ->orderBy('chainage_from')
         ->get();
 
@@ -412,22 +407,16 @@ class InventarisasiJalanController extends Controller
         }
     }
     
-    /**
-     * Delete all inventories for selected year
-     */
     public function destroyAll()
     {
         $selectedYear = session('selected_year');
         
-        // ✅ VALIDASI: Pastikan year sudah dipilih
         if (!$selectedYear) {
             return redirect()->back()->with('error', 'Pilih tahun terlebih dahulu!');
         }
         
-        // ✅ PERBAIKAN: Hapus hanya data pada tahun yang dipilih
-        $deleted = RoadInventory::whereHas('link', function($query) use ($selectedYear) {
-            $query->where('year', $selectedYear);
-        })->delete();
+        // ✅ Langsung query kolom year di road_inventory
+        $deleted = RoadInventory::where('year', $selectedYear)->delete();
         
         return redirect()->route('inventarisasi-jalan.index')
             ->with('success', "Berhasil menghapus {$deleted} data inventarisasi tahun {$selectedYear}.");

@@ -6,8 +6,6 @@ use App\Models\CodeLinkFunction;
 use App\Models\CodeLinkStatus;
 use App\Models\DRP;
 use App\Models\Kabupaten;
-use App\Models\Kecamatan;
-use App\Models\LinkKecamatan;
 use App\Models\LinkMaster;
 use App\Models\Province;
 use App\Models\RoadCondition;
@@ -51,77 +49,42 @@ class Link extends Model
         'link_length_actual' => 'decimal:2',
     ];
 
-    // ====================================
-    // ✅ RELASI - SUDAH DIPERBAIKI
-    // ====================================
-
-    /**
-     * Relasi ke LinkMaster (untuk ambil link_name dan link_code)
-     * FK: link_master_id -> link_master.id
-     */
     public function linkMaster()
     {
         return $this->belongsTo(LinkMaster::class, 'link_master_id', 'id');
     }
 
-    /**
-     * Relasi ke Province
-     * FK: province_code -> provinces.province_code
-     */
+
     public function province()
     {
         return $this->belongsTo(Province::class, 'province_code', 'province_code');
     }
 
-    /**
-     * Relasi ke Kabupaten
-     * FK: kabupaten_code -> kabupaten.kabupaten_code
-     */
     public function kabupaten()
     {
         return $this->belongsTo(Kabupaten::class, 'kabupaten_code', 'kabupaten_code');
     }
 
-    /**
-     * Relasi ke CodeLinkStatus
-     * FK: status -> code_link_status.code
-     */
     public function statusRelation()
     {
         return $this->belongsTo(CodeLinkStatus::class, 'status', 'code');
     }
 
-    /**
-     * Relasi ke CodeLinkFunction
-     * FK: function -> code_link_function.code
-     */
     public function functionRelation()
     {
         return $this->belongsTo(CodeLinkFunction::class, 'function', 'code');
     }
 
-    /**
-     * Relasi ke DRP (Detail Ruas Panggal)
-     * FK: link_id -> drp.link_id
-     */
     public function drp()
     {
         return $this->hasMany(DRP::class, 'link_id', 'id');
     }
 
-    /**
-     * Relasi ke RoadInventory
-     * FK: link_id -> road_inventory.link_id
-     */
     public function roadInventories()
     {
         return $this->hasMany(RoadInventory::class, 'link_id', 'id');
     }
 
-    /**
-     * Relasi ke RoadCondition
-     * FK: link_id -> road_condition.link_id
-     */
     public function roadConditions()
     {
         return $this->hasMany(RoadCondition::class, 'link_id', 'id');
@@ -131,42 +94,27 @@ class Link extends Model
     // ✅ SCOPES
     // ====================================
 
-    /**
-     * Scope: Filter by year
-     */
     public function scopeByYear($query, $year)
     {
         return $query->where('year', $year);
     }
 
-    /**
-     * Scope: With master relation
-     */
     public function scopeWithMaster($query)
     {
         return $query->with('linkMaster');
     }
-    
-    /**
-     * Scope: Current year from session
-     */
+
     public function scopeCurrentYear($query)
     {
         $year = session('selected_year', now()->year);
         return $query->where('year', $year);
     }
 
-    /**
-     * Scope: Without DRP
-     */
     public function scopeWithoutDRP($query)
     {
         return $query->whereDoesntHave('drp');
     }
-    
-    /**
-     * Scope: With DRP
-     */
+
     public function scopeWithDRP($query)
     {
         return $query->whereHas('drp');

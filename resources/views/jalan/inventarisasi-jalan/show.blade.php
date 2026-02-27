@@ -5,7 +5,7 @@
 <div class="main-content">
     <section class="section">
         <div class="section-header">
-            <h1>Detail Ruas Jalan</h1>
+            <h1>Detail Inventarisasi Jalan</h1>
             <div class="section-header-breadcrumb">
                 <div class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></div>
                 <div class="breadcrumb-item"><a href="{{ route('inventarisasi-jalan.index') }}">Inventarisasi Jalan</a></div>

@@ -1,8 +1,8 @@
 @php
     $colors = [
         'Baik'         => ['bg' => '#2ecc71', 'text' => '#ffffff'],
-        'Sedang'       => ['bg' => '#f1c40f', 'text' => '#000000'],
-        'Rusak Ringan' => ['bg' => '#e67e22', 'text' => '#ffffff'],
+        'Sedang'       => ['bg' => '#FFD700', 'text' => '#7a5c00'],
+        'Rusak Ringan' => ['bg' => '#FF8C00', 'text' => '#ffffff'],
         'Rusak Berat'  => ['bg' => '#e74c3c', 'text' => '#ffffff'],
     ];
 
@@ -19,7 +19,7 @@
 >
     {{ $category }}
     @if($sdiValue !== null)
-        <small style="opacity: 0.95; margin-left: 0.35rem; font-weight: 500;">
+        <small style="opacity: 0.85; margin-left: 0.35rem; font-weight: 500;">
             ({{ is_numeric($sdiValue) ? number_format($sdiValue, 2) : $sdiValue }})
         </small>
     @endif

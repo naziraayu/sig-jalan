@@ -1061,9 +1061,17 @@ class RoadConditionController extends Controller
 
     public function destroyAll()
     {
-        RoadCondition::query()->delete();
+        $selectedYear = session('selected_year');
+        
+        // ✅ Validasi tahun dulu
+        if (!$selectedYear) {
+            return redirect()->back()->with('error', 'Pilih tahun terlebih dahulu!');
+        }
+        
+        // ✅ Hapus hanya tahun yang dipilih
+        $deleted = RoadCondition::where('year', $selectedYear)->delete();
         
         return redirect()->route('kondisi-jalan.index')
-            ->with('success', 'Semua data kondisi jalan berhasil dihapus.');
+            ->with('success', "Berhasil menghapus {$deleted} data kondisi jalan tahun {$selectedYear}.");
     }
 }
