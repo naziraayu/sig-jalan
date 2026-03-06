@@ -12,6 +12,7 @@ use App\Imports\RoadConditionImport;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ImportExportController extends Controller
 {
@@ -102,8 +103,12 @@ class ImportExportController extends Controller
                 'model'             => \App\Models\Alignment::class,
                 'label'             => 'Koordinat GPS',
                 'permission'        => 'koordinat_gps',
-                'import_class'      => \App\Imports\AlignmentImport::class,
+                'import_class'      => \App\Imports\AlignmentImport::class,      // Excel
                 'template_class'    => \App\Exports\Templates\AlignmentTemplate::class,
+                // ✅ KML support
+                'support_kml'       => true,
+                'kml_export_class'  => \App\Exports\AlignmentKmlExport::class,
+                'kml_import_class'  => \App\Imports\AlignmentKmlImport::class,
             ],
         ];
     }
@@ -130,7 +135,7 @@ class ImportExportController extends Controller
     }
 
     // ============================================================
-    // ✅ METHOD BARU: Download Template
+    // Download Template
     // ============================================================
     public function downloadTemplate(Request $request)
     {
@@ -167,20 +172,54 @@ class ImportExportController extends Controller
     {
         $request->validate([
             'menu_type'     => 'required|string',
+            'format'        => 'nullable|string|in:xlsx,kml',
             'year'          => 'nullable|integer',
             'province_code' => 'nullable|string',
+            'kabupaten_code'=> 'nullable|string',
+            'link_no'       => 'nullable|string',
         ]);
 
         $menuType   = $request->menu_type;
+        $format     = $request->input('format', 'xlsx'); // default Excel
         $menuConfig = $this->getMenuConfig();
 
         if (!isset($menuConfig[$menuType])) {
             return back()->with('error', 'Menu tidak valid!');
         }
 
-        $config     = $menuConfig[$menuType];
-        $modelClass = $config['model'];
+        $config = $menuConfig[$menuType];
 
+        // ── KML Export ───────────────────────────────────────────
+        if ($format === 'kml') {
+            if (empty($config['support_kml'])) {
+                return back()->with('error', 'Menu ini tidak mendukung format KML.');
+            }
+
+            $filters = array_filter([
+                'province_code'  => $request->province_code,
+                'kabupaten_code' => $request->kabupaten_code,
+                'link_no'        => $request->link_no,
+                'year'           => $request->year,
+            ]);
+
+            $fileNameParts = [strtolower(str_replace(' ', '_', $config['label']))];
+            if ($request->filled('link_no'))       $fileNameParts[] = $request->link_no;
+            if ($request->filled('year'))          $fileNameParts[] = $request->year;
+            if ($request->filled('province_code')) $fileNameParts[] = 'prov_' . $request->province_code;
+            $fileNameParts[] = date('YmdHis');
+            $fileName = implode('_', $fileNameParts) . '.kml';
+
+            try {
+                Log::info("Export KML {$menuType}", ['user_id' => Auth::id(), 'filters' => $filters]);
+                $exportClass = $config['kml_export_class'];
+                return (new $exportClass($filters))->download($fileName);
+            } catch (\Throwable $e) {
+                Log::error("KML Export failed {$menuType}", ['error' => $e->getMessage()]);
+                return back()->with('error', 'Gagal export KML: ' . $e->getMessage());
+            }
+        }
+
+        // ── Excel Export ─────────────────────────────────────────
         $fileNameParts = [strtolower(str_replace(' ', '_', $config['label']))];
         if ($request->filled('year'))          $fileNameParts[] = 'tahun_' . $request->year;
         if ($request->filled('province_code')) $fileNameParts[] = 'prov_' . $request->province_code;
@@ -192,7 +231,7 @@ class ImportExportController extends Controller
             ini_set('memory_limit', '1024M');
             DB::connection()->disableQueryLog();
 
-            Log::info("Export {$menuType}", ['user_id' => Auth::id(), 'year' => $request->year]);
+            Log::info("Export Excel {$menuType}", ['user_id' => Auth::id(), 'year' => $request->year]);
 
             if (!empty($config['use_custom_export'])) {
                 return Excel::download(
@@ -205,10 +244,10 @@ class ImportExportController extends Controller
                 return Excel::download(new $config['export_class'](), $fileName);
             }
 
-            return Excel::download(new DynamicExport($modelClass), $fileName);
+            return Excel::download(new DynamicExport($config['model']), $fileName);
 
         } catch (\Throwable $e) {
-            Log::error("Export failed {$menuType}", ['error' => $e->getMessage()]);
+            Log::error("Excel Export failed {$menuType}", ['error' => $e->getMessage()]);
             return back()->with('error', 'Gagal export: ' . $e->getMessage());
         }
     }
@@ -220,25 +259,78 @@ class ImportExportController extends Controller
     {
         $request->validate([
             'menu_type' => 'required|string',
-            'file'      => 'required|mimes:xlsx,xls|max:20480',
+            'format'    => 'nullable|string|in:xlsx,kml',
+            'file'      => 'required|file|max:20480',
         ]);
 
         $menuType   = $request->menu_type;
+        $format     = $request->input('format', 'xlsx');
         $menuConfig = $this->getMenuConfig();
 
         if (!isset($menuConfig[$menuType])) {
             return back()->with('error', 'Menu tidak valid!');
         }
 
-        $config     = $menuConfig[$menuType];
-        $modelClass = $config['model'];
+        $config = $menuConfig[$menuType];
+
+        // ── KML Import ───────────────────────────────────────────
+        if ($format === 'kml') {
+            if (empty($config['support_kml'])) {
+                return back()->with('error', 'Menu ini tidak mendukung format KML.');
+            }
+
+            // Validasi ekstensi KML
+            $ext = strtolower($request->file('file')->getClientOriginalExtension());
+            if (!in_array($ext, ['kml', 'xml'])) {
+                return back()->with('error', 'File KML harus berekstensi .kml atau .xml');
+            }
+
+            // Simpan sementara
+            $tmpPath  = $request->file('file')->store('tmp/kml', 'local');
+            $fullPath = storage_path('app/' . $tmpPath);
+
+            try {
+                Log::info("Import KML {$menuType}", [
+                    'file'    => $request->file('file')->getClientOriginalName(),
+                    'user_id' => Auth::id(),
+                ]);
+
+                $importClass = $config['kml_import_class'];
+                $importer    = new $importClass();
+                $importer->import($fullPath);
+
+                Storage::disk('local')->delete($tmpPath);
+
+                $summary = $importer->getSummary();
+
+                $msg = "Import KML {$config['label']} berhasil! {$summary['imported']} titik diimport.";
+                if ($summary['skipped'] > 0) {
+                    $msg .= " {$summary['skipped']} placemark dilewati.";
+                }
+
+                if (!empty($summary['errors'])) {
+                    $errorSample = implode('<br>', array_slice($summary['errors'], 0, 5));
+                    return back()->with('success', $msg)->with('import_warnings', $errorSample);
+                }
+
+                return back()->with('success', $msg);
+
+            } catch (\Throwable $e) {
+                Storage::disk('local')->delete($tmpPath);
+                Log::error("KML Import failed {$menuType}", ['error' => $e->getMessage()]);
+                return back()->with('error', 'Gagal import KML: ' . $e->getMessage());
+            }
+        }
+
+        // ── Excel Import ─────────────────────────────────────────
+        $request->validate(['file' => 'mimes:xlsx,xls']);
 
         try {
             set_time_limit(600);
             ini_set('memory_limit', '1024M');
             DB::connection()->disableQueryLog();
 
-            Log::info("Import {$menuType}", [
+            Log::info("Import Excel {$menuType}", [
                 'file'    => $request->file('file')->getClientOriginalName(),
                 'user_id' => Auth::id(),
             ]);
@@ -252,9 +344,7 @@ class ImportExportController extends Controller
 
                 if (count($importer->getErrors()) > 0) {
                     $errorSample = implode('<br>', array_slice($importer->getErrors(), 0, 5));
-                    return back()
-                        ->with('success', $msg)
-                        ->with('import_warnings', $errorSample);
+                    return back()->with('success', $msg)->with('import_warnings', $errorSample);
                 }
 
                 return back()->with('success', $msg);
@@ -264,28 +354,24 @@ class ImportExportController extends Controller
                 $importer = new $config['import_class']();
                 Excel::import($importer, $request->file('file'));
 
-                // Tampilkan summary jika import class punya getSkippedCount
                 $msg = "Data {$config['label']} berhasil diimport!";
                 if (method_exists($importer, 'getSkippedCount') && $importer->getSkippedCount() > 0) {
                     $msg .= " ({$importer->getSkippedCount()} baris dilewati)";
 
                     if (method_exists($importer, 'getErrors') && count($importer->getErrors()) > 0) {
                         $errorSample = implode('<br>', array_slice($importer->getErrors(), 0, 5));
-                        return back()
-                            ->with('success', $msg)
-                            ->with('import_warnings', $errorSample);
+                        return back()->with('success', $msg)->with('import_warnings', $errorSample);
                     }
                 }
 
                 return back()->with('success', $msg);
             }
 
-            // Fallback DynamicImport
-            Excel::import(new DynamicImport($modelClass), $request->file('file'));
+            Excel::import(new DynamicImport($config['model']), $request->file('file'));
             return back()->with('success', "Data {$config['label']} berhasil diimport!");
 
         } catch (\Throwable $e) {
-            Log::error("Import failed {$menuType}", ['error' => $e->getMessage()]);
+            Log::error("Excel Import failed {$menuType}", ['error' => $e->getMessage()]);
             return back()->with('error', 'Gagal import: ' . $e->getMessage());
         }
     }

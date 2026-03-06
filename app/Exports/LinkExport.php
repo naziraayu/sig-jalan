@@ -8,46 +8,44 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class LinkExport implements FromCollection, WithHeadings
 {
-    /**
-     * Ambil data untuk diexport
-     */
     public function collection()
     {
-        return Link::select(
-            'link_no',
-            'province_code',
-            'kabupaten_code',
-            'link_code',
-            'link_name',
-            'status',
-            'function',
-            'class',
-            'project_number',
-            'access_status',
-            'link_length_official',
-            'link_length_actual',
-            'WTI',
-            'MCA2',
-            'MCA3',
-            'MCA4',
-            'MCA5',
-            'CUMESA',
-            'ESA0',
-            'AADT'
-        )->get();
+        return Link::with('linkMaster')
+            ->get()
+            ->map(fn($link) => [
+                'link_no'              => $link->link_no,
+                'link_name'            => $link->linkMaster?->link_name,
+                'province_code'        => $link->province_code,
+                'kabupaten_code'       => $link->kabupaten_code,
+                'year'                 => $link->year,
+                'link_code'            => $link->link_code,
+                'status'               => $link->status,
+                'function'             => $link->function,
+                'class'                => $link->class,
+                'project_number'       => $link->project_number,
+                'access_status'        => $link->access_status,
+                'link_length_official' => $link->link_length_official,
+                'link_length_actual'   => $link->link_length_actual,
+                'WTI'                  => $link->WTI,
+                'MCA2'                 => $link->MCA2,
+                'MCA3'                 => $link->MCA3,
+                'MCA4'                 => $link->MCA4,
+                'MCA5'                 => $link->MCA5,
+                'CUMESA'               => $link->CUMESA,
+                'ESA0'                 => $link->ESA0,
+                'AADT'                 => $link->AADT,
+            ]);
     }
 
-    /**
-     * Tambah heading (judul kolom di Excel)
-     */
     public function headings(): array
     {
         return [
             'Link_No',
+            'Link_Name',
             'Province_Code',
             'Kabupaten_Code',
+            'Year',
             'Link_Code',
-            'Link_Name',
             'Status',
             'Function',
             'Class',
@@ -62,7 +60,7 @@ class LinkExport implements FromCollection, WithHeadings
             'MCA5',
             'CUMESA',
             'ESA0',
-            'AADT'
+            'AADT',
         ];
     }
 }

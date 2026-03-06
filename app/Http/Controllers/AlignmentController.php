@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\AlignmentKmlExport;
 use App\Http\Controllers\Controller;
+use App\Imports\AlignmentKmlImport;
 use App\Models\RoadCondition;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AlignmentController extends Controller
 {
@@ -406,7 +410,6 @@ class AlignmentController extends Controller
     public function getCoordsWithSDIByKecamatan(Request $request)
     {
         try {
-            // ✅ PERBAIKAN 1: VALIDASI INPUT (CRITICAL!)
             $validated = $request->validate([
                 'year' => 'required|integer|min:2000|max:' . (date('Y') + 1),
                 'kecamatan_codes' => 'required|array|min:1',
@@ -438,12 +441,10 @@ class AlignmentController extends Controller
                 'kecamatan_count' => count($kecamatanCodes)
             ]);
 
-            // ✅ PERBAIKAN 2: CACHE KEY yang BENAR (include kecamatan!)
             sort($kecamatanCodes); // Supaya [1,2,3] = [3,2,1]
             $kecKey = implode('_', $kecamatanCodes);
             $cacheKey = "coords_sdi_kec_{$surveyYear}_ref_{$referenceYear}_{$kecKey}_v3";
             
-            // ✅ PERBAIKAN 3: Gunakan cache dengan key yang benar
             return Cache::remember($cacheKey, 3600, function () use ($surveyYear, $referenceYear, $kecamatanCodes) {
                 
                 // ✅ STRICT FILTER seperti Dashboard
@@ -454,7 +455,6 @@ class AlignmentController extends Controller
                     ->whereHas('kabupaten', function ($query) {
                         $query->where('kabupaten_name', 'LIKE', '%JEMBER%');
                     })
-                    // ✅ BENAR - lewat linkMaster
                     ->whereHas('link.linkMaster', function($query) use ($kecamatanCodes) {
                         $query->whereHas('linkKecamatans', function($q) use ($kecamatanCodes) {
                             $q->whereIn('kecamatan_code', $kecamatanCodes);
@@ -670,6 +670,87 @@ class AlignmentController extends Controller
                 'success' => false,
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function exportKml(Request $request)
+    {
+        $filters = array_filter([
+            'province_code'  => $request->province_code,
+            'kabupaten_code' => $request->kabupaten_code,
+            'link_no'        => $request->link_no,
+            'year'           => $request->year,
+        ]);
+
+        $filename = 'alignment';
+        if (!empty($filters['link_no'])) {
+            $filename .= '_' . $filters['link_no'];
+        }
+        if (!empty($filters['year'])) {
+            $filename .= '_' . $filters['year'];
+        }
+        $filename .= '.kml';
+
+        return Excel::download(new AlignmentKmlExport($filters), $filename);
+    }
+
+    // ──────────────────────────────────────────────────────────
+    // IMPORT KML
+    // ──────────────────────────────────────────────────────────
+
+    public function importKml(Request $request)
+    {
+        // 1. Validasi file
+        $request->validate([
+            'file' => [
+                'required',
+                'file',
+                'max:10240', // max 10MB
+                function ($attribute, $value, $fail) {
+                    $ext = strtolower($value->getClientOriginalExtension());
+                    if (!in_array($ext, ['kml', 'xml'])) {
+                        $fail('File harus berformat .kml atau .xml');
+                    }
+                },
+            ],
+        ]);
+
+        // 2. Simpan file sementara
+        $tmpPath = $request->file('file')->store('tmp/kml', 'local');
+        $fullPath = storage_path('app/' . $tmpPath);
+
+        try {
+            // 3. Jalankan import
+            $importer = new AlignmentKmlImport();
+            $importer->import($fullPath);
+
+            $summary = $importer->getSummary();
+
+            // 4. Hapus file sementara
+           Storage::disk('local')->delete($tmpPath);
+
+            // 5. Beri feedback ke user
+            if ($summary['imported'] === 0 && $summary['skipped'] > 0) {
+                return back()->with('warning', 
+                    "Import selesai namun tidak ada data yang berhasil diimport. " .
+                    "Dilewati: {$summary['skipped']} placemark. " .
+                    "Pastikan file KML diekspor dari sistem ini."
+                )->with('import_errors', array_slice($summary['errors'], 0, 10));
+            }
+
+            $message = "Import KML berhasil! {$summary['imported']} titik diimport.";
+            if ($summary['skipped'] > 0) {
+                $message .= " {$summary['skipped']} placemark dilewati.";
+            }
+
+            return back()->with('success', $message)
+                         ->with('import_errors', array_slice($summary['errors'], 0, 10));
+
+        } catch (\Throwable $e) {
+            // Bersihkan file tmp kalau error
+            Storage::disk('local')->delete($tmpPath);
+
+            return back()->with('error', 'Import KML gagal: ' . $e->getMessage());
         }
     }
 }
