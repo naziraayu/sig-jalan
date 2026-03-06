@@ -272,12 +272,12 @@ class AlignmentKmlImport
      */
     protected function getLinkMasterId(string $linkNo, string $provinceCode, string $kabupatenCode): ?int
     {
-        $cacheKey = "{$linkNo}_{$provinceCode}_{$kabupatenCode}";
+        $cacheKey = "{$linkNo}_{$provinceCode}";
 
         if (!isset($this->linkMasterCache[$cacheKey])) {
+            // ✅ FIX: kabupaten_code di tabel link_master bisa null/kosong,
+            // cukup lookup berdasarkan link_no saja (sudah unik)
             $linkMaster = LinkMaster::where('link_no', $linkNo)
-                ->where('province_code', $provinceCode)
-                ->where('kabupaten_code', $kabupatenCode)
                 ->select('id')
                 ->first();
 

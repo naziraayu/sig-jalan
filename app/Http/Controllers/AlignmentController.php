@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Imports\AlignmentKmlImport;
 use App\Models\RoadCondition;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -675,6 +676,13 @@ class AlignmentController extends Controller
 
     public function exportKml(Request $request)
     {
+        $request->validate([
+            'province_code'  => 'nullable|string',
+            'kabupaten_code' => 'nullable|string',
+            'link_no'        => 'nullable|string',
+            'year'           => 'nullable|integer',
+        ]);
+
         $filters = array_filter([
             'province_code'  => $request->province_code,
             'kabupaten_code' => $request->kabupaten_code,
@@ -682,16 +690,27 @@ class AlignmentController extends Controller
             'year'           => $request->year,
         ]);
 
-        $filename = 'alignment';
-        if (!empty($filters['link_no'])) {
-            $filename .= '_' . $filters['link_no'];
-        }
-        if (!empty($filters['year'])) {
-            $filename .= '_' . $filters['year'];
-        }
-        $filename .= '.kml';
+        // Buat nama file dari filter
+        $fileNameParts = ['alignment'];
+        if (!empty($filters['link_no']))       $fileNameParts[] = $filters['link_no'];
+        if (!empty($filters['year']))          $fileNameParts[] = $filters['year'];
+        if (!empty($filters['province_code'])) $fileNameParts[] = 'prov_' . $filters['province_code'];
+        $fileNameParts[] = date('YmdHis');
+        $filename = implode('_', $fileNameParts) . '.kml';
 
-        return Excel::download(new AlignmentKmlExport($filters), $filename);
+        try {
+            Log::info('Export KML Alignment', [
+                'user_id' => Auth::id(),
+                'filters' => $filters,
+            ]);
+
+            // ✅ BENAR: bukan Excel::download()
+            return (new AlignmentKmlExport($filters))->download($filename);
+
+        } catch (\Throwable $e) {
+            Log::error('Export KML Alignment gagal', ['error' => $e->getMessage()]);
+            return back()->with('error', 'Gagal export KML: ' . $e->getMessage());
+        }
     }
 
     // ──────────────────────────────────────────────────────────
@@ -715,23 +734,32 @@ class AlignmentController extends Controller
             ],
         ]);
 
-        // 2. Simpan file sementara
-        $tmpPath = $request->file('file')->store('tmp/kml', 'local');
-        $fullPath = storage_path('app/' . $tmpPath);
+        // ✅ FIX: Pastikan folder tmp/kml ada sebelum store
+        // Storage::makeDirectory() aman dipanggil meski folder sudah ada
+        Storage::disk('local')->makeDirectory('tmp/kml');
 
+        // 2. Simpan file sementara ke storage/app/tmp/kml/
+        $tmpPath  = $request->file('file')->store('tmp/kml', 'local');
+        $fullPath = Storage::disk('local')->path($tmpPath);
+        
         try {
+            Log::info('Import KML Alignment', [
+                'file'    => $request->file('file')->getClientOriginalName(),
+                'user_id' => Auth::id(),
+            ]);
+
             // 3. Jalankan import
             $importer = new AlignmentKmlImport();
             $importer->import($fullPath);
 
-            $summary = $importer->getSummary();
+            // 4. Hapus file sementara setelah selesai
+            Storage::disk('local')->delete($tmpPath);
 
-            // 4. Hapus file sementara
-           Storage::disk('local')->delete($tmpPath);
+            $summary = $importer->getSummary();
 
             // 5. Beri feedback ke user
             if ($summary['imported'] === 0 && $summary['skipped'] > 0) {
-                return back()->with('warning', 
+                return back()->with('warning',
                     "Import selesai namun tidak ada data yang berhasil diimport. " .
                     "Dilewati: {$summary['skipped']} placemark. " .
                     "Pastikan file KML diekspor dari sistem ini."
@@ -743,13 +771,15 @@ class AlignmentController extends Controller
                 $message .= " {$summary['skipped']} placemark dilewati.";
             }
 
-            return back()->with('success', $message)
-                         ->with('import_errors', array_slice($summary['errors'], 0, 10));
+            return back()
+                ->with('success', $message)
+                ->with('import_errors', array_slice($summary['errors'], 0, 10));
 
         } catch (\Throwable $e) {
-            // Bersihkan file tmp kalau error
+            // ✅ Bersihkan file tmp walau ada error
             Storage::disk('local')->delete($tmpPath);
 
+            Log::error('Import KML Alignment gagal', ['error' => $e->getMessage()]);
             return back()->with('error', 'Import KML gagal: ' . $e->getMessage());
         }
     }

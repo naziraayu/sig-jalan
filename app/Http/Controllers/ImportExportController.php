@@ -20,76 +20,76 @@ class ImportExportController extends Controller
     {
         return [
             'provinsi' => [
-                'model'             => \App\Models\Province::class,
-                'label'             => 'Provinsi',
-                'permission'        => 'provinsi',
-                'export_class'      => \App\Exports\ProvinceExport::class,
-                'import_class'      => \App\Imports\ProvinceImport::class,
-                'template_class'    => \App\Exports\Templates\ProvinceTemplate::class,
+                'model'          => \App\Models\Province::class,
+                'label'          => 'Provinsi',
+                'permission'     => 'provinsi',
+                'export_class'   => \App\Exports\ProvinceExport::class,
+                'import_class'   => \App\Imports\ProvinceImport::class,
+                'template_class' => \App\Exports\Templates\ProvinceTemplate::class,
             ],
             'balai' => [
-                'model'             => \App\Models\Balai::class,
-                'label'             => 'Balai',
-                'permission'        => 'balai',
-                'export_class'      => \App\Exports\BalaiExport::class,
-                'import_class'      => \App\Imports\BalaiImport::class,
-                'template_class'    => \App\Exports\Templates\BalaiTemplate::class,
+                'model'          => \App\Models\Balai::class,
+                'label'          => 'Balai',
+                'permission'     => 'balai',
+                'export_class'   => \App\Exports\BalaiExport::class,
+                'import_class'   => \App\Imports\BalaiImport::class,
+                'template_class' => \App\Exports\Templates\BalaiTemplate::class,
             ],
             'pulau' => [
-                'model'             => \App\Models\Island::class,
-                'label'             => 'Pulau',
-                'permission'        => 'pulau',
-                'export_class'      => \App\Exports\IslandExport::class,
-                'import_class'      => \App\Imports\IslandImport::class,
-                'template_class'    => \App\Exports\Templates\IslandTemplate::class,
+                'model'          => \App\Models\Island::class,
+                'label'          => 'Pulau',
+                'permission'     => 'pulau',
+                'export_class'   => \App\Exports\IslandExport::class,
+                'import_class'   => \App\Imports\IslandImport::class,
+                'template_class' => \App\Exports\Templates\IslandTemplate::class,
             ],
             'kabupaten' => [
-                'model'             => \App\Models\Kabupaten::class,
-                'label'             => 'Kabupaten',
-                'permission'        => 'kabupaten',
-                'export_class'      => \App\Exports\KabupatenExport::class,
-                'import_class'      => \App\Imports\KabupatenImport::class,
-                'template_class'    => \App\Exports\Templates\KabupatenTemplate::class,
+                'model'          => \App\Models\Kabupaten::class,
+                'label'          => 'Kabupaten',
+                'permission'     => 'kabupaten',
+                'export_class'   => \App\Exports\KabupatenExport::class,
+                'import_class'   => \App\Imports\KabupatenImport::class,
+                'template_class' => \App\Exports\Templates\KabupatenTemplate::class,
             ],
             'kecamatan' => [
-                'model'             => \App\Models\Kecamatan::class,
-                'label'             => 'Kecamatan',
-                'permission'        => 'kecamatan',
-                'export_class'      => \App\Exports\KecamatanExport::class,
-                'import_class'      => \App\Imports\KecamatanImport::class,
-                'template_class'    => \App\Exports\Templates\KecamatanTemplate::class,
+                'model'          => \App\Models\Kecamatan::class,
+                'label'          => 'Kecamatan',
+                'permission'     => 'kecamatan',
+                'export_class'   => \App\Exports\KecamatanExport::class,
+                'import_class'   => \App\Imports\KecamatanImport::class,
+                'template_class' => \App\Exports\Templates\KecamatanTemplate::class,
             ],
             'ruas_jalan' => [
-                'model'             => \App\Models\Link::class,
-                'label'             => 'Ruas Jalan',
-                'permission'        => 'ruas_jalan',
-                'export_class'      => \App\Exports\LinkExport::class,
-                'import_class'      => \App\Imports\LinkImport::class,
-                'template_class'    => \App\Exports\Templates\LinkTemplate::class,
+                'model'          => \App\Models\Link::class,
+                'label'          => 'Ruas Jalan',
+                'permission'     => 'ruas_jalan',
+                'export_class'   => \App\Exports\LinkExport::class,
+                'import_class'   => \App\Imports\LinkImport::class,
+                'template_class' => \App\Exports\Templates\LinkTemplate::class,
             ],
             'drp' => [
-                'model'             => \App\Models\DRP::class,
-                'label'             => 'DRP',
-                'permission'        => 'drp',
-                'export_class'      => \App\Exports\DRPExport::class,
-                'import_class'      => \App\Imports\DRPImport::class,
-                'template_class'    => \App\Exports\Templates\DRPTemplate::class,
+                'model'          => \App\Models\DRP::class,
+                'label'          => 'DRP',
+                'permission'     => 'drp',
+                'export_class'   => \App\Exports\DRPExport::class,
+                'import_class'   => \App\Imports\DRPImport::class,
+                'template_class' => \App\Exports\Templates\DRPTemplate::class,
             ],
             'link_kecamatan' => [
-                'model'             => \App\Models\LinkKecamatan::class,
-                'label'             => 'Link Kecamatan',
-                'permission'        => 'link_kecamatan',
-                'export_class'      => \App\Exports\LinkKecamatanExport::class,
-                'import_class'      => \App\Imports\LinkKecamatanImport::class,
-                'template_class'    => \App\Exports\Templates\LinkKecamatanTemplate::class,
+                'model'          => \App\Models\LinkKecamatan::class,
+                'label'          => 'Link Kecamatan',
+                'permission'     => 'link_kecamatan',
+                'export_class'   => \App\Exports\LinkKecamatanExport::class,
+                'import_class'   => \App\Imports\LinkKecamatanImport::class,
+                'template_class' => \App\Exports\Templates\LinkKecamatanTemplate::class,
             ],
             'inventarisasi_jalan' => [
-                'model'             => \App\Models\RoadInventory::class,
-                'label'             => 'Inventarisasi Jalan',
-                'permission'        => 'inventarisasi_jalan',
-                'export_class'      => \App\Exports\RoadInventoryExport::class,
-                'import_class'      => \App\Imports\RoadInventoryImport::class,
-                'template_class'    => \App\Exports\Templates\RoadInventoryTemplate::class,
+                'model'          => \App\Models\RoadInventory::class,
+                'label'          => 'Inventarisasi Jalan',
+                'permission'     => 'inventarisasi_jalan',
+                'export_class'   => \App\Exports\RoadInventoryExport::class,
+                'import_class'   => \App\Imports\RoadInventoryImport::class,
+                'template_class' => \App\Exports\Templates\RoadInventoryTemplate::class,
             ],
             'kondisi_jalan' => [
                 'model'             => \App\Models\RoadCondition::class,
@@ -100,19 +100,31 @@ class ImportExportController extends Controller
                 'template_class'    => \App\Exports\Templates\RoadConditionTemplate::class,
             ],
             'koordinat_gps' => [
-                'model'             => \App\Models\Alignment::class,
-                'label'             => 'Koordinat GPS',
-                'permission'        => 'koordinat_gps',
-                'import_class'      => \App\Imports\AlignmentImport::class,      // Excel
-                'template_class'    => \App\Exports\Templates\AlignmentTemplate::class,
+                'model'            => \App\Models\Alignment::class,
+                'label'            => 'Koordinat GPS',
+                'permission'       => 'koordinat_gps',
+                'import_class'     => \App\Imports\AlignmentImport::class,
+                'template_class'   => \App\Exports\Templates\AlignmentTemplate::class,
                 // ✅ KML support
-                'support_kml'       => true,
-                'kml_export_class'  => \App\Exports\AlignmentKmlExport::class,
-                'kml_import_class'  => \App\Imports\AlignmentKmlImport::class,
+                'support_kml'      => true,
+                'kml_export_class' => \App\Exports\AlignmentKmlExport::class,
+                'kml_import_class' => \App\Imports\AlignmentKmlImport::class,
             ],
         ];
     }
 
+    // ============================================================
+    // ✅ Helper: Pastikan folder tmp/kml ada sebelum store file
+    // Storage::makeDirectory() aman dipanggil meski folder sudah ada
+    // ============================================================
+    private function ensureTmpKmlDirExists(): void
+    {
+        Storage::disk('local')->makeDirectory('tmp/kml');
+    }
+
+    // ============================================================
+    // Index
+    // ============================================================
     public function index()
     {
         /** @var \App\Models\User|null $user */
@@ -171,16 +183,16 @@ class ImportExportController extends Controller
     public function export(Request $request)
     {
         $request->validate([
-            'menu_type'     => 'required|string',
-            'format'        => 'nullable|string|in:xlsx,kml',
-            'year'          => 'nullable|integer',
-            'province_code' => 'nullable|string',
-            'kabupaten_code'=> 'nullable|string',
-            'link_no'       => 'nullable|string',
+            'menu_type'      => 'required|string',
+            'format'         => 'nullable|string|in:xlsx,kml',
+            'year'           => 'nullable|integer',
+            'province_code'  => 'nullable|string',
+            'kabupaten_code' => 'nullable|string',
+            'link_no'        => 'nullable|string',
         ]);
 
         $menuType   = $request->menu_type;
-        $format     = $request->input('format', 'xlsx'); // default Excel
+        $format     = $request->input('format', 'xlsx');
         $menuConfig = $this->getMenuConfig();
 
         if (!isset($menuConfig[$menuType])) {
@@ -212,6 +224,8 @@ class ImportExportController extends Controller
             try {
                 Log::info("Export KML {$menuType}", ['user_id' => Auth::id(), 'filters' => $filters]);
                 $exportClass = $config['kml_export_class'];
+                // ✅ FIX: pakai ->download() bukan Excel::download()
+                // karena AlignmentKmlExport bukan Maatwebsite class
                 return (new $exportClass($filters))->download($fileName);
             } catch (\Throwable $e) {
                 Log::error("KML Export failed {$menuType}", ['error' => $e->getMessage()]);
@@ -279,15 +293,16 @@ class ImportExportController extends Controller
                 return back()->with('error', 'Menu ini tidak mendukung format KML.');
             }
 
-            // Validasi ekstensi KML
             $ext = strtolower($request->file('file')->getClientOriginalExtension());
             if (!in_array($ext, ['kml', 'xml'])) {
                 return back()->with('error', 'File KML harus berekstensi .kml atau .xml');
             }
 
-            // Simpan sementara
+            // ✅ FIX: Pastikan folder tmp/kml ada sebelum store
+            $this->ensureTmpKmlDirExists();
+
             $tmpPath  = $request->file('file')->store('tmp/kml', 'local');
-            $fullPath = storage_path('app/' . $tmpPath);
+            $fullPath = Storage::disk('local')->path($tmpPath);
 
             try {
                 Log::info("Import KML {$menuType}", [
@@ -299,6 +314,7 @@ class ImportExportController extends Controller
                 $importer    = new $importClass();
                 $importer->import($fullPath);
 
+                // ✅ Hapus file tmp setelah selesai
                 Storage::disk('local')->delete($tmpPath);
 
                 $summary = $importer->getSummary();
@@ -316,6 +332,7 @@ class ImportExportController extends Controller
                 return back()->with('success', $msg);
 
             } catch (\Throwable $e) {
+                // ✅ Bersihkan tmp walau error
                 Storage::disk('local')->delete($tmpPath);
                 Log::error("KML Import failed {$menuType}", ['error' => $e->getMessage()]);
                 return back()->with('error', 'Gagal import KML: ' . $e->getMessage());
@@ -339,7 +356,7 @@ class ImportExportController extends Controller
                 $importer = new RoadConditionImport();
                 Excel::import($importer, $request->file('file'));
 
-                $msg = "Data {$config['label']} berhasil diimport! ";
+                $msg  = "Data {$config['label']} berhasil diimport! ";
                 $msg .= "({$importer->getImportedCount()} berhasil, {$importer->getSkippedCount()} dilewati)";
 
                 if (count($importer->getErrors()) > 0) {

@@ -432,6 +432,9 @@ Route::middleware(['auth'])->group(function () {
 
     // View peta
     Route::get('/peta/alignment', [AlignmentController::class, 'showMap']);
+
+    Route::get('/alignment/export/kml',  [AlignmentController::class, 'exportKml']);
+    Route::post('/alignment/import/kml', [AlignmentController::class, 'importKml']);
     
     Route::prefix('api/alignment')->group(function () {
     

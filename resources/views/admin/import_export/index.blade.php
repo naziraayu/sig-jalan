@@ -239,14 +239,14 @@
                                 <div class="form-group">
                                     <label><strong>Link No</strong> <span class="text-muted small">(opsional)</span></label>
                                     <input type="text" id="kml_link_no" class="form-control form-control-sm"
-                                           placeholder="cth: 001">
+                                           placeholder="cth: 350900000001">
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label><strong>Kabupaten</strong> <span class="text-muted small">(opsional)</span></label>
                                     <input type="text" id="kml_kabupaten" class="form-control form-control-sm"
-                                           placeholder="cth: 3201">
+                                           placeholder="cth: 09">
                                 </div>
                             </div>
                         </div>
