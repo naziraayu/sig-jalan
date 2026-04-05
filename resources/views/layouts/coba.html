@@ -2,339 +2,387 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Flowchart SIG Kondisi Jalan</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>State of The Art - Sidang Skripsi</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
   body {
-    background: #f4f6fb;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    padding: 40px 24px 80px;
+    font-family: 'Poppins', sans-serif;
+    background: #e0e0e0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     min-height: 100vh;
+    padding: 20px;
   }
-  header {
+
+  .slide {
+    width: 1280px;
+    height: 720px;
+    background: #f5f0e8;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+
+  /* Header bar */
+  .header {
+    display: flex;
+    align-items: center;
+    padding: 0 36px;
+    height: 52px;
+    margin-top: 14px;
+    gap: 0;
+  }
+  .header-left {
+    background: #2e7d32;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 7px 22px;
+    border-radius: 30px;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .header-line {
+    flex: 1;
+    height: 2px;
+    background: #2e7d32;
+    margin: 0 -4px;
+  }
+  .header-right {
+    background: #2e7d32;
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 7px 26px;
+    border-radius: 30px;
+    letter-spacing: 1.5px;
+    white-space: nowrap;
+  }
+
+  /* Title */
+  .title {
     text-align: center;
-    margin-bottom: 36px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 8px 0 10px;
   }
-  header h1 { font-size: 22px; font-weight: 700; color: #1a1f36; }
-  header p { font-size: 13px; color: #6b7280; margin-top: 6px; }
 
-  .legend {
-    display: flex; gap: 20px; justify-content: center;
-    flex-wrap: wrap; margin-bottom: 32px;
+  /* TOP ROW - 5 prior research cards */
+  .top-row {
+    display: flex;
+    gap: 10px;
+    padding: 0 24px;
   }
-  .leg { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #6b7280; }
 
-  svg { display: block; margin: 0 auto; }
+  .card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
 
-  /* shape styles */
-  .terminator { fill: #4f46e5; stroke: #3730a3; stroke-width: 1.5; rx: 28; }
-  .process     { fill: #ffffff; stroke: #c7d2fe; stroke-width: 1.5; }
-  .input-out   { fill: #eff6ff; stroke: #93c5fd; stroke-width: 1.5; }
-  .decision    { fill: #fefce8; stroke: #fbbf24; stroke-width: 1.5; }
-  .sdi-box     { fill: #f0fdf4; stroke: #86efac; stroke-width: 1.5; }
-  .result-good { fill: #f0fdf4; stroke: #22c55e; stroke-width: 1.5; }
-  .result-med  { fill: #fefce8; stroke: #eab308; stroke-width: 1.5; }
-  .result-rr   { fill: #fff7ed; stroke: #f97316; stroke-width: 1.5; }
-  .result-rb   { fill: #fef2f2; stroke: #ef4444; stroke-width: 1.5; }
-  .output-box  { fill: #ede9fe; stroke: #a78bfa; stroke-width: 1.5; }
+  .card-header {
+    background: #2e7d32;
+    color: white;
+    text-align: center;
+    padding: 6px 8px;
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 1.3;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-  .lbl-white { fill: #ffffff; font-weight: 700; font-size: 12px; }
-  .lbl-dark  { fill: #1e293b; font-weight: 600; font-size: 11px; }
-  .lbl-step  { fill: #94a3b8; font-size: 9px; }
-  .lbl-field { fill: #64748b; font-size: 9.5px; }
-  .lbl-field-hi { fill: #1e40af; font-size: 9.5px; font-weight: 600; }
-  .lbl-sdi   { fill: #15803d; font-weight: 700; font-size: 11px; }
-  .lbl-sdi-sub { fill: #6b7280; font-size: 9px; }
-  .arrow { stroke: #94a3b8; stroke-width: 1.8; fill: none; marker-end: url(#arrowhead); }
+  .card-body {
+    flex: 1;
+    padding: 7px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background: #f9f9f9;
+  }
+
+  .card-title-box {
+    background: #e8f5e9;
+    border-left: 3px solid #2e7d32;
+    border-radius: 4px;
+    padding: 4px 7px;
+    font-size: 8.8px;
+    font-weight: 500;
+    color: #1b5e20;
+    line-height: 1.35;
+  }
+
+  .label {
+    font-size: 8.5px;
+    font-weight: 700;
+    color: #2e7d32;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+
+  .metode-box {
+    background: #fff8e1;
+    border-left: 3px solid #f9a825;
+    border-radius: 4px;
+    padding: 4px 7px;
+    font-size: 8.8px;
+    font-weight: 600;
+    color: #5d4037;
+    line-height: 1.3;
+  }
+
+  .kelemahan-box {
+    background: #fce4ec;
+    border-left: 3px solid #c62828;
+    border-radius: 4px;
+    padding: 4px 7px;
+    font-size: 8.5px;
+    color: #4a1010;
+    line-height: 1.4;
+    flex: 1;
+  }
+  .kelemahan-box ul {
+    padding-left: 11px;
+    margin: 0;
+  }
+  .kelemahan-box li { margin-bottom: 2px; }
+
+  /* BOTTOM ROW - Own research card */
+  .bottom-row {
+    padding: 8px 24px 0;
+  }
+
+  .own-card {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .own-card-header {
+    background: #1b5e20;
+    color: white;
+    text-align: center;
+    padding: 7px 16px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+
+  .own-card-body {
+    display: flex;
+    gap: 0;
+    background: #f9f9f9;
+  }
+
+  .own-section {
+    flex: 1;
+    padding: 8px 12px;
+    border-right: 1px solid #e0e0e0;
+  }
+  .own-section:last-child { border-right: none; }
+
+  .own-section-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: #1b5e20;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    margin-bottom: 4px;
+    padding-bottom: 3px;
+    border-bottom: 2px solid #2e7d32;
+  }
+
+  .own-section-content {
+    font-size: 9px;
+    color: #2d2d2d;
+    line-height: 1.5;
+  }
+  .own-section-content ul {
+    padding-left: 13px;
+    margin: 0;
+  }
+  .own-section-content li { margin-bottom: 2px; }
+
+  .highlight-green {
+    background: #e8f5e9;
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 9px;
+    font-weight: 600;
+    color: #1b5e20;
+    display: inline-block;
+    margin-bottom: 3px;
+  }
+
+  /* Bottom bar */
+  .bottom-bar {
+    height: 9px;
+    background: #2e7d32;
+    margin-top: auto;
+  }
+
+  .slide-number {
+    position: absolute;
+    bottom: 16px;
+    right: 32px;
+    width: 32px;
+    height: 32px;
+    background: #2e7d32;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+  }
 </style>
 </head>
 <body>
+<div class="slide">
 
-<header>
-  <h1>Business Flow — SIG Kondisi Jalan</h1>
-  <p>DPUBMSDA Jember · Alur bisnis sistem informasi geografis kondisi jalan</p>
-</header>
+  <div class="header">
+    <div class="header-left">BAB 2. TINJAUAN PUSTAKA</div>
+    <div class="header-line"></div>
+    <div class="header-right">SIDANG SKRIPSI</div>
+  </div>
 
-<div class="legend">
-  <div class="leg"><svg width="32" height="16"><rect x="2" y="2" width="28" height="12" rx="6" fill="#4f46e5"/></svg>Terminator (Start/End)</div>
-  <div class="leg"><svg width="32" height="16"><rect x="2" y="2" width="28" height="12" fill="white" stroke="#c7d2fe" stroke-width="1.5"/></svg>Proses</div>
-  <div class="leg"><svg width="32" height="16"><polygon points="6,14 2,2 30,2 26,14" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/></svg>Input / Output</div>
-  <div class="leg"><svg width="32" height="16"><polygon points="16,2 30,8 16,14 2,8" fill="#fefce8" stroke="#fbbf24" stroke-width="1.5"/></svg>Decision</div>
+  <div class="title">State of The Art</div>
+
+  <!-- TOP ROW: 5 prior research -->
+  <div class="top-row">
+
+    <div class="card">
+      <div class="card-header">Santya dkk.<br>(2024)</div>
+      <div class="card-body">
+        <div class="card-title-box">Penilaian Kondisi Jalan Menggunakan SDI dan Inventarisasi Berbasis SIG — Ruas Banda-Nyanglan, Klungkung</div>
+        <div class="label">Metode</div>
+        <div class="metode-box">SDI + SIG (ArcGIS)</div>
+        <div class="label">Kelemahan</div>
+        <div class="kelemahan-box"><ul>
+          <li>Tidak dikembangkan sebagai sistem berbasis web</li>
+          <li>Cakupan hanya satu ruas jalan</li>
+        </ul></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Kharisma dkk.<br>(2022)</div>
+      <div class="card-body">
+        <div class="card-title-box">SIG Pemetaan dan Pelaporan Kerusakan Jalan di Kec. Bayongbong Berbasis Web</div>
+        <div class="label">Metode</div>
+        <div class="metode-box">Web GIS + Partisipasi Masyarakat</div>
+        <div class="label">Kelemahan</div>
+        <div class="kelemahan-box"><ul>
+          <li>Tidak menggunakan metode klasifikasi teknis (SDI/PCI)</li>
+          <li>Penilaian tidak terstandarisasi Bina Marga</li>
+        </ul></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Rofi'ah dkk.<br>(2021)</div>
+      <div class="card-body">
+        <div class="card-title-box">SIG Pemetaan Kerusakan Jalan Berbasis Web dan Android — Kab. Probolinggo</div>
+        <div class="label">Metode</div>
+        <div class="metode-box">Web GIS + Android</div>
+        <div class="label">Kelemahan</div>
+        <div class="kelemahan-box"><ul>
+          <li>Tingkat kelayakan hanya 72,2%</li>
+          <li>Tidak menggunakan metode penilaian teknis standar</li>
+        </ul></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Adhar dkk.<br>(2021)</div>
+      <div class="card-body">
+        <div class="card-title-box">SIG Kerusakan Jalan Berbasis Web — Kabupaten Buton Utara</div>
+        <div class="label">Metode</div>
+        <div class="metode-box">PCI + Web GIS</div>
+        <div class="label">Kelemahan</div>
+        <div class="kelemahan-box"><ul>
+          <li>Metode PCI, tidak sesuai standar Bina Marga</li>
+          <li>Tidak terintegrasi sistem manajemen jalan resmi</li>
+        </ul></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Yastawan dkk.<br>(2021)</div>
+      <div class="card-body">
+        <div class="card-title-box">Penilaian Kondisi Jalan Menggunakan SDI dan Inventarisasi dalam GIS — Kab. Klungkung</div>
+        <div class="label">Metode</div>
+        <div class="metode-box">SDI + GIS (ArcGIS)</div>
+        <div class="label">Kelemahan</div>
+        <div class="kelemahan-box"><ul>
+          <li>Tidak dikembangkan sebagai sistem berbasis web</li>
+          <li>Visualisasi statis, tidak mendukung input dinamis</li>
+        </ul></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM ROW: Own research -->
+  <div class="bottom-row">
+    <div class="own-card">
+      <div class="own-card-header">
+        ✦ &nbsp; Nazira Ayu Sekar Wangi (2026) — Penelitian Ini &nbsp; ✦
+      </div>
+      <div class="own-card-body">
+
+        <div class="own-section" style="flex:2;">
+          <div class="own-section-label">Judul</div>
+          <div class="own-section-content">
+            Klasifikasi Kondisi Kerusakan Jalan Berbasis Sistem Informasi Geografis<br>
+            <span style="color:#555;">(Studi Kasus DPUPR Kabupaten Jember)</span>
+          </div>
+        </div>
+
+        <div class="own-section" style="flex:1.2;">
+          <div class="own-section-label">Metode</div>
+          <div class="own-section-content">
+            <span class="highlight-green">SDI (Surface Distress Index)</span><br>
+            <span class="highlight-green">Web GIS — Laravel 12 + Leaflet</span>
+          </div>
+        </div>
+
+        <div class="own-section" style="flex:2.5;">
+          <div class="own-section-label">Kelebihan</div>
+          <div class="own-section-content"><ul>
+            <li>Mengintegrasikan metode SDI standar Bina Marga dengan sistem Web GIS interaktif</li>
+            <li>Perhitungan SDI otomatis dengan klasifikasi 4 kategori: Baik, Sedang, Rusak Ringan, Rusak Berat</li>
+            <li>Fitur ekspor data Excel & KML, visualisasi grafik, dan manajemen hak akses (Admin & Koorwil)</li>
+            <li>Terintegrasi dengan data DPUPR Kabupaten Jember, dapat diakses multi-pengguna secara online</li>
+          </ul></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div style="height: 10px;"></div>
+  <div class="bottom-bar"></div>
+  <div class="slide-number">07</div>
+
 </div>
-
-<svg id="fc" xmlns="http://www.w3.org/2000/svg" width="1100" height="1700" viewBox="0 0 1100 1700">
-  <defs>
-    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-      <polygon points="0 0, 8 3, 0 6" fill="#94a3b8"/>
-    </marker>
-  </defs>
-
-  <!-- ════════════════════════════════════ -->
-  <!-- ROW 1 (L→R): START, LOGIN, TAHUN, RUAS JALAN, INV STEP 1 -->
-  <!-- ════════════════════════════════════ -->
-
-  <!-- START terminator -->
-  <rect x="30" y="30" width="140" height="44" rx="22" class="terminator"/>
-  <text x="100" y="49" text-anchor="middle" class="lbl-white">START</text>
-  <text x="100" y="63" text-anchor="middle" fill="#c7d2fe" font-size="9">Pengguna</text>
-
-  <!-- arrow → -->
-  <line x1="170" y1="52" x2="200" y2="52" class="arrow"/>
-
-  <!-- LOGIN - parallelogram input shape -->
-  <polygon points="200,30 370,30 355,74 185,74" class="input-out"/>
-  <text x="277" y="46" text-anchor="middle" fill="#64748b" font-size="9">Input</text>
-  <text x="277" y="59" text-anchor="middle" fill="#1e293b" font-weight="700" font-size="11">Login</text>
-  <text x="277" y="70" text-anchor="middle" fill="#3b82f6" font-size="9">Email · Password</text>
-
-  <!-- arrow → -->
-  <line x1="355" y1="52" x2="385" y2="52" class="arrow"/>
-
-  <!-- PILIH TAHUN - parallelogram -->
-  <polygon points="385,30 535,30 520,74 370,74" class="input-out"/>
-  <text x="452" y="46" text-anchor="middle" fill="#64748b" font-size="9">Input</text>
-  <text x="452" y="59" text-anchor="middle" fill="#1e293b" font-weight="700" font-size="11">Pilih Tahun Survey</text>
-  <text x="452" y="70" text-anchor="middle" fill="#3b82f6" font-size="9">Tahun aktif</text>
-
-  <!-- arrow → -->
-  <line x1="520" y1="52" x2="550" y2="52" class="arrow"/>
-
-  <!-- RUAS JALAN - process rect -->
-  <rect x="550" y="20" width="165" height="95" rx="6" class="process"/>
-  <text x="632" y="36" text-anchor="middle" fill="#94a3b8" font-size="9">Modul 1 · Proses</text>
-  <text x="632" y="50" text-anchor="middle" fill="#1e293b" font-weight="700" font-size="11">Manajemen Ruas Jalan</text>
-  <line x1="560" y1="56" x2="705" y2="56" stroke="#e2e8f0" stroke-width="1"/>
-  <text x="563" y="67" fill="#1e40af" font-size="9" font-weight="600">▸ Nama Ruas · Link No</text>
-  <text x="563" y="78" fill="#64748b" font-size="9">▸ Provinsi · Kabupaten</text>
-  <text x="563" y="89" fill="#64748b" font-size="9">▸ Status · Fungsi · Panjang</text>
-  <text x="563" y="100" fill="#64748b" font-size="9">▸ Akses ke Jalan</text>
-
-  <!-- arrow → -->
-  <line x1="715" y1="67" x2="745" y2="67" class="arrow"/>
-
-  <!-- INV STEP 1 - process rect -->
-  <rect x="745" y="20" width="165" height="95" rx="6" class="process"/>
-  <text x="827" y="36" text-anchor="middle" fill="#94a3b8" font-size="9">Modul 2 · Step 1</text>
-  <text x="827" y="50" text-anchor="middle" fill="#1e293b" font-weight="700" font-size="11">Inventarisasi Jalan</text>
-  <line x1="755" y1="56" x2="900" y2="56" stroke="#e2e8f0" stroke-width="1"/>
-  <text x="758" y="67" fill="#1e40af" font-size="9" font-weight="600">▸ Pilih Nomor Ruas</text>
-  <text x="758" y="78" fill="#1e40af" font-size="9" font-weight="600">▸ Surveyor · Tanggal</text>
-  <text x="758" y="89" fill="#64748b" font-size="9">▸ Arah · Interval (m)</text>
-  <text x="758" y="100" fill="#64748b" font-size="9">▸ Tipe Pengumpulan Data</text>
-
-  <!-- arrow ↓ (belok kanan-bawah) -->
-  <line x1="910" y1="67" x2="960" y2="67" stroke="#94a3b8" stroke-width="1.8" fill="none"/>
-  <line x1="960" y1="67" x2="960" y2="200" stroke="#94a3b8" stroke-width="1.8" fill="none" marker-end="url(#arrowhead)"/>
-
-  <!-- ════════════════════════════════════ -->
-  <!-- ROW 2 (R→L): INV STEP 2, KONDISI STEP 1, KONDISI STEP 2, KALKULASI SDI -->
-  <!-- ════════════════════════════════════ -->
-
-  <!-- INV STEP 2 - parallelogram (input) -->
-  <polygon points="745,200 910,200 895,295 730,295" class="input-out"/>
-  <text x="827" y="217" text-anchor="middle" fill="#64748b" font-size="9">Modul 2 · Step 2 · Input</text>
-  <text x="827" y="231" text-anchor="middle" fill="#1e293b" font-weight="700" font-size="11">Input Data Segmen</text>
-  <line x1="737" y1="237" x2="902" y2="237" stroke="#bfdbfe" stroke-width="1"/>
-  <text x="750" y="248" fill="#1e40af" font-size="9" font-weight="600">▸ Dari km — Ke km</text>
-  <text x="750" y="259" fill="#1e40af" font-size="9" font-weight="600">▸ Tipe Perkerasan</text>
-  <text x="750" y="270" fill="#1e40af" font-size="9" font-weight="600">▸ Lebar Perkerasan (m)</text>
-  <text x="750" y="281" fill="#64748b" font-size="9">▸ Lebar RuMija · Medan Jalan</text>
-
-  <!-- arrow ← -->
-  <line x1="730" y1="247" x2="700" y2="247" class="arrow"/>
-
-  <!-- KONDISI STEP 1 - process -->
-  <rect x="535" y="200" width="165" height="95" rx="6" class="process"/>
-  <text x="617" y="216" text-anchor="middle" fill="#94a3b8" font-size="9">Modul 3 · Step 1</text>
-  <text x="617" y="230" text-anchor="middle" fill="#1e293b" font-weight="700" font-size="11">Kondisi Jalan</text>
-  <line x1="545" y1="236" x2="690" y2="236" stroke="#e2e8f0" stroke-width="1"/>
-  <text x="548" y="247" fill="#1e40af" font-size="9" font-weight="600">▸ Pilih Nomor Ruas</text>
-  <text x="548" y="258" fill="#1e40af" font-size="9" font-weight="600">▸ Surveyor · Tanggal</text>
-  <text x="548" y="269" fill="#64748b" font-size="9">▸ Arah · Interval (m)</text>
-  <text x="548" y="280" fill="#64748b" font-size="9">▸ Tipe Pengumpulan Data</text>
-
-  <!-- arrow ← -->
-  <line x1="535" y1="247" x2="505" y2="247" class="arrow"/>
-
-  <!-- KONDISI STEP 2 - parallelogram input -->
-  <polygon points="320,200 505,200 490,295 305,295" class="input-out"/>
-  <text x="407" y="217" text-anchor="middle" fill="#64748b" font-size="9">Modul 3 · Step 2 · Input</text>
-  <text x="407" y="231" text-anchor="middle" fill="#1e293b" font-weight="700" font-size="11">Input Kerusakan Segmen</text>
-  <line x1="312" y1="237" x2="497" y2="237" stroke="#bfdbfe" stroke-width="1"/>
-  <text x="325" y="248" fill="#64748b" font-size="9">▸ Tab: Aspal/Beton/Blok/Non-Aspal</text>
-  <text x="325" y="259" fill="#1e40af" font-size="9" font-weight="600">▸ Luas & jenis retak (m²)</text>
-  <text x="325" y="270" fill="#1e40af" font-size="9" font-weight="600">▸ Jumlah & ukuran lubang</text>
-  <text x="325" y="281" fill="#1e40af" font-size="9" font-weight="600">▸ Luas & kedalaman alur</text>
-
-  <!-- arrow ← -->
-  <line x1="305" y1="247" x2="275" y2="247" class="arrow"/>
-
-  <!-- KALKULASI SDI - diamond decision -->
-  <polygon points="140,200 275,247 140,294 5,247" class="decision"/>
-  <text x="140" y="237" text-anchor="middle" fill="#92400e" font-size="9">Otomatis</text>
-  <text x="140" y="251" text-anchor="middle" fill="#1e293b" font-weight="700" font-size="11">Kalkulasi SDI</text>
-  <text x="140" y="263" text-anchor="middle" fill="#92400e" font-size="9">PKRMS Standard</text>
-
-  <!-- arrow ↓ (belok kiri-bawah) -->
-  <line x1="5" y1="247" x2="30" y2="247" stroke="#94a3b8" stroke-width="1.8" fill="none"/>
-  <line x1="30" y1="247" x2="30" y2="390" stroke="#94a3b8" stroke-width="1.8" fill="none" marker-end="url(#arrowhead)"/>
-
-  <!-- ════════════════════════════════════ -->
-  <!-- ROW 3 (L→R): SDI1, SDI2, SDI3, SDI4, SDI FINAL -->
-  <!-- ════════════════════════════════════ -->
-
-  <!-- SDI 1 -->
-  <rect x="30" y="390" width="150" height="80" rx="6" class="sdi-box"/>
-  <text x="105" y="410" text-anchor="middle" fill="#15803d" font-size="9" font-weight="700">SDI 1</text>
-  <text x="105" y="425" text-anchor="middle" fill="#1e293b" font-weight="700" font-size="11">Luas Retak</text>
-  <line x1="40" y1="431" x2="170" y2="431" stroke="#bbf7d0" stroke-width="1"/>
-  <text x="105" y="443" text-anchor="middle" fill="#6b7280" font-size="9">% luas retak</text>
-  <text x="105" y="455" text-anchor="middle" fill="#6b7280" font-size="9">vs luas segmen</text>
-  <text x="105" y="463" text-anchor="middle" fill="#6b7280" font-size="9">  </text>
-
-  <!-- arrow → -->
-  <line x1="180" y1="430" x2="210" y2="430" class="arrow"/>
-
-  <!-- SDI 2 -->
-  <rect x="210" y="390" width="150" height="80" rx="6" class="sdi-box"/>
-  <text x="285" y="410" text-anchor="middle" fill="#15803d" font-size="9" font-weight="700">SDI 2</text>
-  <text x="285" y="425" text-anchor="middle" fill="#1e293b" font-weight="700" font-size="11">Lebar Retak</text>
-  <line x1="220" y1="431" x2="350" y2="431" stroke="#bbf7d0" stroke-width="1"/>
-  <text x="285" y="443" text-anchor="middle" fill="#6b7280" font-size="9">Rata-rata lebar</text>
-  <text x="285" y="455" text-anchor="middle" fill="#6b7280" font-size="9">retak ditemukan</text>
-
-  <!-- arrow → -->
-  <line x1="360" y1="430" x2="390" y2="430" class="arrow"/>
-
-  <!-- SDI 3 -->
-  <rect x="390" y="390" width="150" height="80" rx="6" class="sdi-box"/>
-  <text x="465" y="410" text-anchor="middle" fill="#15803d" font-size="9" font-weight="700">SDI 3</text>
-  <text x="465" y="425" text-anchor="middle" fill="#1e293b" font-weight="700" font-size="11">Jumlah Lubang</text>
-  <line x1="400" y1="431" x2="530" y2="431" stroke="#bbf7d0" stroke-width="1"/>
-  <text x="465" y="443" text-anchor="middle" fill="#6b7280" font-size="9">Jumlah lubang</text>
-  <text x="465" y="455" text-anchor="middle" fill="#6b7280" font-size="9">per 100 meter</text>
-
-  <!-- arrow → -->
-  <line x1="540" y1="430" x2="570" y2="430" class="arrow"/>
-
-  <!-- SDI 4 -->
-  <rect x="570" y="390" width="150" height="80" rx="6" class="sdi-box"/>
-  <text x="645" y="410" text-anchor="middle" fill="#15803d" font-size="9" font-weight="700">SDI 4</text>
-  <text x="645" y="425" text-anchor="middle" fill="#1e293b" font-weight="700" font-size="11">Kedalaman Alur</text>
-  <line x1="580" y1="431" x2="710" y2="431" stroke="#bbf7d0" stroke-width="1"/>
-  <text x="645" y="443" text-anchor="middle" fill="#6b7280" font-size="9">Rata-rata kedalaman</text>
-  <text x="645" y="455" text-anchor="middle" fill="#6b7280" font-size="9">alur roda (mm)</text>
-
-  <!-- arrow → -->
-  <line x1="720" y1="430" x2="750" y2="430" class="arrow"/>
-
-  <!-- SDI FINAL - parallelogram output -->
-  <polygon points="750,390 930,390 915,470 735,470" class="output-box"/>
-  <text x="832" y="407" text-anchor="middle" fill="#5b21b6" font-size="9">Output · Kalkulasi</text>
-  <text x="832" y="421" text-anchor="middle" fill="#1e293b" font-weight="700" font-size="11">SDI Final per Segmen</text>
-  <line x1="742" y1="427" x2="922" y2="427" stroke="#ddd6fe" stroke-width="1"/>
-  <text x="832" y="439" text-anchor="middle" fill="#5b21b6" font-size="9" font-weight="600">SDI1 + SDI2 + SDI3 + SDI4</text>
-  <text x="832" y="451" text-anchor="middle" fill="#6b7280" font-size="9">Tersimpan di database</text>
-  <text x="832" y="462" text-anchor="middle" fill="#6b7280" font-size="9">per segmen per ruas</text>
-
-  <!-- arrow ↓ belok kanan-bawah -->
-  <line x1="930" y1="430" x2="970" y2="430" stroke="#94a3b8" stroke-width="1.8" fill="none"/>
-  <line x1="970" y1="430" x2="970" y2="560" stroke="#94a3b8" stroke-width="1.8" fill="none" marker-end="url(#arrowhead)"/>
-
-  <!-- ════════════════════════════════════ -->
-  <!-- ROW 4 (R→L): KATEGORI DECISION + 4 HASIL -->
-  <!-- ════════════════════════════════════ -->
-
-  <!-- KATEGORI - diamond -->
-  <polygon points="830,560 970,607 830,654 690,607" class="decision"/>
-  <text x="830" y="597" text-anchor="middle" fill="#92400e" font-size="9">Klasifikasi</text>
-  <text x="830" y="611" text-anchor="middle" fill="#1e293b" font-weight="700" font-size="11">Kategori Kondisi</text>
-  <text x="830" y="623" text-anchor="middle" fill="#92400e" font-size="9">Berdasarkan SDI Final</text>
-
-  <!-- arrow ← dari diamond -->
-  <line x1="690" y1="607" x2="640" y2="607" class="arrow"/>
-
-  <!-- RUSAK BERAT -->
-  <polygon points="480,580 640,580 640,634 480,634" class="result-rb"/>
-  <text x="560" y="598" text-anchor="middle" fill="#b91c1c" font-size="9">Kategori</text>
-  <text x="560" y="612" text-anchor="middle" fill="#1e293b" font-weight="700" font-size="12">🔴 Rusak Berat</text>
-  <text x="560" y="625" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">SDI ≥ 150</text>
-
-  <!-- arrow ← -->
-  <line x1="480" y1="607" x2="450" y2="607" class="arrow"/>
-
-  <!-- RUSAK RINGAN -->
-  <polygon points="290,580 450,580 450,634 290,634" class="result-rr"/>
-  <text x="370" y="598" text-anchor="middle" fill="#c2410c" font-size="9">Kategori</text>
-  <text x="370" y="612" text-anchor="middle" fill="#1e293b" font-weight="700" font-size="12">🟠 Rusak Ringan</text>
-  <text x="370" y="625" text-anchor="middle" fill="#f97316" font-size="10" font-weight="600">SDI 100–149</text>
-
-  <!-- arrow ← -->
-  <line x1="290" y1="607" x2="260" y2="607" class="arrow"/>
-
-  <!-- SEDANG -->
-  <polygon points="100,580 260,580 260,634 100,634" class="result-med"/>
-  <text x="180" y="598" text-anchor="middle" fill="#854d0e" font-size="9">Kategori</text>
-  <text x="180" y="612" text-anchor="middle" fill="#1e293b" font-weight="700" font-size="12">🟡 Sedang</text>
-  <text x="180" y="625" text-anchor="middle" fill="#eab308" font-size="10" font-weight="600">SDI 50–99</text>
-
-  <!-- arrow ← -->
-  <line x1="100" y1="607" x2="70" y2="607" class="arrow"/>
-
-  <!-- BAIK -->
-  <polygon points="30,580 100,580 100,634 30,634" class="result-good"/>
-  <text x="65" y="603" text-anchor="middle" fill="#15803d" font-weight="700" font-size="10">✅ Baik</text>
-  <text x="65" y="617" text-anchor="middle" fill="#22c55e" font-size="9" font-weight="600">SDI&lt;50</text>
-  <text x="65" y="629" text-anchor="middle" fill="#6b7280" font-size="8">  </text>
-
-  <!-- turn: pojok kiri bawah -->
-  <line x1="30" y1="607" x2="15" y2="607" stroke="#94a3b8" stroke-width="1.8" fill="none"/>
-  <line x1="15" y1="607" x2="15" y2="760" stroke="#94a3b8" stroke-width="1.8" fill="none" marker-end="url(#arrowhead)"/>
-
-  <!-- ════════════════════════════════════ -->
-  <!-- ROW 5 (L→R): DASHBOARD + PETA -->
-  <!-- ════════════════════════════════════ -->
-
-  <!-- DASHBOARD - parallelogram output -->
-  <polygon points="15,760 370,760 355,880 0,880" class="output-box"/>
-  <text x="187" y="778" text-anchor="middle" fill="#5b21b6" font-size="9">Output 1</text>
-  <text x="187" y="793" text-anchor="middle" fill="#1e293b" font-weight="700" font-size="12">📊 Dashboard</text>
-  <line x1="8" y1="800" x2="362" y2="800" stroke="#ddd6fe" stroke-width="1"/>
-  <text x="27" y="812" fill="#5b21b6" font-size="9" font-weight="600">▸ Total segmen & rata-rata SDI</text>
-  <text x="27" y="824" fill="#5b21b6" font-size="9" font-weight="600">▸ Trend SDI per tahun</text>
-  <text x="27" y="836" fill="#5b21b6" font-size="9" font-weight="600">▸ Distribusi kondisi jalan</text>
-  <text x="27" y="848" fill="#64748b" font-size="9">▸ Top 5 ruas terburuk</text>
-  <text x="27" y="860" fill="#64748b" font-size="9">▸ Top 10 kecamatan SDI tertinggi</text>
-  <text x="27" y="872" fill="#64748b" font-size="9">▸ Statistik kerusakan detail</text>
-
-  <!-- arrow → -->
-  <line x1="370" y1="820" x2="420" y2="820" class="arrow"/>
-
-  <!-- PETA - parallelogram output -->
-  <polygon points="420,760 780,760 765,880 405,880" class="output-box"/>
-  <text x="592" y="778" text-anchor="middle" fill="#5b21b6" font-size="9">Output 2</text>
-  <text x="592" y="793" text-anchor="middle" fill="#1e293b" font-weight="700" font-size="12">🗺️ Peta Kondisi Jalan</text>
-  <line x1="413" y1="800" x2="772" y2="800" stroke="#ddd6fe" stroke-width="1"/>
-  <text x="430" y="812" fill="#5b21b6" font-size="9" font-weight="600">▸ Visualisasi warna SDI per segmen</text>
-  <text x="430" y="824" fill="#5b21b6" font-size="9" font-weight="600">▸ Filter per kecamatan & tahun</text>
-  <text x="430" y="836" fill="#64748b" font-size="9">▸ Statistik panjang jalan per kategori</text>
-  <text x="430" y="848" fill="#64748b" font-size="9">▸ Estimasi biaya perbaikan</text>
-  <text x="430" y="860" fill="#64748b" font-size="9">▸ Peta Kabupaten Jember (Leaflet)</text>
-
-  <!-- arrow → END -->
-  <line x1="780" y1="820" x2="830" y2="820" class="arrow"/>
-
-  <!-- END terminator -->
-  <rect x="830" y="798" width="140" height="44" rx="22" class="terminator"/>
-  <text x="900" y="817" text-anchor="middle" class="lbl-white">END</text>
-  <text x="900" y="831" text-anchor="middle" fill="#c7d2fe" font-size="9">Selesai</text>
-
-</svg>
-
-<div style="text-align:center;margin-top:24px;color:#9ca3af;font-size:11px">
-  DPUBMSDA Jember · SIG Kondisi Jalan · Business Flow v4
-</div>
-
 </body>
 </html>
